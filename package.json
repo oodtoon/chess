@@ -1,0 +1,15 @@
+{
+  "name": "web-chess",
+  "version": "1.0.0",
+  "description": "chess",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "start": "nodemon index.html"
+  },
+  "author": "Best buds",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
