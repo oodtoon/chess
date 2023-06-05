@@ -29,6 +29,7 @@ class Board {
     this.initializePiece(Rook);
     this.initializePiece(Bishop);
     this.initializePiece(Queen)
+    this.initializePiece(King)
   }
 
 
@@ -289,7 +290,6 @@ class Queen extends Piece {
     super(game, board, color);
     this.row = row;
     this.file = file;
-    this.hasMoved = false;
   }
 
   name = "Queen";
@@ -317,6 +317,61 @@ class Queen extends Piece {
 
   get icon() {
     return this.isWhite ? "♕" : "♛";
+  }
+}
+
+class King extends Piece {
+  static startingRows = [0, 7]
+  static startingFiles = [4]
+
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+    this.hasMoved = false;
+  }
+
+  name = "King";
+
+  moveOneSquare(row, file, arr, vert, horiz) {
+    const nextSquare = [row + vert, file + horiz];
+    if (
+      this.isValidSquare(...nextSquare) &&
+      !this.isSquareOccupied(...nextSquare)
+    ) {
+      arr.push(Move.fromSquare(nextSquare, this));
+    } else if (
+      this.isValidSquare(...nextSquare) &&
+      this.isSquareOccupied(...nextSquare) &&
+      this.getSquareContent(...nextSquare).color !== this.color
+    ) {
+      arr.push(
+        Move.fromSquare(nextSquare, this, this.isSquareOccupied(...nextSquare))
+      );
+    }
+    return arr;
+  }
+
+  get moves() {
+    const available = [];
+
+    this.moveOneSquare(this.row, this.file, available, 1, 0);
+    this.moveOneSquare(this.row, this.file, available, -1, 0);
+    this.moveOneSquare(this.row, this.file, available, 0, 1);
+    this.moveOneSquare(this.row, this.file, available, 0, -1);
+    this.moveOneSquare(this.row, this.file, available, 1, 1);
+    this.moveOneSquare(this.row, this.file, available, 1, -1);
+    this.moveOneSquare(this.row, this.file, available, -1, 1);
+    this.moveOneSquare(this.row, this.file, available, -1, -1);
+    return available;
+  }
+
+  get icon() {
+    return this.isWhite() ? "♔" : "♚";
+  }
+
+  onMove(move) {
+    this.hasMoved = true;
   }
 }
 
@@ -393,13 +448,10 @@ game.doMove(pawnLeft.moves[1]);
 game.doMove(pawnRight.moves[1]);
 console.log(game.board.debug());
 
-const whiteRook = game.board.get(0, 0);
-const blackRook = game.board.get(7, 0);
-const randomPwn = game.board.get(1, 6);
-const rook2 = game.board.get(0, 7);
-const rook3 = game.board.get(7, 7);
-console.log(whiteRook);
-console.log(randomPwn);
-console.log(blackRook);
-console.log(rook2);
-console.log(rook3);
+const queen = game.board.get(0, 4);
+const rookw = game.board.get(0, 0);
+const king = game.board.get(0, 3);
+console.log(rookw);
+console.log(wb);
+console.log(queen);
+console.log(king)
