@@ -447,7 +447,6 @@ console.log(whitePawn.moves);
 // game.doMove(whitePawn3.moves[1]);
 // console.log(blackPawn.moves[0]);
 // game.doMove(blackPawn.moves[0]);
-
 const wb = game.board.get(0, 2);
 const pawnLeft = game.board.get(1, 1);
 const pawnRight = game.board.get(1, 3);
