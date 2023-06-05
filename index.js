@@ -20,7 +20,14 @@ class Board {
       const pB = new Pawn(this.game, this, "Black", 6, i);
       this.#board[pB.row][pB.file] = pB;
     }
+    for (let i = 0; i < Board.LANE_SIZE; i += 7) {
+      const r = new Rook(this.game, this, "white", 0, i);
+      this.#board[r.row][r.file] = r;
+      const rB = new Rook(this.game, this, "Black", 7, i);
+      this.#board[rB.row][rB.file] = rB;
+    }
   }
+
   getSquareContent(row, file) {
     return this.#board[row][file];
   }
@@ -71,6 +78,17 @@ class Piece {
     return this.board.getSquareContent(row, file);
   }
 
+  isValidSquare(row, file) {
+    return (
+      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
+    );
+  }
+
+  isSquareOccupied(row, file) {
+    let squareContent = this.getSquareContent(row, file);
+    return squareContent !== null;
+  }
+
   get moves() {
     throw new Error("moves getter is not yet implementeed");
   }
@@ -87,27 +105,9 @@ class Pawn extends Piece {
     this.hasDoubleMoved = false;
   }
 
-  isSquareOccupied(row, file) {
-    let squareContent = this.getSquareContent(row, file);
-    return squareContent !== null;
-  }
-
-  isValidSquare(row, file) {
-    return (
-      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
-    );
-  }
-
   canEnPassant(row, file) {
     const squareContent = this.getSquareContent(row, file);
     const lastMove = game.moves.at(-1);
-    console.log({
-      isValid: this.isValidSquare(row, file),
-      squareContent,
-      lastMove,
-      match: lastMove?.initiatingPiece === squareContent,
-      isDoubleMvoe: lastMove?.isPawnDoubleMove,
-    });
     return (
       this.isValidSquare(row, file) &&
       squareContent &&
@@ -169,7 +169,99 @@ class Pawn extends Piece {
   get icon() {
     return this.isWhite() ? "♙" : "♟";
   }
+  onMove(move) {
+    this.hasMoved = true;
+  }
+}
 
+class Rook extends Piece {
+  name = "Rook";
+
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+    this.hasMoved = false;
+  }
+
+  get icon() {
+    return this.isWhite() ? "♖" : "♜";
+  }
+
+  rightMove(row, file, arr) {
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const horizontalRight = [row, file + i];
+      if (
+        this.isValidSquare(...horizontalRight) &&
+        !this.isSquareOccupied(...horizontalRight)
+      ) {
+        arr.push(Move.fromSquare(horizontalRight, this));
+      } else if (
+        this.isValidSquare(...horizontalRight) &&
+        this.isSquareOccupied(...horizontalRight) &&
+        this.getSquareContent(...horizontalRight).color !== this.color
+      ) {
+        arr.push(Move.fromSquare(horizontalRight, this));
+      }
+    }
+  }
+
+  leftMove(row, file, arr) {
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const horizontalLeft = [row, file - i];
+      if (
+        this.isValidSquare(...horizontalLeft) &&
+        !this.isSquareOccupied(...horizontalLeft)
+      ) {
+        arr.push(Move.fromSquare(horizontalLeft, this));
+      } else if (
+        this.isValidSquare(...horizontalLeft) &&
+        this.isSquareOccupied(...horizontalLeft) &&
+        this.getSquareContent(...horizontalLeft).color !== this.color
+      ) {
+        arr.push(Move.fromSquare(horizontalLeft, this));
+      }
+    }
+  }
+
+  get moves() {
+    const available = [];
+
+    for (let i = this.row + 1; i < Board.LANE_SIZE; i++) {
+      const up = [this.row + i, this.file];
+
+      if (this.isValidSquare(...up) && !this.isSquareOccupied(...up)) {
+        available.push(Move.fromSquare(up, this));
+      } else if (this.isValidSquare(...up) && this.isSquareOccupied(...up)) {
+        if (this.getSquareContent(...up).color !== this.color) {
+          available.push(Move.fromSquare(up, this));
+        }
+        this.rightMove(this.row, this.file, available);
+        this.leftMove(this.row, this.file, available);
+        return available;
+      }
+    }
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const down = [this.row - i, this.file];
+
+      if (this.isValidSquare(...down) && !this.isSquareOccupied(...down)) {
+        available.push(Move.fromSquare(down, this));
+      } else if (
+        this.isValidSquare(...down) &&
+        this.isSquareOccupied(...down)
+      ) {
+        if (this.getSquareContent(...down).color !== this.color) {
+          available.push(Move.fromSquare(down, this));
+        }
+        this.rightMove(this.row, this.file, available);
+        this.leftMove(this.row, this.file, available);
+        return available;
+      }
+    }
+
+    return available;
+  }
   onMove(move) {
     this.hasMoved = true;
   }
@@ -190,12 +282,6 @@ class Move {
   }
 
   get isPawnDoubleMove() {
-    console.log(
-      this.initiatingPiece.name === "Pawn",
-      Math.abs(this.sourceRow - this.row) === 2,
-      this.sourceRow,
-      this.row
-    );
     return (
       this.initiatingPiece.name === "Pawn" &&
       Math.abs(this.sourceRow - this.row) === 2
@@ -230,18 +316,6 @@ class Game {
 
 //TESTING AREA
 
-// const b = new Board();
-
-// b.initialize();
-
-// const p = new Pawn(b, "white", 1, 0);
-
-// console.log(Board.LANE_SIZE);
-
-// console.log(`${p}`, p);
-
-// console.log(p.moves);
-
 const game = new Game();
 
 console.log(game.board);
@@ -257,3 +331,14 @@ game.doMove(whitePawn3.moves[1]);
 console.log(blackPawn.moves[0]);
 game.doMove(blackPawn.moves[0]);
 console.log(game.board.debug());
+
+const whiteRook = game.board.get(0, 0);
+const blackRook = game.board.get(7, 0);
+const randomPwn = game.board.get(1, 6);
+const rook2 = game.board.get(0, 7);
+const rook3 = game.board.get(7, 7);
+console.log(whiteRook);
+console.log(randomPwn);
+console.log(blackRook);
+console.log(rook2);
+console.log(rook3);
