@@ -175,8 +175,6 @@ class Pawn extends Piece {
 }
 
 class Rook extends Piece {
-  name = "Rook";
-
   constructor(game, board, color, row, file) {
     super(game, board, color);
     this.row = row;
@@ -184,42 +182,65 @@ class Rook extends Piece {
     this.hasMoved = false;
   }
 
+  name = "Rook";
+
   get icon() {
     return this.isWhite() ? "♖" : "♜";
   }
 
-  rightMove(row, file, arr) {
+  horizontalMove(row, file, arr, direction) {
+    const horizontal = direction === "right" ? 1 : -1;
+
     for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizontalRight = [row, file + i];
+      const horizDirection = [row, file + i * horizontal];
       if (
-        this.isValidSquare(...horizontalRight) &&
-        !this.isSquareOccupied(...horizontalRight)
+        this.isValidSquare(...horizDirection) &&
+        !this.isSquareOccupied(...horizDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalRight, this));
+        arr.push(Move.fromSquare(horizDirection, this));
       } else if (
-        this.isValidSquare(...horizontalRight) &&
-        this.isSquareOccupied(...horizontalRight) &&
-        this.getSquareContent(...horizontalRight).color !== this.color
+        this.isValidSquare(...horizDirection) &&
+        this.isSquareOccupied(...horizDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalRight, this));
+        if (this.getSquareContent(...horizDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              horizDirection,
+              this,
+              this.getSquareContent(...horizDirection)
+            )
+          );
+        }
+        return arr;
       }
     }
   }
 
-  leftMove(row, file, arr) {
+  verticalMove(row, file, arr, direction) {
+    const vertical = direction === "up" ? 1 : -1;
+
     for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizontalLeft = [row, file - i];
+      const vertDirection = [row + i * vertical, file];
+
       if (
-        this.isValidSquare(...horizontalLeft) &&
-        !this.isSquareOccupied(...horizontalLeft)
+        this.isValidSquare(...vertDirection) &&
+        !this.isSquareOccupied(...vertDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalLeft, this));
+        arr.push(Move.fromSquare(vertDirection, this));
       } else if (
-        this.isValidSquare(...horizontalLeft) &&
-        this.isSquareOccupied(...horizontalLeft) &&
-        this.getSquareContent(...horizontalLeft).color !== this.color
+        this.isValidSquare(...vertDirection) &&
+        this.isSquareOccupied(...vertDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalLeft, this));
+        if (this.getSquareContent(...vertDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              vertDirection,
+              this,
+              this.getSquareContent(...vertDirection)
+            )
+          );
+        }
+        return arr;
       }
     }
   }
@@ -227,39 +248,10 @@ class Rook extends Piece {
   get moves() {
     const available = [];
 
-    for (let i = this.row + 1; i < Board.LANE_SIZE; i++) {
-      const up = [this.row + i, this.file];
-
-      if (this.isValidSquare(...up) && !this.isSquareOccupied(...up)) {
-        available.push(Move.fromSquare(up, this));
-      } else if (this.isValidSquare(...up) && this.isSquareOccupied(...up)) {
-        if (this.getSquareContent(...up).color !== this.color) {
-          available.push(Move.fromSquare(up, this));
-        }
-        this.rightMove(this.row, this.file, available);
-        this.leftMove(this.row, this.file, available);
-        return available;
-      }
-    }
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const down = [this.row - i, this.file];
-
-      if (this.isValidSquare(...down) && !this.isSquareOccupied(...down)) {
-        available.push(Move.fromSquare(down, this));
-      } else if (
-        this.isValidSquare(...down) &&
-        this.isSquareOccupied(...down)
-      ) {
-        if (this.getSquareContent(...down).color !== this.color) {
-          available.push(Move.fromSquare(down, this));
-        }
-        this.rightMove(this.row, this.file, available);
-        this.leftMove(this.row, this.file, available);
-        return available;
-      }
-    }
-
+    this.verticalMove(this.row, this.file, available, "up");
+    this.verticalMove(this.row, this.file, available, "down");
+    this.horizontalMove(this.row, this.file, available, "right");
+    this.horizontalMove(this.row, this.file, available, "left");
     return available;
   }
   onMove(move) {
