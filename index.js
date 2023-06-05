@@ -32,6 +32,10 @@ class Board {
       const bB = new Bishop(this.game, this, "black", 7, i);
       this.#board[bB.row][bB.file] = bB;
     }
+    const q = new Queen(this.game, this, "white", 0, 4);
+    this.#board[q.row][q.file] = q;
+    const qB = new Queen(this.game, this, "black", 7, 4);
+    this.#board[qB.row][qB.file] = qB;
   }
 
   getSquareContent(row, file) {
@@ -93,6 +97,29 @@ class Piece {
   isSquareOccupied(row, file) {
     let squareContent = this.getSquareContent(row, file);
     return squareContent !== null;
+  }
+
+  moveDiagonally(row, file, arr, vert, horiz) {
+    const upDown = vert === "up" ? 1 : -1;
+    const leftRight = horiz === "right" ? 1 : -1;
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [row + i * upDown, file + i * leftRight];
+      if (this.isValidSquare(...square) && !this.isSquareOccupied(...square)) {
+        arr.push(Move.fromSquare(square, this));
+      } else if (
+        this.isValidSquare(...square) &&
+        this.isSquareOccupied(...square)
+      ) {
+        if (this.getSquareContent(...square).color !== this.color) {
+          arr.push(
+            Move.fromSquare(square, this, this.getSquareContent(...square))
+          );
+        }
+        return arr;
+      }
+    }
+    return arr;
   }
 
   get moves() {
@@ -194,50 +221,59 @@ class Rook extends Piece {
     return this.isWhite() ? "♖" : "♜";
   }
 
-  rightMove(row, file, arr) {
+  horizontalMove(row, file, arr, direction) {
+    const horizontal = direction === "right" ? 1 : -1;
+
     for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizontalRight = [row, file + i];
+      const horizDirection = [row, file + i * horizontal];
       if (
-        this.isValidSquare(...horizontalRight) &&
-        !this.isSquareOccupied(...horizontalRight)
+        this.isValidSquare(...horizDirection) &&
+        !this.isSquareOccupied(...horizDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalRight, this));
+        arr.push(Move.fromSquare(horizDirection, this));
       } else if (
-        this.isValidSquare(...horizontalRight) &&
-        this.isSquareOccupied(...horizontalRight) &&
-        this.getSquareContent(...horizontalRight).color !== this.color
+        this.isValidSquare(...horizDirection) &&
+        this.isSquareOccupied(...horizDirection)
       ) {
-        arr.push(
-          Move.fromSquare(
-            horizontalRight,
-            this,
-            this.getSquareContent(...horizontalRight)
-          )
-        );
+        if (this.getSquareContent(...horizDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              horizDirection,
+              this,
+              this.getSquareContent(...horizDirection)
+            )
+          );
+        }
+        return arr;
       }
     }
   }
 
-  leftMove(row, file, arr) {
+  verticalMove(row, file, arr, direction) {
+    const vertical = direction === "up" ? 1 : -1;
+
     for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizontalLeft = [row, file - i];
+      const vertDirection = [row + i * vertical, file];
+
       if (
-        this.isValidSquare(...horizontalLeft) &&
-        !this.isSquareOccupied(...horizontalLeft)
+        this.isValidSquare(...vertDirection) &&
+        !this.isSquareOccupied(...vertDirection)
       ) {
-        arr.push(Move.fromSquare(horizontalLeft, this));
+        arr.push(Move.fromSquare(vertDirection, this));
       } else if (
-        this.isValidSquare(...horizontalLeft) &&
-        this.isSquareOccupied(...horizontalLeft) &&
-        this.getSquareContent(...horizontalLeft).color !== this.color
+        this.isValidSquare(...vertDirection) &&
+        this.isSquareOccupied(...vertDirection)
       ) {
-        arr.push(
-          Move.fromSquare(
-            horizontalLeft,
-            this,
-            this.getSquareContent(...horizontalLeft)
-          )
-        );
+        if (this.getSquareContent(...vertDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              vertDirection,
+              this,
+              this.getSquareContent(...vertDirection)
+            )
+          );
+        }
+        return arr;
       }
     }
   }
@@ -245,43 +281,10 @@ class Rook extends Piece {
   get moves() {
     const available = [];
 
-    for (let i = this.row + 1; i < Board.LANE_SIZE; i++) {
-      const up = [this.row + i, this.file];
-
-      if (this.isValidSquare(...up) && !this.isSquareOccupied(...up)) {
-        available.push(Move.fromSquare(up, this));
-      } else if (this.isValidSquare(...up) && this.isSquareOccupied(...up)) {
-        if (this.getSquareContent(...up).color !== this.color) {
-          available.push(
-            Move.fromSquare(up, this, this.getSquareContent(...up))
-          );
-        }
-        this.rightMove(this.row, this.file, available);
-        this.leftMove(this.row, this.file, available);
-        return available;
-      }
-    }
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const down = [this.row - i, this.file];
-
-      if (this.isValidSquare(...down) && !this.isSquareOccupied(...down)) {
-        available.push(Move.fromSquare(down, this));
-      } else if (
-        this.isValidSquare(...down) &&
-        this.isSquareOccupied(...down)
-      ) {
-        if (this.getSquareContent(...down).color !== this.color) {
-          available.push(
-            Move.fromSquare(down, this, this.getSquareContent(...down))
-          );
-        }
-        this.rightMove(this.row, this.file, available);
-        this.leftMove(this.row, this.file, available);
-        return available;
-      }
-    }
-
+    this.verticalMove(this.row, this.file, available, "up");
+    this.verticalMove(this.row, this.file, available, "down");
+    this.horizontalMove(this.row, this.file, available, "right");
+    this.horizontalMove(this.row, this.file, available, "left");
     return available;
   }
   onMove(move) {
@@ -304,37 +307,14 @@ class Bishop extends Piece {
     }
   }
 
-  moveDiagonally(row, file, arr, vert, horiz) {
-    const upDown = vert === "up" ? 1 : -1
-    const leftRight = horiz === "right" ? 1 : -1
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const square = [row + i * upDown, file + i * leftRight]
-      if (this.isValidSquare(...square) && !this.isSquareOccupied(...square)) {
-        arr.push(Move.fromSquare(square, this));
-      } else if (
-        this.isValidSquare(...square) &&
-        this.isSquareOccupied(...square)
-      ) {
-        if (this.getSquareContent(...square).color !== this.color) {
-          arr.push(
-            Move.fromSquare(square, this, this.getSquareContent(...square))
-          );
-        }
-        return arr;
-      }
-    }
-    return arr
-  }
-
   get moves() {
-    const available = []
+    const available = [];
 
     this.moveDiagonally(this.row, this.file, available, "up", "right");
     this.moveDiagonally(this.row, this.file, available, "down", "left");
     this.moveDiagonally(this.row, this.file, available, "up", "left");
     this.moveDiagonally(this.row, this.file, available, "down", "right");
-    return available
+    return available;
   }
 
   onMove(move) {
@@ -342,6 +322,35 @@ class Bishop extends Piece {
   }
   get icon() {
     return this.isWhite() ? "♗" : "♝";
+  }
+}
+
+class Queen extends Piece {
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+    this.hasMoved = false;
+  }
+
+  name = "queen";
+
+  get moves() {
+    const available = [];
+
+    this.moveDiagonally(this.row, this.file, available, "up", "right");
+    this.moveDiagonally(this.row, this.file, available, "down", "left");
+    this.moveDiagonally(this.row, this.file, available, "up", "left");
+    this.moveDiagonally(this.row, this.file, available, "down", "right");
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+
+  get icon() {
+    return this.isWhite ? "♕" : "♛";
   }
 }
 
@@ -397,20 +406,22 @@ class Game {
 const game = new Game();
 
 console.log(game.board);
-// const whitePawn = game.board.get(1, 0);
-// console.log(whitePawn.moves);
-// game.doMove(whitePawn.moves[0]);
-// const blackPawn = game.board.get(6, 0);
-// game.doMove(blackPawn.moves[1]);
-// const whitePawn2 = game.board.get(1, 2);
-// game.doMove(whitePawn2.moves[0]);
-// game.doMove(blackPawn.moves[0]);
-// const whitePawn3 = game.board.get(1, 1);
-// game.doMove(whitePawn3.moves[1]);
-// console.log(blackPawn.moves[0]);
-// game.doMove(blackPawn.moves[0]);
-
-
-const wb = game.board.get(0, 2);
+const whitePawn = game.board.get(1, 0);
+console.log(whitePawn.moves);
+game.doMove(whitePawn.moves[0]);
+const blackPawn = game.board.get(6, 0);
+game.doMove(blackPawn.moves[1]);
+const whitePawn2 = game.board.get(1, 2);
+game.doMove(whitePawn2.moves[0]);
+game.doMove(blackPawn.moves[0]);
+const whitePawn3 = game.board.get(1, 1);
+game.doMove(whitePawn3.moves[1]);
+console.log(blackPawn.moves[0]);
+game.doMove(blackPawn.moves[0]);
 console.log(game.board.debug());
+const wb = game.board.get(0, 2);
+const queen = game.board.get(0, 4);
+const rookw = game.board.get(0, 0);
+console.log(rookw);
 console.log(wb);
+console.log(queen);
