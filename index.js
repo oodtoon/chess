@@ -53,6 +53,7 @@ class Pawn extends Piece {
   get moves() {
     const available = [];
     available.push([this.row + 1, this.file]);
+    console.log("small change")
     return available;
   }
 }
