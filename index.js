@@ -17,14 +17,20 @@ class Board {
     for (let i = 0; i < Board.LANE_SIZE; i++) {
       const p = new Pawn(this.game, this, "white", 1, i);
       this.#board[p.row][p.file] = p;
-      const pB = new Pawn(this.game, this, "Black", 6, i);
+      const pB = new Pawn(this.game, this, "black", 6, i);
       this.#board[pB.row][pB.file] = pB;
     }
     for (let i = 0; i < Board.LANE_SIZE; i += 7) {
       const r = new Rook(this.game, this, "white", 0, i);
       this.#board[r.row][r.file] = r;
-      const rB = new Rook(this.game, this, "Black", 7, i);
+      const rB = new Rook(this.game, this, "black", 7, i);
       this.#board[rB.row][rB.file] = rB;
+    }
+    for (let i = 2; i < 6; i += 3) {
+      const b = new Bishop(this.game, this, "white", 0, i);
+      this.#board[b.row][b.file] = b;
+      const bB = new Bishop(this.game, this, "black", 7, i);
+      this.#board[bB.row][bB.file] = bB;
     }
   }
 
@@ -218,6 +224,8 @@ class Rook extends Piece {
     return this.isWhite() ? "♖" : "♜";
   }
 
+ 
+
   get moves() {
     const directions = [
       [-1, 0],
@@ -233,6 +241,62 @@ class Rook extends Piece {
 
   onMove(move) {
     this.hasMoved = true;
+  }
+}
+
+class Bishop extends Piece {
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+  }
+
+  name = "Bishop";
+
+  nearestSquareOccupied(square) {
+    if (this.isSquareOccupied(...square)) {
+      return square;
+    }
+  }
+
+  moveDiagonally(row, file, arr, vert, horiz) {
+    const upDown = vert === "up" ? 1 : -1
+    const leftRight = horiz === "right" ? 1 : -1
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [row + i * upDown, file + i * leftRight]
+      if (this.isValidSquare(...square) && !this.isSquareOccupied(...square)) {
+        arr.push(Move.fromSquare(square, this));
+      } else if (
+        this.isValidSquare(...square) &&
+        this.isSquareOccupied(...square)
+      ) {
+        if (this.getSquareContent(...square).color !== this.color) {
+          arr.push(
+            Move.fromSquare(square, this, this.getSquareContent(...square))
+          );
+        }
+        return arr;
+      }
+    }
+    return arr
+  }
+
+  get moves() {
+    const available = []
+
+    this.moveDiagonally(this.row, this.file, available, "up", "right");
+    this.moveDiagonally(this.row, this.file, available, "down", "left");
+    this.moveDiagonally(this.row, this.file, available, "up", "left");
+    this.moveDiagonally(this.row, this.file, available, "down", "right");
+    return available
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+  get icon() {
+    return this.isWhite() ? "♗" : "♝";
   }
 }
 
@@ -288,26 +352,20 @@ class Game {
 const game = new Game();
 
 console.log(game.board);
-const whitePawn = game.board.get(1, 0);
-game.doMove(whitePawn.moves[0]);
-const blackPawn = game.board.get(6, 0);
-game.doMove(blackPawn.moves[1]);
-const whitePawn2 = game.board.get(1, 2);
-game.doMove(whitePawn2.moves[0]);
-game.doMove(blackPawn.moves[0]);
-const whitePawn3 = game.board.get(1, 1);
-game.doMove(whitePawn3.moves[1]);
-console.log(blackPawn.moves[0]);
-game.doMove(blackPawn.moves[0]);
-console.log(game.board.debug());
+// const whitePawn = game.board.get(1, 0);
+// console.log(whitePawn.moves);
+// game.doMove(whitePawn.moves[0]);
+// const blackPawn = game.board.get(6, 0);
+// game.doMove(blackPawn.moves[1]);
+// const whitePawn2 = game.board.get(1, 2);
+// game.doMove(whitePawn2.moves[0]);
+// game.doMove(blackPawn.moves[0]);
+// const whitePawn3 = game.board.get(1, 1);
+// game.doMove(whitePawn3.moves[1]);
+// console.log(blackPawn.moves[0]);
+// game.doMove(blackPawn.moves[0]);
 
-const whiteRook = game.board.get(0, 0);
-const blackRook = game.board.get(7, 0);
-const randomPwn = game.board.get(1, 6);
-const rook2 = game.board.get(0, 7);
-const rook3 = game.board.get(7, 7);
-console.log(whiteRook);
-console.log(randomPwn);
-console.log(blackRook);
-console.log(rook2);
-console.log(rook3);
+
+const wb = game.board.get(0, 2);
+console.log(game.board.debug());
+console.log(wb);
