@@ -32,10 +32,16 @@ class Board {
       const bB = new Bishop(this.game, this, "black", 7, i);
       this.#board[bB.row][bB.file] = bB;
     }
+
     const q = new Queen(this.game, this, "white", 0, 4);
     this.#board[q.row][q.file] = q;
     const qB = new Queen(this.game, this, "black", 7, 4);
     this.#board[qB.row][qB.file] = qB;
+
+    const k = new King(this.game, this, "white", 0, 3);
+    this.#board[k.row][k.file] = k;
+    const kB = new King(this.game, this, "black", 7, 3);
+    this.#board[kB.row][kB.file] = kB;
   }
 
   getSquareContent(row, file) {
@@ -301,12 +307,6 @@ class Bishop extends Piece {
 
   name = "Bishop";
 
-  nearestSquareOccupied(square) {
-    if (this.isSquareOccupied(...square)) {
-      return square;
-    }
-  }
-
   get moves() {
     const available = [];
 
@@ -330,7 +330,6 @@ class Queen extends Piece {
     super(game, board, color);
     this.row = row;
     this.file = file;
-    this.hasMoved = false;
   }
 
   name = "queen";
@@ -355,6 +354,58 @@ class Queen extends Piece {
 
   get icon() {
     return this.isWhite ? "♕" : "♛";
+  }
+}
+
+class King extends Piece {
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+    this.hasMoved = false;
+  }
+
+  name = "King";
+
+  moveOneSquare(row, file, arr, vert, horiz) {
+    const nextSquare = [row + vert, file + horiz];
+    if (
+      this.isValidSquare(...nextSquare) &&
+      !this.isSquareOccupied(...nextSquare)
+    ) {
+      arr.push(Move.fromSquare(nextSquare, this));
+    } else if (
+      this.isValidSquare(...nextSquare) &&
+      this.isSquareOccupied(...nextSquare) &&
+      this.getSquareContent(...nextSquare).color !== this.color
+    ) {
+      arr.push(
+        Move.fromSquare(nextSquare, this, this.isSquareOccupied(...nextSquare))
+      );
+    }
+    return arr;
+  }
+
+  get moves() {
+    const available = [];
+
+    this.moveOneSquare(this.row, this.file, available, 1, 0);
+    this.moveOneSquare(this.row, this.file, available, -1, 0);
+    this.moveOneSquare(this.row, this.file, available, 0, 1);
+    this.moveOneSquare(this.row, this.file, available, 0, -1);
+    this.moveOneSquare(this.row, this.file, available, 1, 1);
+    this.moveOneSquare(this.row, this.file, available, 1, -1);
+    this.moveOneSquare(this.row, this.file, available, -1, 1);
+    this.moveOneSquare(this.row, this.file, available, -1, -1);
+    return available;
+  }
+
+  get icon() {
+    return this.isWhite() ? "♔" : "♚";
+  }
+
+  onMove(move) {
+    this.hasMoved = true;
   }
 }
 
@@ -410,22 +461,24 @@ class Game {
 const game = new Game();
 
 console.log(game.board);
-const whitePawn = game.board.get(1, 0);
-console.log(whitePawn.moves);
-game.doMove(whitePawn.moves[0]);
-const blackPawn = game.board.get(6, 0);
-game.doMove(blackPawn.moves[1]);
-const whitePawn2 = game.board.get(1, 2);
-game.doMove(whitePawn2.moves[0]);
-game.doMove(blackPawn.moves[0]);
-const whitePawn3 = game.board.get(1, 1);
-game.doMove(whitePawn3.moves[1]);
-console.log(blackPawn.moves[0]);
-game.doMove(blackPawn.moves[0]);
+// const whitePawn = game.board.get(1, 0);
+// console.log(whitePawn.moves);
+// game.doMove(whitePawn.moves[0]);
+// const blackPawn = game.board.get(6, 0);
+// game.doMove(blackPawn.moves[1]);
+// const whitePawn2 = game.board.get(1, 2);
+// game.doMove(whitePawn2.moves[0]);
+// game.doMove(blackPawn.moves[0]);
+// const whitePawn3 = game.board.get(1, 1);
+// game.doMove(whitePawn3.moves[1]);
+// console.log(blackPawn.moves[0]);
+// game.doMove(blackPawn.moves[0]);
 console.log(game.board.debug());
 const wb = game.board.get(0, 2);
 const queen = game.board.get(0, 4);
 const rookw = game.board.get(0, 0);
+const king = game.board.get(0, 3);
 console.log(rookw);
 console.log(wb);
 console.log(queen);
+console.log(king);
