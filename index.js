@@ -99,6 +99,63 @@ class Piece {
     return squareContent !== null;
   }
 
+  horizontalMove(row, file, arr, direction) {
+    const horizontal = direction === "right" ? 1 : -1;
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const horizDirection = [row, file + i * horizontal];
+      if (
+        this.isValidSquare(...horizDirection) &&
+        !this.isSquareOccupied(...horizDirection)
+      ) {
+        arr.push(Move.fromSquare(horizDirection, this));
+      } else if (
+        this.isValidSquare(...horizDirection) &&
+        this.isSquareOccupied(...horizDirection)
+      ) {
+        if (this.getSquareContent(...horizDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              horizDirection,
+              this,
+              this.getSquareContent(...horizDirection)
+            )
+          );
+        }
+        return arr;
+      }
+    }
+  }
+
+  verticalMove(row, file, arr, direction) {
+    const vertical = direction === "up" ? 1 : -1;
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const vertDirection = [row + i * vertical, file];
+
+      if (
+        this.isValidSquare(...vertDirection) &&
+        !this.isSquareOccupied(...vertDirection)
+      ) {
+        arr.push(Move.fromSquare(vertDirection, this));
+      } else if (
+        this.isValidSquare(...vertDirection) &&
+        this.isSquareOccupied(...vertDirection)
+      ) {
+        if (this.getSquareContent(...vertDirection).color !== this.color) {
+          arr.push(
+            Move.fromSquare(
+              vertDirection,
+              this,
+              this.getSquareContent(...vertDirection)
+            )
+          );
+        }
+        return arr;
+      }
+    }
+  }
+
   moveDiagonally(row, file, arr, vert, horiz) {
     const upDown = vert === "up" ? 1 : -1;
     const leftRight = horiz === "right" ? 1 : -1;
@@ -221,63 +278,6 @@ class Rook extends Piece {
     return this.isWhite() ? "♖" : "♜";
   }
 
-  horizontalMove(row, file, arr, direction) {
-    const horizontal = direction === "right" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizDirection = [row, file + i * horizontal];
-      if (
-        this.isValidSquare(...horizDirection) &&
-        !this.isSquareOccupied(...horizDirection)
-      ) {
-        arr.push(Move.fromSquare(horizDirection, this));
-      } else if (
-        this.isValidSquare(...horizDirection) &&
-        this.isSquareOccupied(...horizDirection)
-      ) {
-        if (this.getSquareContent(...horizDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              horizDirection,
-              this,
-              this.getSquareContent(...horizDirection)
-            )
-          );
-        }
-        return arr;
-      }
-    }
-  }
-
-  verticalMove(row, file, arr, direction) {
-    const vertical = direction === "up" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const vertDirection = [row + i * vertical, file];
-
-      if (
-        this.isValidSquare(...vertDirection) &&
-        !this.isSquareOccupied(...vertDirection)
-      ) {
-        arr.push(Move.fromSquare(vertDirection, this));
-      } else if (
-        this.isValidSquare(...vertDirection) &&
-        this.isSquareOccupied(...vertDirection)
-      ) {
-        if (this.getSquareContent(...vertDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              vertDirection,
-              this,
-              this.getSquareContent(...vertDirection)
-            )
-          );
-        }
-        return arr;
-      }
-    }
-  }
-
   get moves() {
     const available = [];
 
@@ -337,6 +337,10 @@ class Queen extends Piece {
 
   get moves() {
     const available = [];
+    this.verticalMove(this.row, this.file, available, "up");
+    this.verticalMove(this.row, this.file, available, "down");
+    this.horizontalMove(this.row, this.file, available, "right");
+    this.horizontalMove(this.row, this.file, available, "left");
 
     this.moveDiagonally(this.row, this.file, available, "up", "right");
     this.moveDiagonally(this.row, this.file, available, "down", "left");
