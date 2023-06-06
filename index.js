@@ -33,6 +33,13 @@ class Board {
       this.#board[bB.row][bB.file] = bB;
     }
 
+    for (let i = 1; i < 7; i += 5) {
+      const kn = new Knight(this.game, this, "white", 0, i);
+      this.#board[kn.row][kn.file] = kn;
+      const knB = new Knight(this.game, this, "black", 7, i);
+      this.#board[knB.row][knB.file] = knB;
+    }
+
     const q = new Queen(this.game, this, "white", 0, 4);
     this.#board[q.row][q.file] = q;
     const qB = new Queen(this.game, this, "black", 7, 4);
@@ -325,6 +332,60 @@ class Bishop extends Piece {
   }
 }
 
+class Knight extends Piece {
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+  }
+
+  name = "Knight";
+
+  elMove(row, file, arr, vert, horiz) {
+    const elSquare = [row + vert, file + horiz];
+
+    if (this.isValidSquare(...elSquare)) {
+      if (!this.isSquareOccupied(...elSquare)) {
+        arr.push(Move.fromSquare(elSquare, this));
+      } else if (
+        this.isSquareOccupied(...elSquare) &&
+        this.getSquareContent(...elSquare).color !== this.color
+      ) {
+        arr.push(
+          Move.fromSquare(elSquare, this, this.getSquareContent(...elSquare))
+        );
+      }
+    }
+    return arr;
+  }
+
+  get moves() {
+    const available = [];
+
+    this.elMove(this.row, this.file, available, 2, 1);
+    this.elMove(this.row, this.file, available, 1, 2);
+
+    this.elMove(this.row, this.file, available, -2, 1);
+    this.elMove(this.row, this.file, available, -1, 2);
+
+    this.elMove(this.row, this.file, available, -2, -1);
+    this.elMove(this.row, this.file, available, -1, -2);
+
+    this.elMove(this.row, this.file, available, 2, -1);
+    this.elMove(this.row, this.file, available, 1, -2);
+
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+
+  get icon() {
+    return this.isWhite() ? "♘" : "♞";
+  }
+}
+
 class Queen extends Piece {
   constructor(game, board, color, row, file) {
     super(game, board, color);
@@ -478,7 +539,9 @@ const wb = game.board.get(0, 2);
 const queen = game.board.get(0, 4);
 const rookw = game.board.get(0, 0);
 const king = game.board.get(0, 3);
+const knight = game.board.get(0, 1);
 console.log(rookw);
 console.log(wb);
 console.log(queen);
 console.log(king);
+console.log(knight);
