@@ -2,7 +2,7 @@
 
 const width = 8;
 const squares = [];
-let color = "white"
+let color = "white";
 
 class Board {
   static LANE_SIZE = 8;
@@ -11,6 +11,7 @@ class Board {
   constructor(game) {
     this.game = game;
     this.#board = [];
+
     for (let i = 0; i < Board.LANE_SIZE; i++) {
       const file = new Array(Board.LANE_SIZE).fill(null);
       this.#board[i] = file;
@@ -18,12 +19,12 @@ class Board {
   }
 
   initialize() {
-    for (let i = 0; i < Board.LANE_SIZE; i++) {
-      const p = new Pawn(this.game, this, "white", 1, i);
-      this.#board[p.row][p.file] = p;
-      const pB = new Pawn(this.game, this, "black", 6, i);
-      this.#board[pB.row][pB.file] = pB;
-    }
+    // for (let i = 0; i < Board.LANE_SIZE; i++) {
+    //   const p = new Pawn(this.game, this, "white", 1, i);
+    //   this.#board[p.row][p.file] = p;
+    //   const pB = new Pawn(this.game, this, "black", 6, i);
+    //   this.#board[pB.row][pB.file] = pB;
+    // }
     for (let i = 0; i < Board.LANE_SIZE; i += 7) {
       const r = new Rook(this.game, this, "white", 0, i);
       this.#board[r.row][r.file] = r;
@@ -428,6 +429,7 @@ class King extends Piece {
     this.row = row;
     this.file = file;
     this.hasMoved = false;
+    this.isChecked = false;
   }
 
   name = "King";
@@ -439,6 +441,7 @@ class King extends Piece {
       !this.isSquareOccupied(...nextSquare)
     ) {
       arr.push(Move.fromSquare(nextSquare, this));
+      this.isNotChecked();
     } else if (
       this.isValidSquare(...nextSquare) &&
       this.isSquareOccupied(...nextSquare) &&
@@ -449,6 +452,14 @@ class King extends Piece {
       );
     }
     return arr;
+  }
+
+  isCheck() {
+    this.isChecked = true;
+  }
+
+  isNotChecked() {
+    this.isChecked = false;
   }
 
   get moves() {
@@ -522,6 +533,40 @@ class Game {
     this.board.set(initiatingRow, initiatingFile, null);
     this.board.set(row, file, initiatingPiece);
     move.initiatingPiece.onMove(move);
+
+    for (let i = 0; i < initiatingPiece.moves.length; i++) {
+      const pieceInView = this.board.getSquareContent(
+        initiatingPiece.moves[i].row,
+        initiatingPiece.moves[i].file
+      );
+      if (
+        pieceInView !== null &&
+        initiatingPiece.color !== pieceInView.color &&
+        pieceInView.name === "King"
+      ) {
+        pieceInView.isCheck();
+      }
+    }
+
+    for (let row = 0; row < Board.LANE_SIZE; row++) {
+      for (let file = 0; file < Board.LANE_SIZE; file++) {
+        const opponent = this.board.getSquareContent(row, file);
+        if (opponent !== null && initiatingPiece.color !== opponent.color) {
+          for (let i = 0; i < opponent.moves.length; i++) {
+            const movedTeam = this.board.getSquareContent(
+              opponent.moves[i].row,
+              opponent.moves[i].file
+            );
+            if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name === "King") {
+              console.log("check");
+              return
+            } else if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name !== "King") {
+              console.log("no check");
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -539,22 +584,21 @@ document.addEventListener(
 
     const drawSquares = (color) => {
       for (let i = 63; i >= 0; i--) {
-          if (i % width === 0) {
-              squares[i].classList.add(color)
-          } else {
-              if (color === "white") {
-                  squares[i].classList.add(color)
-                  color = "black"
-              } else if (color === "black") {
-                  squares[i].classList.add(color)
-                  color = "white"
-              }
+        if (i % width === 0) {
+          squares[i].classList.add(color);
+        } else {
+          if (color === "white") {
+            squares[i].classList.add(color);
+            color = "black";
+          } else if (color === "black") {
+            squares[i].classList.add(color);
+            color = "white";
           }
-  
+        }
       }
-  }
+    };
 
-  drawSquares(color)
+    drawSquares(color);
   },
   false
 );
@@ -576,14 +620,13 @@ console.log(game.board);
 // game.doMove(whitePawn3.moves[1]);
 // console.log(blackPawn.moves[0]);
 // game.doMove(blackPawn.moves[0]);
-console.log(game.board.debug());
-const wb = game.board.get(0, 2);
-const queen = game.board.get(0, 4);
-const rookw = game.board.get(0, 0);
+
+//King gets checked on move only
+
+const queen = game.board.get(7, 4);
 const king = game.board.get(0, 3);
-const knight = game.board.get(0, 1);
-console.log(rookw);
-console.log(wb);
-console.log(queen);
-console.log(king);
-console.log(knight);
+const wk = game.board.get(0, 1)
+game.doMove(queen.moves[7]);
+game.doMove(wk.moves[1])
+game.doMove(wk.moves[1])
+console.log(game.board.debug());
