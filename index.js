@@ -2,7 +2,7 @@
 
 const width = 8;
 const squares = [];
-let color = "white"
+let color = "white";
 
 class Board {
   static LANE_SIZE = 8;
@@ -11,6 +11,7 @@ class Board {
   constructor(game) {
     this.game = game;
     this.#board = [];
+
     for (let i = 0; i < Board.LANE_SIZE; i++) {
       const file = new Array(Board.LANE_SIZE).fill(null);
       this.#board[i] = file;
@@ -376,6 +377,7 @@ class King extends Piece {
     this.row = row;
     this.file = file;
     this.hasMoved = false;
+    this.isChecked = false;
   }
 
   name = "King";
@@ -387,6 +389,7 @@ class King extends Piece {
       !this.isSquareOccupied(...nextSquare)
     ) {
       arr.push(Move.fromSquare(nextSquare, this));
+      this.isNotChecked();
     } else if (
       this.isValidSquare(...nextSquare) &&
       this.isSquareOccupied(...nextSquare) &&
@@ -397,6 +400,14 @@ class King extends Piece {
       );
     }
     return arr;
+  }
+
+  isCheck() {
+    this.isChecked = true;
+  }
+
+  isNotChecked() {
+    this.isChecked = false;
   }
 
   get moves() {
@@ -469,6 +480,40 @@ class Game {
     this.board.set(initiatingRow, initiatingFile, null);
     this.board.set(row, file, initiatingPiece);
     move.initiatingPiece.onMove(move);
+
+    for (let i = 0; i < initiatingPiece.moves.length; i++) {
+      const pieceInView = this.board.getSquareContent(
+        initiatingPiece.moves[i].row,
+        initiatingPiece.moves[i].file
+      );
+      if (
+        pieceInView !== null &&
+        initiatingPiece.color !== pieceInView.color &&
+        pieceInView.name === "King"
+      ) {
+        pieceInView.isCheck();
+      }
+    }
+
+    for (let row = 0; row < Board.LANE_SIZE; row++) {
+      for (let file = 0; file < Board.LANE_SIZE; file++) {
+        const opponent = this.board.getSquareContent(row, file);
+        if (opponent !== null && initiatingPiece.color !== opponent.color) {
+          for (let i = 0; i < opponent.moves.length; i++) {
+            const movedTeam = this.board.getSquareContent(
+              opponent.moves[i].row,
+              opponent.moves[i].file
+            );
+            if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name === "King") {
+              console.log("check");
+              return
+            } else if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name !== "King") {
+              console.log("no check");
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -486,22 +531,21 @@ document.addEventListener(
 
     const drawSquares = (color) => {
       for (let i = 63; i >= 0; i--) {
-          if (i % width === 0) {
-              squares[i].classList.add(color)
-          } else {
-              if (color === "white") {
-                  squares[i].classList.add(color)
-                  color = "black"
-              } else if (color === "black") {
-                  squares[i].classList.add(color)
-                  color = "white"
-              }
+        if (i % width === 0) {
+          squares[i].classList.add(color);
+        } else {
+          if (color === "white") {
+            squares[i].classList.add(color);
+            color = "black";
+          } else if (color === "black") {
+            squares[i].classList.add(color);
+            color = "white";
           }
-  
+        }
       }
-  }
+    };
 
-  drawSquares(color)
+    drawSquares(color);
   },
   false
 );
