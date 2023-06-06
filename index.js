@@ -30,6 +30,7 @@ class Board {
     this.initializePiece(Bishop);
     this.initializePiece(Queen)
     this.initializePiece(King)
+    this.initializePiece(Knight)
   }
 
 
@@ -286,6 +287,63 @@ class Bishop extends Piece {
   }
 }
 
+class Knight extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [1, 6];
+
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+  }
+
+  name = "Knight";
+
+  elMove(row, file, arr, vert, horiz) {
+    const elSquare = [row + vert, file + horiz];
+
+    if (this.isValidSquare(...elSquare)) {
+      if (!this.isSquareOccupied(...elSquare)) {
+        arr.push(Move.fromSquare(elSquare, this));
+      } else if (
+        this.isSquareOccupied(...elSquare) &&
+        this.getSquareContent(...elSquare).color !== this.color
+      ) {
+        arr.push(
+          Move.fromSquare(elSquare, this, this.getSquareContent(...elSquare))
+        );
+      }
+    }
+    return arr;
+  }
+
+  get moves() {
+    const available = [];
+
+    this.elMove(this.row, this.file, available, 2, 1);
+    this.elMove(this.row, this.file, available, 1, 2);
+
+    this.elMove(this.row, this.file, available, -2, 1);
+    this.elMove(this.row, this.file, available, -1, 2);
+
+    this.elMove(this.row, this.file, available, -2, -1);
+    this.elMove(this.row, this.file, available, -1, -2);
+
+    this.elMove(this.row, this.file, available, 2, -1);
+    this.elMove(this.row, this.file, available, 1, -2);
+
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+
+  get icon() {
+    return this.isWhite() ? "♘" : "♞";
+  }
+}
+
 class Queen extends Piece {
   static startingRows = [0, 7]
   static startingFiles = [3]
@@ -457,6 +515,7 @@ console.log(game.board.debug());
 const queen = game.board.get(0, 4);
 const rookw = game.board.get(0, 0);
 const king = game.board.get(0, 3);
+const knight = game.board.get(0, 1);
 console.log(rookw);
 console.log(wb);
 console.log(queen);
