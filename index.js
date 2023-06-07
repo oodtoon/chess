@@ -117,6 +117,10 @@ class Piece {
     return squareContent !== null;
   }
 
+  isKing(row, file) {
+    return this.getSquareContent(row, file).name === "King";
+  }
+
   horizontalMove(row, file, arr, direction) {
     const horizontal = direction === "right" ? 1 : -1;
 
@@ -523,6 +527,63 @@ class Game {
     this.moves.push(move);
   }
 
+  moveIntoCheck(arr, movingPience) {
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const opponentPiece = this.board.getSquareContent(y, x);
+        if (
+          opponentPiece !== null &&
+          opponentPiece.color !== movingPience.color
+        ) {
+          for (let i = 0; i < opponentPiece.moves.length; i++) {
+            const test = this.board.getSquareContent(
+              opponentPiece.moves[i].row,
+              opponentPiece.moves[i].file
+            );
+            if (test !== null && test.name !== "King") {
+              arr.push(false);
+            } else if (test !== null && test.name === "King") {
+              arr.push(true);
+              test.isCheck();
+            }
+          }
+        }
+      }
+    }
+    return arr;
+  }
+
+  didCheck(piece) {
+    for (let i = 0; i < piece.moves.length; i++) {
+      const pieceInView = this.board.getSquareContent(
+        piece.moves[i].row,
+        piece.moves[i].file
+      );
+      if (
+        pieceInView !== null &&
+        piece.color !== pieceInView.color &&
+        pieceInView.name === "King"
+      ) {
+        pieceInView.isCheck();
+      }
+    }
+  }
+
+  findKing(movingPience) {
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const king = this.board.getSquareContent(y, x);
+        if (
+          king !== null &&
+          king.color === movingPience.color &&
+          king.name === "King"
+        ) {
+          return king;
+        }
+      }
+    }
+  }
+
   executeMove(move) {
     const { row, file, initiatingPiece, capturedPiece } = move;
     if (capturedPiece) {
@@ -534,38 +595,19 @@ class Game {
     this.board.set(row, file, initiatingPiece);
     move.initiatingPiece.onMove(move);
 
-    for (let i = 0; i < initiatingPiece.moves.length; i++) {
-      const pieceInView = this.board.getSquareContent(
-        initiatingPiece.moves[i].row,
-        initiatingPiece.moves[i].file
-      );
-      if (
-        pieceInView !== null &&
-        initiatingPiece.color !== pieceInView.color &&
-        pieceInView.name === "King"
-      ) {
-        pieceInView.isCheck();
-      }
-    }
+    const movedPiece = this.board.getSquareContent(
+      initiatingPiece.row,
+      initiatingPiece.file
+    );
 
-    for (let row = 0; row < Board.LANE_SIZE; row++) {
-      for (let file = 0; file < Board.LANE_SIZE; file++) {
-        const opponent = this.board.getSquareContent(row, file);
-        if (opponent !== null && initiatingPiece.color !== opponent.color) {
-          for (let i = 0; i < opponent.moves.length; i++) {
-            const movedTeam = this.board.getSquareContent(
-              opponent.moves[i].row,
-              opponent.moves[i].file
-            );
-            if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name === "King") {
-              console.log("check");
-              return
-            } else if (movedTeam !== null && movedTeam.color !== opponent.color && movedTeam.name !== "King") {
-              console.log("no check");
-            }
-          }
-        }
-      }
+    this.didCheck(movedPiece);
+
+    const isKing = [];
+
+    this.moveIntoCheck(isKing, movedPiece);
+    if (isKing.indexOf(true) === -1) {
+    } else {
+      this.findKing(movedPiece).isCheck();
     }
   }
 }
@@ -625,8 +667,10 @@ console.log(game.board);
 
 const queen = game.board.get(7, 4);
 const king = game.board.get(0, 3);
-const wk = game.board.get(0, 1)
+const wk = game.board.get(0, 1);
 game.doMove(queen.moves[7]);
-game.doMove(wk.moves[1])
-game.doMove(wk.moves[1])
+game.doMove(wk.moves[1]);
+game.doMove(wk.moves[1]);
+game.doMove(king.moves[0])
 console.log(game.board.debug());
+console.log(king)
