@@ -333,7 +333,7 @@ class Queen extends Piece {
     this.hasMoved = false;
   }
 
-  name = "queen";
+  name = "Queen";
 
   get moves() {
     const available = [];
