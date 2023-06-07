@@ -45,14 +45,14 @@ class Board {
       this.#board[knB.row][knB.file] = knB;
     }
 
-    const q = new Queen(this.game, this, "white", 0, 4);
+    const q = new Queen(this.game, this, "white", 0, 3);
     this.#board[q.row][q.file] = q;
-    const qB = new Queen(this.game, this, "black", 7, 4);
+    const qB = new Queen(this.game, this, "black", 7, 3);
     this.#board[qB.row][qB.file] = qB;
 
-    const k = new King(this.game, this, "white", 0, 3);
+    const k = new King(this.game, this, "white", 0, 4);
     this.#board[k.row][k.file] = k;
-    const kB = new King(this.game, this, "black", 7, 3);
+    const kB = new King(this.game, this, "black", 7, 4);
     this.#board[kB.row][kB.file] = kB;
   }
 
@@ -452,7 +452,7 @@ class King extends Piece {
       this.getSquareContent(...nextSquare).color !== this.color
     ) {
       arr.push(
-        Move.fromSquare(nextSquare, this, this.isSquareOccupied(...nextSquare))
+        Move.fromSquare(nextSquare, this, this.getSquareContent(...nextSquare))
       );
     }
     return arr;
@@ -464,6 +464,41 @@ class King extends Piece {
 
   isNotChecked() {
     this.isChecked = false;
+  }
+
+  castleMove(row, file, arr, type) {
+    const emptySquare = [];
+    const currentSquare = [row, file];
+
+    const direction = type === "short" ? 1 : -1;
+
+    for (let i = 0; i < file; i++) {
+      const nextSquare = [row, file + i * direction];
+      if (!this.isSquareOccupied(...nextSquare)) {
+        emptySquare.push(true);
+      }
+    }
+
+    if (
+      emptySquare.length === 3 &&
+      this.getSquareContent(row, 0).name === "Rook" &&
+      this.getSquareContent(row, 0).hasMoved === false &&
+      this.getSquareContent(row, file).hasMoved === false
+    ) {
+      arr.push(
+        Move.fromSquare(currentSquare, this, this.getSquareContent(row, 0))
+      );
+    } else if (
+      emptySquare.length === 2 &&
+      this.getSquareContent(row, 7).name === "Rook" &&
+      this.getSquareContent(row, 0).hasMoved === false &&
+      this.getSquareContent(row, file).hasMoved === false
+    ) {
+      arr.push(
+        Move.fromSquare(currentSquare, this, this.getSquareContent(row, 7))
+      );
+    }
+    return arr;
   }
 
   get moves() {
@@ -480,6 +515,9 @@ class King extends Piece {
 
     this.moveOneSquare(this.row, this.file, available, -1, 1);
     this.moveOneSquare(this.row, this.file, available, -1, -1);
+
+    this.castleMove(this.row, this.file, available, "long");
+    this.castleMove(this.row, this.file, available, "short");
 
     return available;
   }
@@ -525,6 +563,23 @@ class Game {
   doMove(move) {
     this.executeMove(move);
     this.moves.push(move);
+  }
+
+  doCastle(move) {
+    this.executeCastle(move);
+    this.moves.push(move);
+    console.log("castle")
+  }
+
+  executeCastle(move) {
+    const { initiatingPiece, capturedPiece } = move;
+    
+    const { row: kingRow, file: kingFile } = initiatingPiece;
+    const { row: rookRow, file: rookFile } = capturedPiece
+    this.board.set(kingRow, kingFile, capturedPiece);
+    this.board.set(rookRow, rookFile, initiatingPiece);
+    move.initiatingPiece.onMove(move);
+    move.capturedPiece.onMove(move)
   }
 
   moveIntoCheck(arr, movingPience) {
@@ -665,12 +720,32 @@ console.log(game.board);
 
 //King gets checked on move only
 
-const queen = game.board.get(7, 4);
-const king = game.board.get(0, 3);
-const wk = game.board.get(0, 1);
-game.doMove(queen.moves[7]);
-game.doMove(wk.moves[1]);
-game.doMove(wk.moves[1]);
-game.doMove(king.moves[0])
-console.log(game.board.debug());
-console.log(king)
+// const queen = game.board.get(7, 4);
+// const king = game.board.get(0, 3);
+// const wk = game.board.get(0, 1);
+// game.doMove(queen.moves[7]);
+// game.doMove(wk.moves[1]);
+// game.doMove(wk.moves[1]);
+// game.doMove(king.moves[0]);
+// console.log(game.board.debug());
+// console.log(king);
+
+const wb = game.board.get(0, 2);
+const queen = game.board.get(0, 3);
+const king = game.board.get(0, 4);
+const whiteKnight = game.board.get(0, 1);
+const rook = game.board.get(0, 0);
+const secondR = game.board.get(0, 7);
+const rightB = game.board.get(0, 5);
+const rightK = game.board.get(0, 6);
+game.doMove(wb.moves[4]);
+game.doMove(queen.moves[6]);
+game.doMove(whiteKnight.moves[0]);
+game.doMove(rightB.moves[0]);
+game.doMove(rightK.moves[1]);
+game.doCastle(king.moves[5])
+
+
+console.log(king);
+
+console.log(game.board.debug())
