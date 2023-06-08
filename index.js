@@ -311,7 +311,7 @@ class Knight extends Piece {
       [1, -2],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(this, dir)
+      this.getLegalDirectionalMoves(this, dir, 1)
     );
     return available;
   }
