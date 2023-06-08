@@ -32,6 +32,17 @@ class Board {
     return this.#board[row][file];
   }
 
+  isValidSquare(row, file) {
+    return (
+      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
+    );
+  }
+
+  isSquareOccupied(row, file) {
+    let squareContent = this.getSquareContent(row, file);
+    return squareContent !== null;
+  }
+
   set(row, file, value) {
     this.#board[row][file] = value;
     if (value) {
@@ -57,9 +68,11 @@ class Board {
 class Piece {
   name = null;
 
-  constructor(game, board, color) {
+  constructor(game, board, color, row, file) {
     this.color = color;
     this.board = board;
+    this.row = row;
+    this.file = file;
   }
 
   toString() {
@@ -79,14 +92,11 @@ class Piece {
   }
 
   isValidSquare(row, file) {
-    return (
-      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
-    );
+    return this.board.isValidSquare(row, file);
   }
 
   isSquareOccupied(row, file) {
-    let squareContent = this.getSquareContent(row, file);
-    return squareContent !== null;
+    return this.board.isSquareOccupied(row, file);
   }
 
   get moves() {
@@ -98,9 +108,7 @@ class Pawn extends Piece {
   name = "Pawn";
 
   constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+    super(game, board, color, row, file);
     this.hasMoved = false;
     this.hasDoubleMoved = false;
   }
@@ -176,9 +184,7 @@ class Pawn extends Piece {
 
 class Rook extends Piece {
   constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+    super(game, board, color, row, file);
     this.hasMoved = false;
   }
 
@@ -193,27 +199,20 @@ class Rook extends Piece {
 
     for (let i = 1; i < Board.LANE_SIZE; i++) {
       const horizDirection = [row, file + i * horizontal];
-      if (
-        this.isValidSquare(...horizDirection) &&
-        !this.isSquareOccupied(...horizDirection)
-      ) {
-        arr.push(Move.fromSquare(horizDirection, this));
-      } else if (
-        this.isValidSquare(...horizDirection) &&
-        this.isSquareOccupied(...horizDirection)
-      ) {
-        if (this.getSquareContent(...horizDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              horizDirection,
-              this,
-              this.getSquareContent(...horizDirection)
-            )
-          );
+      if (this.isValidSquare(...horizDirection)) {
+        if (!this.isSquareOccupied(...horizDirection)) {
+          arr.push(Move.fromSquare(horizDirection, this));
+        } else {
+          const otherPiece = this.getSquareContent(...horizDirection);
+          if (otherPiece.color !== this.color) {
+            arr.push(Move.fromSquare(horizDirection, this, otherPiece));
+          } else {
+            break;
+          }
         }
-        return arr;
       }
     }
+    return arr;
   }
 
   verticalMove(row, file, arr, direction) {
@@ -222,27 +221,20 @@ class Rook extends Piece {
     for (let i = 1; i < Board.LANE_SIZE; i++) {
       const vertDirection = [row + i * vertical, file];
 
-      if (
-        this.isValidSquare(...vertDirection) &&
-        !this.isSquareOccupied(...vertDirection)
-      ) {
-        arr.push(Move.fromSquare(vertDirection, this));
-      } else if (
-        this.isValidSquare(...vertDirection) &&
-        this.isSquareOccupied(...vertDirection)
-      ) {
-        if (this.getSquareContent(...vertDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              vertDirection,
-              this,
-              this.getSquareContent(...vertDirection)
-            )
-          );
+      if (this.isValidSquare(...vertDirection)) {
+        if (!this.isSquareOccupied(...vertDirection)) {
+          arr.push(Move.fromSquare(vertDirection, this));
+        } else {
+          const otherPiece = this.getSquareContent(...vertDirection);
+          if (otherPiece.color !== this.color) {
+            arr.push(Move.fromSquare(vertDirection, this, otherPiece));
+          } else {
+            break;
+          }
         }
-        return arr;
       }
     }
+    return arr;
   }
 
   get moves() {
