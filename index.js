@@ -299,39 +299,20 @@ class Knight extends Piece {
 
   name = "Knight";
 
-  elMove(row, file, arr, vert, horiz) {
-    const elSquare = [row + vert, file + horiz];
-
-    if (this.isValidSquare(...elSquare)) {
-      if (!this.isSquareOccupied(...elSquare)) {
-        arr.push(Move.fromSquare(elSquare, this));
-      } else if (
-        this.isSquareOccupied(...elSquare) &&
-        this.getSquareContent(...elSquare).color !== this.color
-      ) {
-        arr.push(
-          Move.fromSquare(elSquare, this, this.getSquareContent(...elSquare))
-        );
-      }
-    }
-    return arr;
-  }
-
   get moves() {
-    const available = [];
-
-    this.elMove(this.row, this.file, available, 2, 1);
-    this.elMove(this.row, this.file, available, 1, 2);
-
-    this.elMove(this.row, this.file, available, -2, 1);
-    this.elMove(this.row, this.file, available, -1, 2);
-
-    this.elMove(this.row, this.file, available, -2, -1);
-    this.elMove(this.row, this.file, available, -1, -2);
-
-    this.elMove(this.row, this.file, available, 2, -1);
-    this.elMove(this.row, this.file, available, 1, -2);
-
+    const directions = [
+      [2, 1],
+      [1, 2],
+      [-2, 1],
+      [-1, 2],
+      [-2, -1],
+      [-1, -2],
+      [2, -1],
+      [1, -2],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
     return available;
   }
 
