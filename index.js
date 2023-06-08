@@ -60,6 +60,7 @@ class Board {
   get(row, file) {
     return this.#board[row][file];
   }
+  
 
   debug() {
     return this.#board
@@ -69,6 +70,8 @@ class Board {
       .reverse()
       .join("\n");
   }
+
+ 
 }
 
 class Piece {
@@ -112,6 +115,32 @@ class Piece {
     const legalMoves = [];
 
     for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      if (this.isValidSquare(...square)) {
+        if (!this.isSquareOccupied(...square)) {
+          legalMoves.push(Move.fromSquare(square, this));
+        } else {
+          const otherPiece = this.getSquareContent(...square);
+          if (otherPiece.color !== this.color) {
+            legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return legalMoves;
+  }
+
+  getLegalDirectionalMoves(piece, directions, magnitude) {
+    const vertical = directions[0];
+    const horizontal = directions[1];
+
+    const reach = !magnitude ? Board.LANE_SIZE : magnitude + 1;
+
+    const legalMoves = [];
+
+    for (let i = 1; i < reach; i++) {
       const square = [piece.row + i * vertical, piece.file + i * horizontal];
       if (this.isValidSquare(...square)) {
         if (!this.isSquareOccupied(...square)) {
@@ -353,16 +382,19 @@ class King extends Piece {
   }
 
   get moves() {
-    const available = [];
-
-    this.moveOneSquare(this.row, this.file, available, 1, 0);
-    this.moveOneSquare(this.row, this.file, available, -1, 0);
-    this.moveOneSquare(this.row, this.file, available, 0, 1);
-    this.moveOneSquare(this.row, this.file, available, 0, -1);
-    this.moveOneSquare(this.row, this.file, available, 1, 1);
-    this.moveOneSquare(this.row, this.file, available, 1, -1);
-    this.moveOneSquare(this.row, this.file, available, -1, 1);
-    this.moveOneSquare(this.row, this.file, available, -1, -1);
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+      [0, -1],
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir, 1)
+    );
     return available;
   }
 
