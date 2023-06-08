@@ -99,84 +99,28 @@ class Piece {
     return squareContent !== null;
   }
 
-  horizontalMove(row, file, arr, direction) {
-    const horizontal = direction === "right" ? 1 : -1;
+  getLegalDirectionalMoves(piece, directions) {
+    const vertical = directions[0];
+    const horizontal = directions[1];
+
+    const legalMoves = [];
 
     for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizDirection = [row, file + i * horizontal];
-      if (
-        this.isValidSquare(...horizDirection) &&
-        !this.isSquareOccupied(...horizDirection)
-      ) {
-        arr.push(Move.fromSquare(horizDirection, this));
-      } else if (
-        this.isValidSquare(...horizDirection) &&
-        this.isSquareOccupied(...horizDirection)
-      ) {
-        if (this.getSquareContent(...horizDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              horizDirection,
-              this,
-              this.getSquareContent(...horizDirection)
-            )
-          );
+      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      if (this.isValidSquare(...square)) {
+        if (!this.isSquareOccupied(...square)) {
+          legalMoves.push(Move.fromSquare(square, this));
+        } else {
+          const otherPiece = this.getSquareContent(...square);
+          if (otherPiece.color !== this.color) {
+            legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          } else {
+            break;
+          }
         }
-        return arr;
       }
     }
-  }
-
-  verticalMove(row, file, arr, direction) {
-    const vertical = direction === "up" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const vertDirection = [row + i * vertical, file];
-
-      if (
-        this.isValidSquare(...vertDirection) &&
-        !this.isSquareOccupied(...vertDirection)
-      ) {
-        arr.push(Move.fromSquare(vertDirection, this));
-      } else if (
-        this.isValidSquare(...vertDirection) &&
-        this.isSquareOccupied(...vertDirection)
-      ) {
-        if (this.getSquareContent(...vertDirection).color !== this.color) {
-          arr.push(
-            Move.fromSquare(
-              vertDirection,
-              this,
-              this.getSquareContent(...vertDirection)
-            )
-          );
-        }
-        return arr;
-      }
-    }
-  }
-
-  moveDiagonally(row, file, arr, vert, horiz) {
-    const upDown = vert === "up" ? 1 : -1;
-    const leftRight = horiz === "right" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const square = [row + i * upDown, file + i * leftRight];
-      if (this.isValidSquare(...square) && !this.isSquareOccupied(...square)) {
-        arr.push(Move.fromSquare(square, this));
-      } else if (
-        this.isValidSquare(...square) &&
-        this.isSquareOccupied(...square)
-      ) {
-        if (this.getSquareContent(...square).color !== this.color) {
-          arr.push(
-            Move.fromSquare(square, this, this.getSquareContent(...square))
-          );
-        }
-        return arr;
-      }
-    }
-    return arr;
+    return legalMoves;
   }
 
   get moves() {
@@ -336,16 +280,19 @@ class Queen extends Piece {
   name = "Queen";
 
   get moves() {
-    const available = [];
-    this.verticalMove(this.row, this.file, available, "up");
-    this.verticalMove(this.row, this.file, available, "down");
-    this.horizontalMove(this.row, this.file, available, "right");
-    this.horizontalMove(this.row, this.file, available, "left");
-
-    this.moveDiagonally(this.row, this.file, available, "up", "right");
-    this.moveDiagonally(this.row, this.file, available, "down", "left");
-    this.moveDiagonally(this.row, this.file, available, "up", "left");
-    this.moveDiagonally(this.row, this.file, available, "down", "right");
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
     return available;
   }
 
@@ -424,7 +371,7 @@ console.log(blackPawn.moves[0]);
 game.doMove(blackPawn.moves[0]);
 console.log(game.board.debug());
 const wb = game.board.get(0, 2);
-const queen = game.board.get(0, 4);
+const queen = game.board.get(0, 3);
 const rookw = game.board.get(0, 0);
 console.log(rookw);
 console.log(wb);
