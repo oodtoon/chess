@@ -99,6 +99,30 @@ class Piece {
     return this.board.isSquareOccupied(row, file);
   }
 
+  getLegalDirectionalMoves(piece, directions) {
+    const vertical = directions[0];
+    const horizontal = directions[1];
+
+    const legalMoves = [];
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      if (this.isValidSquare(...square)) {
+        if (!this.isSquareOccupied(...square)) {
+          legalMoves.push(Move.fromSquare(square, this));
+        } else {
+          const otherPiece = this.getSquareContent(...square);
+          if (otherPiece.color !== this.color) {
+            legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return legalMoves;
+  }
+
   get moves() {
     throw new Error("moves getter is not yet implementeed");
   }
@@ -194,58 +218,19 @@ class Rook extends Piece {
     return this.isWhite() ? "♖" : "♜";
   }
 
-  horizontalMove(row, file, arr, direction) {
-    const horizontal = direction === "right" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const horizDirection = [row, file + i * horizontal];
-      if (this.isValidSquare(...horizDirection)) {
-        if (!this.isSquareOccupied(...horizDirection)) {
-          arr.push(Move.fromSquare(horizDirection, this));
-        } else {
-          const otherPiece = this.getSquareContent(...horizDirection);
-          if (otherPiece.color !== this.color) {
-            arr.push(Move.fromSquare(horizDirection, this, otherPiece));
-          } else {
-            break;
-          }
-        }
-      }
-    }
-    return arr;
-  }
-
-  verticalMove(row, file, arr, direction) {
-    const vertical = direction === "up" ? 1 : -1;
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const vertDirection = [row + i * vertical, file];
-
-      if (this.isValidSquare(...vertDirection)) {
-        if (!this.isSquareOccupied(...vertDirection)) {
-          arr.push(Move.fromSquare(vertDirection, this));
-        } else {
-          const otherPiece = this.getSquareContent(...vertDirection);
-          if (otherPiece.color !== this.color) {
-            arr.push(Move.fromSquare(vertDirection, this, otherPiece));
-          } else {
-            break;
-          }
-        }
-      }
-    }
-    return arr;
-  }
-
   get moves() {
-    const available = [];
-
-    this.verticalMove(this.row, this.file, available, "up");
-    this.verticalMove(this.row, this.file, available, "down");
-    this.horizontalMove(this.row, this.file, available, "right");
-    this.horizontalMove(this.row, this.file, available, "left");
+    const directions = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
     return available;
   }
+
   onMove(move) {
     this.hasMoved = true;
   }
