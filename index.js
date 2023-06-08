@@ -129,6 +129,30 @@ class Piece {
     return legalMoves;
   }
 
+  getLegalDirectionalMoves(piece, directions) {
+    const vertical = directions[0];
+    const horizontal = directions[1];
+
+    const legalMoves = [];
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      if (this.isValidSquare(...square)) {
+        if (!this.isSquareOccupied(...square)) {
+          legalMoves.push(Move.fromSquare(square, this));
+        } else {
+          const otherPiece = this.getSquareContent(...square);
+          if (otherPiece.color !== this.color) {
+            legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          }
+        }
+      } else {
+        break;
+      }
+    }
+    return legalMoves;
+  }
+
   get moves() {
     throw new Error("moves getter is not yet implementeed");
   }
@@ -259,37 +283,17 @@ class Bishop extends Piece {
     }
   }
 
-  moveDiagonally(row, file, arr, vert, horiz) {
-    const upDown = vert === "up" ? 1 : -1
-    const leftRight = horiz === "right" ? 1 : -1
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const square = [row + i * upDown, file + i * leftRight]
-      if (this.isValidSquare(...square) && !this.isSquareOccupied(...square)) {
-        arr.push(Move.fromSquare(square, this));
-      } else if (
-        this.isValidSquare(...square) &&
-        this.isSquareOccupied(...square)
-      ) {
-        if (this.getSquareContent(...square).color !== this.color) {
-          arr.push(
-            Move.fromSquare(square, this, this.getSquareContent(...square))
-          );
-        }
-        return arr;
-      }
-    }
-    return arr
-  }
-
   get moves() {
-    const available = []
-
-    this.moveDiagonally(this.row, this.file, available, "up", "right");
-    this.moveDiagonally(this.row, this.file, available, "down", "left");
-    this.moveDiagonally(this.row, this.file, available, "up", "left");
-    this.moveDiagonally(this.row, this.file, available, "down", "right");
-    return available
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
+    return available;
   }
 
   onMove(move) {
@@ -365,7 +369,10 @@ console.log(game.board);
 // console.log(blackPawn.moves[0]);
 // game.doMove(blackPawn.moves[0]);
 
-
 const wb = game.board.get(0, 2);
+const pawnLeft = game.board.get(1, 1);
+const pawnRight = game.board.get(1, 3);
+game.doMove(pawnLeft.moves[1]);
+game.doMove(pawnRight.moves[1]);
 console.log(game.board.debug());
 console.log(wb);
