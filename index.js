@@ -479,15 +479,15 @@ class Game {
           opponentPiece.color !== movingPience.color
         ) {
           for (let i = 0; i < opponentPiece.moves.length; i++) {
-            const test = this.board.getSquareContent(
+            const piece = this.board.getSquareContent(
               opponentPiece.moves[i].row,
               opponentPiece.moves[i].file
             );
-            if (test !== null && test.name !== "King") {
+            if (piece !== null && piece.name !== "King") {
               arr.push(false);
-            } else if (test !== null && test.name === "King") {
+            } else if (piece !== null && piece.name === "King") {
               arr.push(true);
-              test.isCheck();
+              piece.isCheck();
             }
           }
         }
