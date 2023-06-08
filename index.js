@@ -32,9 +32,9 @@ class Board {
       const bB = new Bishop(this.game, this, "black", 7, i);
       this.#board[bB.row][bB.file] = bB;
     }
-    const q = new Queen(this.game, this, "white", 0, 4);
+    const q = new Queen(this.game, this, "white", 0, 3);
     this.#board[q.row][q.file] = q;
-    const qB = new Queen(this.game, this, "black", 7, 4);
+    const qB = new Queen(this.game, this, "black", 7, 3);
     this.#board[qB.row][qB.file] = qB;
   }
 
