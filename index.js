@@ -402,7 +402,7 @@ class Queen extends Piece {
     this.file = file;
   }
 
-  name = "queen";
+  name = "Queen";
 
   get moves() {
     const available = [];
@@ -428,12 +428,13 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
-  constructor(game, board, color, row, file) {
+  constructor(game, board, color, row, file, castleType) {
     super(game, board, color);
     this.row = row;
     this.file = file;
     this.hasMoved = false;
     this.isChecked = false;
+    this.castleType = castleType
   }
 
   name = "King";
@@ -568,18 +569,31 @@ class Game {
   doCastle(move) {
     this.executeCastle(move);
     this.moves.push(move);
-    console.log("castle")
   }
 
   executeCastle(move) {
-    const { initiatingPiece, capturedPiece } = move;
+    const { initiatingPiece: king, capturedPiece: rook } = move;
+
+    if (king.file - rook.file === 4) {
+      this.board.set(king.row, king.file, null);
+      this.board.set(rook.row, rook.file, null);
+      this.board.set(king.row, king.file - 3, king);
+      this.board.set(rook.row, rook.file + 3, rook);
+
+      king.onMove(move);
+      rook.onMove(move)
+    } else {
+      this.board.set(king.row, king.file, null);
+      this.board.set(rook.row, rook.file, null);
+      this.board.set(king.row, king.file + 2, king);
+      this.board.set(rook.row, rook.file - 2, rook);
+
+      king.onMove(move);
+      rook.onMove(move)
+    }
     
-    const { row: kingRow, file: kingFile } = initiatingPiece;
-    const { row: rookRow, file: rookFile } = capturedPiece
-    this.board.set(kingRow, kingFile, capturedPiece);
-    this.board.set(rookRow, rookFile, initiatingPiece);
-    move.initiatingPiece.onMove(move);
-    move.capturedPiece.onMove(move)
+
+
   }
 
   moveIntoCheck(arr, movingPience) {
@@ -743,7 +757,8 @@ game.doMove(queen.moves[6]);
 game.doMove(whiteKnight.moves[0]);
 game.doMove(rightB.moves[0]);
 game.doMove(rightK.moves[1]);
-game.doCastle(king.moves[5])
+
+game.doCastle(king.moves[6])
 
 
 console.log(king);
