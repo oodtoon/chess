@@ -144,10 +144,10 @@ class Piece {
           const otherPiece = this.getSquareContent(...square);
           if (otherPiece.color !== this.color) {
             legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          } else {
+            break;
           }
         }
-      } else {
-        break;
       }
     }
     return legalMoves;
