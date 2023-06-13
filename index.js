@@ -26,19 +26,16 @@ class Board {
         this.#board[row][file] = p;
       }
     }
-    
   }
 
   initialize() {
     this.initializePiece(Pawn);
     this.initializePiece(Rook);
     this.initializePiece(Bishop);
-    this.initializePiece(Queen)
-    this.initializePiece(King)
-    this.initializePiece(Knight)
+    this.initializePiece(Queen);
+    this.initializePiece(King);
+    this.initializePiece(Knight);
   }
-
-
 
   getSquareContent(row, file) {
     return this.#board[row][file];
@@ -66,7 +63,6 @@ class Board {
   get(row, file) {
     return this.#board[row][file];
   }
-  
 
   debug() {
     return this.#board
@@ -76,8 +72,6 @@ class Board {
       .reverse()
       .join("\n");
   }
-
- 
 }
 
 class Piece {
@@ -279,7 +273,8 @@ class Bishop extends Piece {
       [1, 1],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(dir));
+      this.getLegalDirectionalMoves(dir)
+    );
 
     return available;
   }
@@ -331,9 +326,9 @@ class Knight extends Piece {
 }
 
 class Queen extends Piece {
-  static startingRows = [0, 7]
-  static startingFiles = [3]
-  
+  static startingRows = [0, 7];
+  static startingFiles = [3];
+
   constructor(game, board, color, row, file) {
     super(game, board, color);
     this.row = row;
@@ -369,8 +364,8 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
-  static startingRows = [0, 7]
-  static startingFiles = [4]
+  static startingRows = [0, 7];
+  static startingFiles = [4];
 
   constructor(game, board, color, row, file) {
     super(game, board, color);
@@ -382,31 +377,11 @@ class King extends Piece {
 
   name = "King";
 
-  moveOneSquare(row, file, arr, vert, horiz) {
-    const nextSquare = [row + vert, file + horiz];
-    if (
-      this.isValidSquare(...nextSquare) &&
-      !this.isSquareOccupied(...nextSquare)
-    ) {
-      arr.push(Move.fromSquare(nextSquare, this));
-      this.isNotChecked();
-    } else if (
-      this.isValidSquare(...nextSquare) &&
-      this.isSquareOccupied(...nextSquare) &&
-      this.getSquareContent(...nextSquare).color !== this.color
-    ) {
-      arr.push(
-        Move.fromSquare(nextSquare, this, this.isSquareOccupied(...nextSquare))
-      );
-    }
-    return arr;
-  }
-
-  isCheck() {
+  setCheck() {
     this.isChecked = true;
   }
 
-  isNotChecked() {
+  setNotChecked() {
     this.isChecked = false;
   }
 
@@ -470,7 +445,7 @@ class Game {
     this.moves.push(move);
   }
 
-  moveIntoCheck(arr, movingPience) {
+  doesMoveExposeCheck(arr, movingPience) {
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const opponentPiece = this.board.getSquareContent(y, x);
@@ -478,16 +453,13 @@ class Game {
           opponentPiece !== null &&
           opponentPiece.color !== movingPience.color
         ) {
-          for (let i = 0; i < opponentPiece.moves.length; i++) {
-            const piece = this.board.getSquareContent(
-              opponentPiece.moves[i].row,
-              opponentPiece.moves[i].file
-            );
-            if (piece !== null && piece.name !== "King") {
-              arr.push(false);
-            } else if (piece !== null && piece.name === "King") {
-              arr.push(true);
-              piece.isCheck();
+          for (let move of opponentPiece.moves) {
+            if (move.capturedPiece !== null) {
+              const isChecked = move.capturedPiece.name === "King";
+              arr.push(isChecked);
+              if (isChecked) {
+                move.capturedPiece.setChecked();
+              }
             }
           }
         }
@@ -497,30 +469,23 @@ class Game {
   }
 
   didCheck(piece) {
-    for (let i = 0; i < piece.moves.length; i++) {
-      const pieceInView = this.board.getSquareContent(
-        piece.moves[i].row,
-        piece.moves[i].file
-      );
+    for (let move of piece.moves) {
+      const pieceInView = this.board.getSquareContent(move.row, move.file);
       if (
         pieceInView !== null &&
         piece.color !== pieceInView.color &&
         pieceInView.name === "King"
       ) {
-        pieceInView.isCheck();
+        pieceInView.setChecked();
       }
     }
   }
 
-  findKing(movingPience) {
+  findKing(color) {
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const king = this.board.getSquareContent(y, x);
-        if (
-          king !== null &&
-          king.color === movingPience.color &&
-          king.name === "King"
-        ) {
+        if (king !== null && king.color === color && king.name === "King") {
           return king;
         }
       }
@@ -538,19 +503,14 @@ class Game {
     this.board.set(row, file, initiatingPiece);
     move.initiatingPiece.onMove(move);
 
-    const movedPiece = this.board.getSquareContent(
-      initiatingPiece.row,
-      initiatingPiece.file
-    );
-
-    this.didCheck(movedPiece);
+    this.didCheck(initiatingPiece);
 
     const isKing = [];
 
-    this.moveIntoCheck(isKing, movedPiece);
+    this.doesMoveExposeCheck(isKing, initiatingPiece);
     if (isKing.indexOf(true) === -1) {
     } else {
-      this.findKing(movedPiece).isCheck();
+      this.findKing(initiatingPiece.color).setChecked();
     }
   }
 }
@@ -620,5 +580,5 @@ const knight = game.board.get(0, 1);
 console.log(rookw);
 console.log(wb);
 console.log(queen);
-console.log(king)
-console.log(knight)
+console.log(king);
+console.log(knight);
