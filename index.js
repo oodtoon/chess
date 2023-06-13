@@ -30,6 +30,7 @@ class Board {
     this.initializePiece(Bishop);
     this.initializePiece(Queen)
     this.initializePiece(King)
+    this.initializePiece(Knight)
   }
 
 
@@ -286,6 +287,44 @@ class Bishop extends Piece {
   }
 }
 
+class Knight extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [1, 6];
+
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+  }
+
+  name = "Knight";
+
+  get moves() {
+    const directions = [
+      [2, 1],
+      [1, 2],
+      [-2, 1],
+      [-1, 2],
+      [-2, -1],
+      [-1, -2],
+      [2, -1],
+      [1, -2],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(dir, 1)
+    );
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+
+  get icon() {
+    return this.isWhite() ? "♘" : "♞";
+  }
+}
+
 class Queen extends Piece {
   static startingRows = [0, 7]
   static startingFiles = [3]
@@ -447,7 +486,6 @@ console.log(whitePawn.moves);
 // game.doMove(whitePawn3.moves[1]);
 // console.log(blackPawn.moves[0]);
 // game.doMove(blackPawn.moves[0]);
-
 const wb = game.board.get(0, 2);
 const pawnLeft = game.board.get(1, 1);
 const pawnRight = game.board.get(1, 3);
@@ -458,7 +496,9 @@ console.log(game.board.debug());
 const queen = game.board.get(0, 4);
 const rookw = game.board.get(0, 0);
 const king = game.board.get(0, 3);
+const knight = game.board.get(0, 1);
 console.log(rookw);
 console.log(wb);
 console.log(queen);
 console.log(king)
+console.log(knight)
