@@ -13,20 +13,25 @@ class Board {
     }
   }
 
-  initialize() {
-    for (let i = 0; i < Board.LANE_SIZE; i++) {
-      const p = new Pawn(this.game, this, "white", 1, i);
-      this.#board[p.row][p.file] = p;
-      const pB = new Pawn(this.game, this, "Black", 6, i);
-      this.#board[pB.row][pB.file] = pB;
+  initializePiece(PieceConstructor) {
+    for (let row of PieceConstructor.startingRows) {
+      const color = row <= 2 ? "white" : "black";
+      for (let file of PieceConstructor.startingFiles) {
+        const p = new PieceConstructor(this.game, this, color, row, file);
+        this.#board[row][file] = p;
+      }
     }
-    for (let i = 0; i < Board.LANE_SIZE; i += 7) {
-      const r = new Rook(this.game, this, "white", 0, i);
-      this.#board[r.row][r.file] = r;
-      const rB = new Rook(this.game, this, "Black", 7, i);
-      this.#board[rB.row][rB.file] = rB;
-    }
+    
   }
+
+  initialize() {
+    this.initializePiece(Pawn);
+    this.initializePiece(Rook);
+    this.initializePiece(Bishop);
+    this.initializePiece(Queen)
+  }
+
+
 
   getSquareContent(row, file) {
     return this.#board[row][file];
@@ -129,6 +134,9 @@ class Piece {
 }
 
 class Pawn extends Piece {
+  static startingRows = [1, 6];
+  static startingFiles = [0, 1, 3, 4, 5, 6, 7];
+
   name = "Pawn";
 
   constructor(game, board, color, row, file) {
@@ -207,6 +215,9 @@ class Pawn extends Piece {
 }
 
 class Rook extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [0, 7];
+
   constructor(game, board, color, row, file) {
     super(game, board, color, row, file);
     this.hasMoved = false;
@@ -233,6 +244,79 @@ class Rook extends Piece {
 
   onMove(move) {
     this.hasMoved = true;
+  }
+}
+
+class Bishop extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [2, 5];
+
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+  }
+
+  name = "Bishop";
+
+  get moves() {
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
+
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+  get icon() {
+    return this.isWhite() ? "♗" : "♝";
+  }
+}
+
+class Queen extends Piece {
+  static startingRows = [0, 7]
+  static startingFiles = [3]
+  
+  constructor(game, board, color, row, file) {
+    super(game, board, color);
+    this.row = row;
+    this.file = file;
+    this.hasMoved = false;
+  }
+
+  name = "Queen";
+
+  get moves() {
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
+    return available;
+  }
+
+  onMove(move) {
+    console.log(move);
+  }
+
+  get icon() {
+    return this.isWhite ? "♕" : "♛";
   }
 }
 
@@ -289,16 +373,24 @@ const game = new Game();
 
 console.log(game.board);
 const whitePawn = game.board.get(1, 0);
-game.doMove(whitePawn.moves[0]);
-const blackPawn = game.board.get(6, 0);
-game.doMove(blackPawn.moves[1]);
-const whitePawn2 = game.board.get(1, 2);
-game.doMove(whitePawn2.moves[0]);
-game.doMove(blackPawn.moves[0]);
-const whitePawn3 = game.board.get(1, 1);
-game.doMove(whitePawn3.moves[1]);
-console.log(blackPawn.moves[0]);
-game.doMove(blackPawn.moves[0]);
+console.log(whitePawn.moves);
+// console.log(whitePawn.moves);
+// game.doMove(whitePawn.moves[0]);
+// const blackPawn = game.board.get(6, 0);
+// game.doMove(blackPawn.moves[1]);
+// const whitePawn2 = game.board.get(1, 2);
+// game.doMove(whitePawn2.moves[0]);
+// game.doMove(blackPawn.moves[0]);
+// const whitePawn3 = game.board.get(1, 1);
+// game.doMove(whitePawn3.moves[1]);
+// console.log(blackPawn.moves[0]);
+// game.doMove(blackPawn.moves[0]);
+
+const wb = game.board.get(0, 2);
+const pawnLeft = game.board.get(1, 1);
+const pawnRight = game.board.get(1, 3);
+game.doMove(pawnLeft.moves[1]);
+game.doMove(pawnRight.moves[1]);
 console.log(game.board.debug());
 
 const whiteRook = game.board.get(0, 0);
