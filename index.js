@@ -20,9 +20,27 @@ class Board {
       const pB = new Pawn(this.game, this, "Black", 6, i);
       this.#board[pB.row][pB.file] = pB;
     }
+    for (let i = 0; i < Board.LANE_SIZE; i += 7) {
+      const r = new Rook(this.game, this, "white", 0, i);
+      this.#board[r.row][r.file] = r;
+      const rB = new Rook(this.game, this, "Black", 7, i);
+      this.#board[rB.row][rB.file] = rB;
+    }
   }
+
   getSquareContent(row, file) {
     return this.#board[row][file];
+  }
+
+  isValidSquare(row, file) {
+    return (
+      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
+    );
+  }
+
+  isSquareOccupied(row, file) {
+    let squareContent = this.getSquareContent(row, file);
+    return squareContent !== null;
   }
 
   set(row, file, value) {
@@ -50,9 +68,11 @@ class Board {
 class Piece {
   name = null;
 
-  constructor(game, board, color) {
+  constructor(game, board, color, row, file) {
     this.color = color;
     this.board = board;
+    this.row = row;
+    this.file = file;
   }
 
   toString() {
@@ -71,6 +91,38 @@ class Piece {
     return this.board.getSquareContent(row, file);
   }
 
+  isValidSquare(row, file) {
+    return this.board.isValidSquare(row, file);
+  }
+
+  isSquareOccupied(row, file) {
+    return this.board.isSquareOccupied(row, file);
+  }
+
+  getLegalDirectionalMoves(piece, directions) {
+    const vertical = directions[0];
+    const horizontal = directions[1];
+
+    const legalMoves = [];
+
+    for (let i = 1; i < Board.LANE_SIZE; i++) {
+      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      if (this.isValidSquare(...square)) {
+        if (!this.isSquareOccupied(...square)) {
+          legalMoves.push(Move.fromSquare(square, this));
+        } else {
+          const otherPiece = this.getSquareContent(...square);
+          if (otherPiece.color !== this.color) {
+            legalMoves.push(Move.fromSquare(square, this, otherPiece));
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return legalMoves;
+  }
+
   get moves() {
     throw new Error("moves getter is not yet implementeed");
   }
@@ -80,34 +132,14 @@ class Pawn extends Piece {
   name = "Pawn";
 
   constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+    super(game, board, color, row, file);
     this.hasMoved = false;
     this.hasDoubleMoved = false;
-  }
-
-  isSquareOccupied(row, file) {
-    let squareContent = this.getSquareContent(row, file);
-    return squareContent !== null;
-  }
-
-  isValidSquare(row, file) {
-    return (
-      row >= 0 && row < Board.LANE_SIZE && file >= 0 && file < Board.LANE_SIZE
-    );
   }
 
   canEnPassant(row, file) {
     const squareContent = this.getSquareContent(row, file);
     const lastMove = game.moves.at(-1);
-    console.log({
-      isValid: this.isValidSquare(row, file),
-      squareContent,
-      lastMove,
-      match: lastMove?.initiatingPiece === squareContent,
-      isDoubleMvoe: lastMove?.isPawnDoubleMove,
-    });
     return (
       this.isValidSquare(row, file) &&
       squareContent &&
@@ -169,6 +201,35 @@ class Pawn extends Piece {
   get icon() {
     return this.isWhite() ? "♙" : "♟";
   }
+  onMove(move) {
+    this.hasMoved = true;
+  }
+}
+
+class Rook extends Piece {
+  constructor(game, board, color, row, file) {
+    super(game, board, color, row, file);
+    this.hasMoved = false;
+  }
+
+  name = "Rook";
+
+  get icon() {
+    return this.isWhite() ? "♖" : "♜";
+  }
+
+  get moves() {
+    const directions = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+    const available = directions.flatMap((dir) =>
+      this.getLegalDirectionalMoves(this, dir)
+    );
+    return available;
+  }
 
   onMove(move) {
     this.hasMoved = true;
@@ -190,12 +251,6 @@ class Move {
   }
 
   get isPawnDoubleMove() {
-    console.log(
-      this.initiatingPiece.name === "Pawn",
-      Math.abs(this.sourceRow - this.row) === 2,
-      this.sourceRow,
-      this.row
-    );
     return (
       this.initiatingPiece.name === "Pawn" &&
       Math.abs(this.sourceRow - this.row) === 2
@@ -230,18 +285,6 @@ class Game {
 
 //TESTING AREA
 
-// const b = new Board();
-
-// b.initialize();
-
-// const p = new Pawn(b, "white", 1, 0);
-
-// console.log(Board.LANE_SIZE);
-
-// console.log(`${p}`, p);
-
-// console.log(p.moves);
-
 const game = new Game();
 
 console.log(game.board);
@@ -257,3 +300,14 @@ game.doMove(whitePawn3.moves[1]);
 console.log(blackPawn.moves[0]);
 game.doMove(blackPawn.moves[0]);
 console.log(game.board.debug());
+
+const whiteRook = game.board.get(0, 0);
+const blackRook = game.board.get(7, 0);
+const randomPwn = game.board.get(1, 6);
+const rook2 = game.board.get(0, 7);
+const rook3 = game.board.get(7, 7);
+console.log(whiteRook);
+console.log(randomPwn);
+console.log(blackRook);
+console.log(rook2);
+console.log(rook3);
