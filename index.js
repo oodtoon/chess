@@ -13,25 +13,20 @@ class Board {
     }
   }
 
+  initializePiece(PieceConstructor) {
+    for (let row of PieceConstructor.startingRows) {
+      const color = row <= 2 ? "white" : "black";
+      for (let file of PieceConstructor.startingFiles) {
+        const p = new PieceConstructor(this.game, this, color, row, file);
+        this.#board[row][file] = p;
+      }
+    }
+  }
+
   initialize() {
-    for (let i = 0; i < Board.LANE_SIZE; i++) {
-      const p = new Pawn(this.game, this, "white", 1, i);
-      this.#board[p.row][p.file] = p;
-      const pB = new Pawn(this.game, this, "black", 6, i);
-      this.#board[pB.row][pB.file] = pB;
-    }
-    for (let i = 0; i < Board.LANE_SIZE; i += 7) {
-      const r = new Rook(this.game, this, "white", 0, i);
-      this.#board[r.row][r.file] = r;
-      const rB = new Rook(this.game, this, "black", 7, i);
-      this.#board[rB.row][rB.file] = rB;
-    }
-    for (let i = 2; i < 6; i += 3) {
-      const b = new Bishop(this.game, this, "white", 0, i);
-      this.#board[b.row][b.file] = b;
-      const bB = new Bishop(this.game, this, "black", 7, i);
-      this.#board[bB.row][bB.file] = bB;
-    }
+    this.initializePiece(Pawn);
+    this.initializePiece(Rook);
+    this.initializePiece(Bishop);
   }
 
   getSquareContent(row, file) {
@@ -159,6 +154,9 @@ class Piece {
 }
 
 class Pawn extends Piece {
+  static startingRows = [1, 6];
+  static startingFiles = [0, 1, 3, 4, 5, 6, 7];
+
   name = "Pawn";
 
   constructor(game, board, color, row, file) {
@@ -237,6 +235,9 @@ class Pawn extends Piece {
 }
 
 class Rook extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [0, 7];
+
   constructor(game, board, color, row, file) {
     super(game, board, color, row, file);
     this.hasMoved = false;
@@ -247,8 +248,6 @@ class Rook extends Piece {
   get icon() {
     return this.isWhite() ? "♖" : "♜";
   }
-
- 
 
   get moves() {
     const directions = [
@@ -269,6 +268,9 @@ class Rook extends Piece {
 }
 
 class Bishop extends Piece {
+  static startingRows = [0, 7];
+  static startingFiles = [2, 5];
+
   constructor(game, board, color, row, file) {
     super(game, board, color);
     this.row = row;
