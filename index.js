@@ -108,31 +108,7 @@ class Piece {
     return this.board.isSquareOccupied(row, file);
   }
 
-  getLegalDirectionalMoves(piece, directions) {
-    const vertical = directions[0];
-    const horizontal = directions[1];
-
-    const legalMoves = [];
-
-    for (let i = 1; i < Board.LANE_SIZE; i++) {
-      const square = [piece.row + i * vertical, piece.file + i * horizontal];
-      if (this.isValidSquare(...square)) {
-        if (!this.isSquareOccupied(...square)) {
-          legalMoves.push(Move.fromSquare(square, this));
-        } else {
-          const otherPiece = this.getSquareContent(...square);
-          if (otherPiece.color !== this.color) {
-            legalMoves.push(Move.fromSquare(square, this, otherPiece));
-          } else {
-            break;
-          }
-        }
-      }
-    }
-    return legalMoves;
-  }
-
-  getLegalDirectionalMoves(piece, directions, magnitude) {
+  getLegalDirectionalMoves(directions, magnitude) {
     const vertical = directions[0];
     const horizontal = directions[1];
 
@@ -141,7 +117,7 @@ class Piece {
     const legalMoves = [];
 
     for (let i = 1; i < reach; i++) {
-      const square = [piece.row + i * vertical, piece.file + i * horizontal];
+      const square = [this.row + i * vertical, this.file + i * horizontal];
       if (this.isValidSquare(...square)) {
         if (!this.isSquareOccupied(...square)) {
           legalMoves.push(Move.fromSquare(square, this));
@@ -267,7 +243,7 @@ class Rook extends Piece {
       [0, 1],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(this, dir)
+      this.getLegalDirectionalMoves(dir)
     );
     return available;
   }
@@ -297,8 +273,7 @@ class Bishop extends Piece {
       [1, 1],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(this, dir)
-    );
+      this.getLegalDirectionalMoves(dir));
 
     return available;
   }
@@ -335,7 +310,7 @@ class Queen extends Piece {
       [0, -1],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(this, dir)
+      this.getLegalDirectionalMoves(dir)
     );
     return available;
   }
@@ -393,7 +368,7 @@ class King extends Piece {
       [1, 0],
     ];
     const available = directions.flatMap((dir) =>
-      this.getLegalDirectionalMoves(this, dir, 1)
+      this.getLegalDirectionalMoves(dir, 1)
     );
     return available;
   }
