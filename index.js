@@ -20,10 +20,11 @@ class Board {
 
   initializePiece(PieceConstructor) {
     for (let row of PieceConstructor.startingRows) {
-      const color = row <= 2 ? "white" : "black";
+      const player = row <= 2 ? this.game.whitePlayer : this.game.blackPlayer;
       for (let file of PieceConstructor.startingFiles) {
-        const p = new PieceConstructor(this.game, this, color, row, file);
+        const p = new PieceConstructor(this.game, this, player, row, file);
         this.#board[row][file] = p;
+        player.addLivePiece(p);
       }
     }
   }
@@ -77,11 +78,16 @@ class Board {
 class Piece {
   name = null;
 
-  constructor(game, board, color, row, file) {
-    this.color = color;
+  constructor(game, board, player, row, file) {
+    this.game = game;
     this.board = board;
+    this.player = player;
     this.row = row;
     this.file = file;
+  }
+
+  get color() {
+    return this.player.color;
   }
 
   toString() {
@@ -137,23 +143,27 @@ class Piece {
   get moves() {
     throw new Error("moves getter is not yet implementeed");
   }
+
+  get opponent() {
+    return this.player.opponent;
+  }
 }
 
 class Pawn extends Piece {
   static startingRows = [1, 6];
-  static startingFiles = [0, 1, 3, 4, 5, 6, 7];
+  static startingFiles = [0, 1, 2, 3, 4, 5, 6, 7];
 
   name = "Pawn";
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color, row, file);
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
     this.hasMoved = false;
     this.hasDoubleMoved = false;
   }
 
   canEnPassant(row, file) {
     const squareContent = this.getSquareContent(row, file);
-    const lastMove = game.moves.at(-1);
+    const lastMove = this.game.moves.at(-1);
     return (
       this.isValidSquare(row, file) &&
       squareContent &&
@@ -180,7 +190,12 @@ class Pawn extends Piece {
 
     const leftDiag = [this.row + 1 * direction, this.file - 1];
 
-    if (this.isValidSquare(...leftDiag) && this.isSquareOccupied(...leftDiag)) {
+    if (
+      this.isValidSquare(...leftDiag) &&
+      this.isSquareOccupied(
+        ...leftDiag
+      ) /*&& this.color !== this.getSquareContent(...leftDiag).color*/
+    ) {
       available.push(
         Move.fromSquare(leftDiag, this, this.getSquareContent(...leftDiag))
       );
@@ -190,6 +205,7 @@ class Pawn extends Piece {
     if (
       this.isValidSquare(...rightDiag) &&
       this.isSquareOccupied(...rightDiag)
+      /*&& this.color !== this.getSquareContent(...leftDiag).color*/
     ) {
       available.push(
         Move.fromSquare(rightDiag, this, this.getSquareContent(...rightDiag))
@@ -224,8 +240,8 @@ class Rook extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [0, 7];
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color, row, file);
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
     this.hasMoved = false;
   }
 
@@ -257,10 +273,8 @@ class Bishop extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [2, 5];
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
   }
 
   name = "Bishop";
@@ -291,10 +305,8 @@ class Knight extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [1, 6];
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
   }
 
   name = "Knight";
@@ -329,10 +341,8 @@ class Queen extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [3];
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
   }
 
   name = "Queen";
@@ -367,10 +377,8 @@ class King extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [4];
 
-  constructor(game, board, color, row, file) {
-    super(game, board, color);
-    this.row = row;
-    this.file = file;
+  constructor(game, board, player, row, file) {
+    super(game, board, player, row, file);
     this.hasMoved = false;
     this.isChecked = false;
   }
@@ -423,6 +431,7 @@ class Move {
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
     this.capturedPiece = capturedPiece;
+    this.isCheck = false;
   }
 
   get isPawnDoubleMove() {
@@ -436,8 +445,16 @@ class Move {
 class Game {
   constructor() {
     this.board = new Board(this);
+    this.whitePlayer = new Player("white");
+    this.blackPlayer = new Player("black");
+    this.wireUpOpposition();
     this.board.initialize();
     this.moves = [];
+  }
+
+  wireUpOpposition() {
+    this.whitePlayer.opponent = this.blackPlayer;
+    this.blackPlayer.opponent = this.whitePlayer;
   }
 
   doMove(move) {
@@ -445,27 +462,34 @@ class Game {
     this.moves.push(move);
   }
 
-  doesMoveExposeCheck(arr, movingPience) {
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        const opponentPiece = this.board.getSquareContent(y, x);
-        if (
-          opponentPiece !== null &&
-          opponentPiece.color !== movingPience.color
-        ) {
-          for (let move of opponentPiece.moves) {
-            if (move.capturedPiece !== null) {
-              const isChecked = move.capturedPiece.name === "King";
-              arr.push(isChecked);
-              if (isChecked) {
-                move.capturedPiece.setChecked();
-              }
-            }
-          }
+  doesMoveExposeCheck(movingPience) {
+    const { livePieces } = movingPience.opponent;
+    for (let opponentPiece of livePieces) {
+      for (let move of opponentPiece.moves) {
+        if (move.capturedPiece?.name === "King") {
+          move.capturedPiece.setChecked();
+          return true;
         }
       }
     }
-    return arr;
+    return false;
+  }
+
+  getMoves(piece) {
+    return piece.moves.filter((move) => {
+      this.executeMove(move);
+      console.log({
+        move,
+        wasCheck: this.doesMoveExposeCheck(move.initiatingPiece),
+      });
+      if (this.doesMoveExposeCheck(move.initiatingPiece)) {
+        this.undoMove(move);
+        return false;
+      } else {
+        this.undoMove(move);
+        return true;
+      }
+    });
   }
 
   didCheck(piece) {
@@ -495,23 +519,77 @@ class Game {
   executeMove(move) {
     const { row, file, initiatingPiece, capturedPiece } = move;
     if (capturedPiece) {
+      console.log("here");
       const { row: capturedRow, file: capturedFile } = capturedPiece;
       this.board.set(capturedRow, capturedFile, null);
+      capturedPiece.player.addCapturedPiece(capturedPiece);
+      capturedPiece.player.removeLivePiece(capturedPiece);
     }
     const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
     this.board.set(initiatingRow, initiatingFile, null);
     this.board.set(row, file, initiatingPiece);
     move.initiatingPiece.onMove(move);
 
-    this.didCheck(initiatingPiece);
+    // this.didCheck(initiatingPiece);
+  }
 
-    const isKing = [];
-
-    this.doesMoveExposeCheck(isKing, initiatingPiece);
-    if (isKing.indexOf(true) === -1) {
+  undoMove(move) {
+    const { row, file, sourceRow, sourceFile, initiatingPiece, capturedPiece } =
+      move;
+    if (capturedPiece) {
+      this.board.set(row, file, capturedPiece);
     } else {
-      this.findKing(initiatingPiece.color).setChecked();
+      this.board.set(row, file, null);
     }
+    this.board.set(sourceRow, sourceFile, initiatingPiece);
+  }
+}
+
+class Player {
+  constructor(color) {
+    this.color = color;
+    /**
+     * piece names map to the players' live pieces
+     * @type Object<String, Array<Piece>>
+     */
+    this.livePieceMap = {};
+    this.capturedPieces = {};
+    this.opponent = null;
+  }
+
+  addLivePiece(piece) {
+    const pieceType = piece.name;
+    if (!(pieceType in this.livePieceMap)) {
+      this.livePieceMap[pieceType] = [];
+    }
+    this.livePieceMap[pieceType].push(piece);
+  }
+
+  removeLivePiece(piece) {
+    const pieceType = piece.name;
+    const indexToRemove = this.livePieceMap[pieceType].findIndex(
+      (p) => p === piece
+    );
+
+    if (indexToRemove >= 0) {
+      this.livePieceMap[pieceType].splice(indexToRemove, 1);
+    }
+  }
+
+  get livePieces() {
+    return Object.values(this.livePieceMap).flat();
+  }
+
+  addCapturedPiece(piece) {
+    const pieceType = piece.name;
+    if (!(pieceType in this.capturedPieces)) {
+      this.capturedPieces[pieceType] = [];
+    }
+    this.capturedPieces[pieceType].push(piece);
+  }
+
+  get king() {
+    return this.livePieceMap["King"];
   }
 }
 
@@ -554,7 +632,7 @@ const game = new Game();
 
 console.log(game.board);
 const whitePawn = game.board.get(1, 0);
-console.log(whitePawn.moves);
+// console.log(game.getMoves(whitePawn));
 // console.log(whitePawn.moves);
 // game.doMove(whitePawn.moves[0]);
 // const blackPawn = game.board.get(6, 0);
@@ -569,8 +647,9 @@ console.log(whitePawn.moves);
 const wb = game.board.get(0, 2);
 const pawnLeft = game.board.get(1, 1);
 const pawnRight = game.board.get(1, 3);
-game.doMove(pawnLeft.moves[1]);
-game.doMove(pawnRight.moves[1]);
+console.log(game.getMoves(pawnLeft));
+game.doMove(game.getMoves(pawnLeft)[0]);
+game.doMove(game.getMoves(pawnRight)[1]);
 console.log(game.board.debug());
 
 const queen = game.board.get(0, 4);
