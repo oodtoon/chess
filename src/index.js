@@ -1,43 +1,8 @@
 "use strict";
 
 import Game from "./game.js";
+import "./components/index.js"
 
-const squares = [];
-const width = 8;
-let color = "white";
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-    const board = document.querySelector(".board");
-
-    for (let i = 0; i < 64; i++) {
-      const square = document.createElement("div");
-      square.classList.add("square");
-      squares.push(square);
-      board.appendChild(square);
-    }
-
-    const drawSquares = (color) => {
-      for (let i = 63; i >= 0; i--) {
-        if (i % width === 0) {
-          squares[i].classList.add(color);
-        } else {
-          if (color === "white") {
-            squares[i].classList.add(color);
-            color = "black";
-          } else if (color === "black") {
-            squares[i].classList.add(color);
-            color = "white";
-          }
-        }
-      }
-    };
-
-    drawSquares(color);
-  },
-  false
-);
 
 //TESTING AREA
 
