@@ -92,9 +92,9 @@ describe("bishop", () => {
     game.doMove(game.getMoves(whiteBishop)[1]);
     game.doMove(game.getMoves(blackBishop)[4]);
 
-    expect(game.whitePlayer.capturedPieces.Bishop.length).toBe(1)
-    expect(game.whitePlayer.livePieceMap.Bishop.length).toBe(1)
-    expect(game.whitePlayer.livePieces.length).toBe(15)
-    expect(game.board.getSquareContent(2, 0).player.color).toBe("black")
+    expect(game.whitePlayer.capturedPieces.Bishop.length).toBe(1);
+    expect(game.whitePlayer.livePieceMap.Bishop.length).toBe(1);
+    expect(game.whitePlayer.livePieces.length).toBe(15);
+    expect(game.board.getSquareContent(2, 0).player.color).toBe("black");
   });
 });

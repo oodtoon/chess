@@ -1,6 +1,5 @@
 import Game from "../game.js";
 
-
 describe("king", () => {
   test("no moves on start", () => {
     const game = new Game();
@@ -52,7 +51,7 @@ describe("king", () => {
     const game = new Game();
     const whiteKing = game.board.get(0, 4);
     const blackKing = game.board.get(7, 4);
-    const blackQueen = game.board.get(7, 3)
+    const blackQueen = game.board.get(7, 3);
     const WPL = game.board.get(1, 3);
     const WPC = game.board.get(1, 4);
     const WPR = game.board.get(1, 5);
@@ -69,7 +68,7 @@ describe("king", () => {
     game.doMove(game.getMoves(blackQueen)[3]);
 
     expect(whiteKing.isChecked).toBe(true);
-    expect(blackKing.isChecked).toBe(false)
+    expect(blackKing.isChecked).toBe(false);
   });
 
   // test("can castle", () => {

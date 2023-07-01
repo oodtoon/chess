@@ -99,6 +99,7 @@ class King extends Piece {
   }
 
   onMove(move) {
+    super.onMove(move);
     this.hasMoved = true;
   }
 }

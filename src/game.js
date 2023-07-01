@@ -85,34 +85,6 @@ export default class Game {
     }
   }
 
-  doCastle(move) {
-    this.executeCastle(move);
-    this.moves.push(move);
-  }
-
-  executeCastle(move) {
-    const { initiatingPiece: king, capturedPiece: rook } = move;
-
-    debugger;
-    if (king.file - rook.file === 4) {
-      this.board.set(king.row, king.file, null);
-      this.board.set(rook.row, rook.file, null);
-      this.board.set(king.row, king.file - 3, king);
-      this.board.set(rook.row, 3, rook);
-
-      king.onMove(move);
-      rook.onMove(move);
-    } else {
-      this.board.set(king.row, king.file, null);
-      this.board.set(rook.row, rook.file, null);
-      this.board.set(king.row, king.file + 2, king);
-      this.board.set(rook.row, 5, rook);
-
-      king.onMove(move);
-      rook.onMove(move);
-    }
-  }
-
   undoMove(move) {
     if (move.isCompoundMove) {
       move.moves.forEach((move) => this.undoMove(move));

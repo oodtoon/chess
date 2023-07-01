@@ -1,1 +1,1 @@
-import "./ChessBoard.js"
+import "./ChessBoard.js";

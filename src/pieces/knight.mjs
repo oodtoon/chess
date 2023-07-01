@@ -28,6 +28,7 @@ class Knight extends Piece {
   }
 
   onMove(move) {
+    super.onMove(move);
     console.log(move);
   }
 

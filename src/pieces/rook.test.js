@@ -68,9 +68,9 @@ describe("rook", () => {
     game.doMove(game.getMoves(blackRook)[2]);
     game.doMove(game.getMoves(whiteRook)[2]);
 
-    expect(game.blackPlayer.capturedPieces.Rook.length).toBe(1)
-    expect(game.blackPlayer.livePieceMap.Rook.length).toBe(1)
-    expect(game.blackPlayer.livePieces.length).toBe(15)
-    expect(game.board.getSquareContent(5, 1).player.color).toBe("white")
+    expect(game.blackPlayer.capturedPieces.Rook.length).toBe(1);
+    expect(game.blackPlayer.livePieceMap.Rook.length).toBe(1);
+    expect(game.blackPlayer.livePieces.length).toBe(15);
+    expect(game.board.getSquareContent(5, 1).player.color).toBe("white");
   });
 });

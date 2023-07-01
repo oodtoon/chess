@@ -97,7 +97,7 @@ describe("pawn", () => {
     const whitePawn = game.board.get(1, 1);
     const blackPawn = game.board.get(6, 0);
     const wp2 = game.board.get(1, 7);
-    const wp0 = game.board.get(1, 0)
+    const wp0 = game.board.get(1, 0);
 
     game.doMove(game.getMoves(blackPawn)[1]);
     game.doMove(game.getMoves(wp2)[0]);
@@ -107,10 +107,18 @@ describe("pawn", () => {
 
     expect(
       game.getMoves(blackPawn).map((move) => [move.row, move.file])
-    ).toEqual([[1, 1], [1, 0], [1, 2]]);
-    expect(game.board.isSquareOccupied(3, 1)).toBe(false)
-    expect(game.whitePlayer.livePieces.length).toBe(15)
-    expect(game.whitePlayer.capturedPieces.Pawn.length).toBe(1)
-    expect(game.getMoves(wp0).map((move) => [move.row, move.file])).toEqual([[2, 0], [3, 0], [2, 1]])
+    ).toEqual([
+      [1, 1],
+      [1, 0],
+      [1, 2],
+    ]);
+    expect(game.board.isSquareOccupied(3, 1)).toBe(false);
+    expect(game.whitePlayer.livePieces.length).toBe(15);
+    expect(game.whitePlayer.capturedPieces.Pawn.length).toBe(1);
+    expect(game.getMoves(wp0).map((move) => [move.row, move.file])).toEqual([
+      [2, 0],
+      [3, 0],
+      [2, 1],
+    ]);
   });
 });
