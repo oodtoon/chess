@@ -32,7 +32,7 @@ class Queen extends Piece {
   }
 
   get icon() {
-    return this.isWhite ? "♕" : "♛";
+    return this.isWhite() ? "♕" : "♛";
   }
 }
 

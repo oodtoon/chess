@@ -1,4 +1,4 @@
-import Game from "../game.js"
+import Game from "../game.js";
 import { intToFile } from "../util.js";
 
 function generateTemplete() {
@@ -26,37 +26,40 @@ function generateTemplete() {
     for (let file = 0; file < 8; file++) {
       const square = document.createElement("div");
       square.classList.add("square");
-      square.classList.add(rank % 2 === 0 ^ file % 2 === 0 ? "black" : "white")
-      square.dataset.rank = rank + 1
-      square.dataset.file = intToFile(file)
+      square.classList.add(
+        (rank % 2 === 0) ^ (file % 2 === 0) ? "white" : "black"
+      );
+      square.dataset.rank = rank + 1;
+      square.dataset.file = intToFile(file);
       template.content.append(square);
     }
   }
-  return template
-
+  return template;
 }
 
-const template = generateTemplete()
+const template = generateTemplete();
 
 class ChessBoard extends HTMLElement {
   constructor() {
     super();
-    this.classList.add("board")
+    this.classList.add("board");
     this.attachShadow({ mode: "open" });
     this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.game = new Game()
-    this.mountPieces()
+    this.game = new Game();
+    this.mountPieces();
   }
 
   mountPieces() {
-    this.mountPlayerPieces(this.game.whitePlayer)
-    this.mountPlayerPieces(this.game.blackPlayer)
+    this.mountPlayerPieces(this.game.whitePlayer);
+    this.mountPlayerPieces(this.game.blackPlayer);
   }
 
   mountPlayerPieces(player) {
     for (let piece of player.livePieces) {
-      const square = this.shadowRoot.querySelector(`[data-rank="${piece.row + 1}"][data-file="${intToFile(piece.file)}"]`) 
-      square.textContent = piece.icon
+      const square = this.shadowRoot.querySelector(
+        `[data-rank="${piece.row + 1}"][data-file="${intToFile(piece.file)}"]`
+      );
+      square.textContent = piece.icon;
     }
   }
 }
