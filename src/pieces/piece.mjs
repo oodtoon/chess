@@ -1,5 +1,5 @@
-import Move from "../move.js"
-import Board from "../board.js"
+import Move from "../move.js";
+import Board from "../board.js";
 
 class Piece {
   name = null;
@@ -57,9 +57,8 @@ class Piece {
           const otherPiece = this.getSquareContent(...square);
           if (otherPiece.color !== this.color) {
             legalMoves.push(Move.fromSquare(square, this, otherPiece));
-          } else {
-            break;
           }
+          break;
         }
       }
     }

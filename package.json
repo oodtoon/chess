@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "chess",
   "main": "index.html",
+  "type": "module",
   "scripts": {
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "start": "nodemon index.html"
   },
   "author": "Best buds",

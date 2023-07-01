@@ -19,4 +19,8 @@ export default class Move {
       Math.abs(this.sourceRow - this.row) === 2
     );
   }
+
+  toString() {
+    return "I'm a move"
+  }
 }
