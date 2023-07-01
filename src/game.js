@@ -21,8 +21,8 @@ export default class Game {
     this.moves.push(move);
   }
 
-  doesMoveExposeCheck(movingPience) {
-    const { livePieces } = movingPience.opponent;
+  doesMoveExposeCheck(move) {
+    const { livePieces } = move.opponent;
     for (let opponentPiece of livePieces) {
       for (let move of opponentPiece.moves) {
         if (move.capturedPiece?.name === "King") {
@@ -41,7 +41,7 @@ export default class Game {
       //   move,
       //   wasCheck: this.doesMoveExposeCheck(move.initiatingPiece),
       // });
-      if (this.doesMoveExposeCheck(move.initiatingPiece)) {
+      if (this.doesMoveExposeCheck(move)) {
         this.undoMove(move);
         return false;
       } else {
@@ -65,31 +65,24 @@ export default class Game {
     }
   }
 
-  findKing(color) {
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        const king = this.board.getSquareContent(y, x);
-        if (king !== null && king.color === color && king.name === "King") {
-          return king;
-        }
-      }
-    }
-  }
-
   executeMove(move) {
-    const { row, file, initiatingPiece, capturedPiece } = move;
-    if (capturedPiece) {
-      const { row: capturedRow, file: capturedFile } = capturedPiece;
-      this.board.set(capturedRow, capturedFile, null);
-      capturedPiece.player.addCapturedPiece(capturedPiece);
-      capturedPiece.player.removeLivePiece(capturedPiece);
-    }
-    const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
-    this.board.set(initiatingRow, initiatingFile, null);
-    this.board.set(row, file, initiatingPiece);
-    move.initiatingPiece.onMove(move);
+    if (move.isCompoundMove) {
+      move.moves.forEach((move) => this.executeMove(move));
+    } else {
+      const { row, file, initiatingPiece, capturedPiece } = move;
+      if (capturedPiece) {
+        const { row: capturedRow, file: capturedFile } = capturedPiece;
+        this.board.set(capturedRow, capturedFile, null);
+        capturedPiece.player.addCapturedPiece(capturedPiece);
+        capturedPiece.player.removeLivePiece(capturedPiece);
+      }
+      const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
+      this.board.set(initiatingRow, initiatingFile, null);
+      this.board.set(row, file, initiatingPiece);
+      move.initiatingPiece.onMove(move);
 
-    this.didCheck(initiatingPiece);
+      this.didCheck(initiatingPiece);
+    }
   }
 
   doCastle(move) {
@@ -99,8 +92,8 @@ export default class Game {
 
   executeCastle(move) {
     const { initiatingPiece: king, capturedPiece: rook } = move;
-    
 
+    debugger;
     if (king.file - rook.file === 4) {
       this.board.set(king.row, king.file, null);
       this.board.set(rook.row, rook.file, null);
@@ -121,16 +114,26 @@ export default class Game {
   }
 
   undoMove(move) {
-    const { row, file, sourceRow, sourceFile, initiatingPiece, capturedPiece } =
-      move;
-    if (capturedPiece) {
-      this.board.set(row, file, capturedPiece);
-      capturedPiece.player.removeCapturedPiece(capturedPiece);
-      capturedPiece.player.addLivePiece(capturedPiece)
-      capturedPiece.player.livePieceMap.King[0].setNotChecked();
+    if (move.isCompoundMove) {
+      move.moves.forEach((move) => this.undoMove(move));
     } else {
-      this.board.set(row, file, null);
+      const {
+        row,
+        file,
+        sourceRow,
+        sourceFile,
+        initiatingPiece,
+        capturedPiece,
+      } = move;
+      if (capturedPiece) {
+        this.board.set(row, file, capturedPiece);
+        capturedPiece.player.removeCapturedPiece(capturedPiece);
+        capturedPiece.player.addLivePiece(capturedPiece);
+        capturedPiece.player.livePieceMap.King[0].setNotChecked();
+      } else {
+        this.board.set(row, file, null);
+      }
+      this.board.set(sourceRow, sourceFile, initiatingPiece);
     }
-    this.board.set(sourceRow, sourceFile, initiatingPiece);
   }
 }

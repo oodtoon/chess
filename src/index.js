@@ -103,8 +103,9 @@ game.doMove(game.getMoves(WB)[0])
 game.doMove(game.getMoves(BB)[0])
 game.doMove(game.getMoves(WPC)[0])
 game.doMove(game.getMoves(blackQueen)[1])
-game.doCastle(game.getMoves(whiteKing)[2])
-//game.doCastle(game.getMoves(blackKing)[1])
+game.doMove(game.getMoves(whiteKing)[2])
+game.doMove(game.getMoves(blackKing)[1])
+
 
 //game.doMove(game.getMoves(WPLLL)[0])
 

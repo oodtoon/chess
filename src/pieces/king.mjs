@@ -1,5 +1,5 @@
 import Piece from "./piece.mjs";
-import Move from "../move.js"
+import Move, { CompoundMove } from "../move.js";
 
 class King extends Piece {
   static startingRows = [0, 7];
@@ -21,44 +21,58 @@ class King extends Piece {
     this.isChecked = false;
   }
 
-  // castleMove(row, file, arr, type) {
-  //   const emptySquare = [];
-  //   const currentSquare = [row, file];
+  countEmptySquares(row, from, to) {
+    let count = 0;
+    for (let file = from; file < to; file++) {
+      if (!this.isSquareOccupied(row, file)) {
+        count++;
+      }
+    }
+    return count;
+  }
 
-  //   const direction = type === "short" ? 1 : -1;
+  getAvailableCastlingMoves() {
+    if (this.hasMoved) return [];
+    const currentSquare = [this.row, this.file];
 
-  //   for (let i = 0; i < file; i++) {
-  //     const nextSquare = [row, file + i * direction];
-  //     if (!this.isSquareOccupied(...nextSquare)) {
-  //       emptySquare.push(true);
-  //     }
-  //   }
+    const leftSquareCount = this.countEmptySquares(this.row, 1, 4);
+    const rightSquareCount = this.countEmptySquares(this.row, 5, 7);
 
-  //   if (
-  //     emptySquare.length === 3 &&
-  //     this.isSquareOccupied(row, 0) === true &&
-  //     this.getSquareContent(row, 0).name === "Rook" &&
-  //     this.getSquareContent(row, 0).hasMoved === false &&
-  //     this.getSquareContent(row, file).hasMoved === false
-  //   ) {
-  //     console.log("current", currentSquare)
-  //     console.log("this", this)
-  //     console.log("content", this.getSquareContent(row, 0))
-  //     arr.push(
-  //       Move.fromSquare(currentSquare, this, this.getSquareContent(row, 0))
-  //     );
-  //   } else if (
-  //     emptySquare.length === 2 &&
-  //     this.getSquareContent(row, 7).name === "Rook" &&
-  //     this.getSquareContent(row, 0).hasMoved === false &&
-  //     this.getSquareContent(row, file).hasMoved === false
-  //   ) {
-  //     arr.push(
-  //       Move.fromSquare(currentSquare, this, this.getSquareContent(row, 7))
-  //     );
-  //   }
-  //   return arr;
-  // }
+    const leftRook = this.getSquareContent(this.row, 0);
+    const rightRook = this.getSquareContent(this.row, 7);
+
+    const castleOptions = [
+      {
+        rook: leftRook,
+        expectedSquares: 3,
+        actualSquares: leftSquareCount,
+        targetSquare: [this.row, 2],
+        rookTargetSquare: [this.row, 3],
+      },
+      {
+        rook: rightRook,
+        expectedSquares: 2,
+        actualSquares: rightSquareCount,
+        targetSquare: [this.row, 6],
+        rookTargetSquare: [this.row, 5],
+      },
+    ];
+
+    return castleOptions
+      .filter(
+        ({ rook, expectedSquares, actualSquares }) =>
+          actualSquares === expectedSquares &&
+          rook?.name === "Rook" &&
+          !rook.hasMoved
+      )
+      .map(
+        ({ rook, targetSquare, rookTargetSquare }) =>
+          new CompoundMove(
+            Move.fromSquare(targetSquare, this),
+            Move.fromSquare(rookTargetSquare, rook)
+          )
+      );
+  }
 
   get moves() {
     const directions = [
@@ -75,8 +89,7 @@ class King extends Piece {
       this.getLegalDirectionalMoves(dir, 1)
     );
 
-    // this.castleMove(this.row, this.file, available, "long");
-    // this.castleMove(this.row, this.file, available, "short")
+    available.push(...this.getAvailableCastlingMoves());
 
     return available;
   }
