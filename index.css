@@ -2,6 +2,10 @@ html {
   background-color: rgb(32, 32, 32);
 }
 
+:root {
+  --square-size: 80px
+}
+
 .container {
   display: grid;
   margin: auto;
@@ -13,11 +17,11 @@ html {
 }
 
 .board {
-  width: 680px;
-  height: 680px;
+  width: calc(var(--square-size) * 8);
+  height: calc(var(--square-size) * 8);
   border: solid rgb(23, 23, 23) 5px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   margin-top: 50px;
   margin-bottom: 100px;
   box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
@@ -80,15 +84,3 @@ html {
   grid-area: turn;
 }
 
-.square {
-  height: 85px;
-  width: 85px;
-}
-
-.black {
-  background-color: brown;
-}
-
-.white {
-  background-color: #49a6e9;
-}
