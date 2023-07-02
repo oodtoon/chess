@@ -10,6 +10,7 @@ class Piece {
     this.player = player;
     this.row = row;
     this.file = file;
+    this.id = crypto.randomUUID();
   }
 
   get color() {
@@ -71,6 +72,19 @@ class Piece {
 
   get opponent() {
     return this.player.opponent;
+  }
+
+  onMove(move) {
+    window.eventBus.dispatchEvent("piece-move", {
+      pieceId: move.initiatingPiece.id,
+      from: [move.sourceRow, move.sourceFile],
+      to: [move.row, move.file],
+    });
+    if (move.capturedPiece) {
+      window.eventBus.dispatchEvent("piece-capture", {
+        pieceId: move.initiatingPiece.id
+      });
+    }
   }
 }
 

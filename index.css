@@ -6,6 +6,10 @@ html {
   --square-size: 80px
 }
 
+* {
+  user-select: none;
+}
+
 .container {
   display: grid;
   margin: auto;
