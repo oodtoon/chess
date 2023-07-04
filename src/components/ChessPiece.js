@@ -8,14 +8,15 @@ export default class ChessPiece extends HTMLElement {
   }
 
   connectedCallback() {
-    this.setAttribute("draggable", "true");
+    this.setAttribute("draggable", false);
     this.board = document.querySelector(".board");
     this.style.backgroundColor = "transparent";
     this.textContent = this.piece.icon;
     this.innerHTML = `<img src="${this.piece.class}" style="max-width: 100%;
     max-height: 100%;
     display: block;"
-    class="piece-img"/>`;
+    class="piece-img"
+    draggable="false"/>`;
     this.classList.add("piece");
 
     this.addEventListener("click", this.clickHandler);
@@ -30,7 +31,7 @@ export default class ChessPiece extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.removeEventListener(this.clickHandler);
+    this.removeEventListener("click", this.clickHandler);
   }
 
   clickHandler() {

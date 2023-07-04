@@ -31,14 +31,21 @@ class Pawn extends Piece {
     const direction = this.isWhite() ? 1 : -1;
 
     const firstSquare = [this.row + 1 * direction, this.file];
+
+    if (this.isSquareOccupied(...firstSquare)) {
+      return available
+    }
+
     if (!this.isSquareOccupied(...firstSquare)) {
       available.push(Move.fromSquare(firstSquare, this));
     }
 
     const secondSquare = [this.row + 2 * direction, this.file];
     if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
-      available.push(Move.fromSquare(secondSquare, this));
-    }
+        available.push(Move.fromSquare(secondSquare, this)); 
+    } 
+      
+    
 
     const leftDiag = [this.row + 1 * direction, this.file - 1];
 
