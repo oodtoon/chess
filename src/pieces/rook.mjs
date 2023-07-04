@@ -32,6 +32,10 @@ class Rook extends Piece {
     super.onMove(move);
     this.hasMoved = true;
   }
+
+  get class() {
+    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wr.png" : "https://www.chess.com/chess-themes/pieces/neo/150/br.png"
+  }
 }
 
 export default Rook;

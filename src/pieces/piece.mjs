@@ -1,6 +1,7 @@
 import Move from "../move.js";
 import Board from "../board.js";
 
+
 class Piece {
   name = null;
 

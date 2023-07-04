@@ -35,6 +35,10 @@ class Queen extends Piece {
   get icon() {
     return this.isWhite() ? "♕" : "♛";
   }
+
+  get class() {
+    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wq.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bq.png"
+  }
 }
 
 export default Queen;

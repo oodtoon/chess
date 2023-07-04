@@ -102,6 +102,10 @@ class King extends Piece {
     super.onMove(move);
     this.hasMoved = true;
   }
+
+  get class() {
+    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wk.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bk.png"
+  }
 }
 
 export default King;

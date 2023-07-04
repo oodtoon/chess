@@ -44,10 +44,11 @@ class Pawn extends Piece {
 
     if (
       this.isValidSquare(...leftDiag) &&
-      this.isSquareOccupied(
-        ...leftDiag
-      ) /*&& this.color !== this.getSquareContent(...leftDiag).color*/
+      this.isSquareOccupied(...leftDiag) &&
+      this.color !== this.getSquareContent(...leftDiag).color
     ) {
+      console.log("this", this.color);
+      console.log("leftdiag", this.getSquareContent(...leftDiag).color);
       available.push(
         Move.fromSquare(leftDiag, this, this.getSquareContent(...leftDiag))
       );
@@ -56,8 +57,8 @@ class Pawn extends Piece {
     const rightDiag = [this.row + 1 * direction, this.file + 1];
     if (
       this.isValidSquare(...rightDiag) &&
-      this.isSquareOccupied(...rightDiag)
-      /*&& this.color !== this.getSquareContent(...leftDiag).color*/
+      this.isSquareOccupied(...rightDiag) &&
+      this.color !== this.getSquareContent(...rightDiag).color
     ) {
       available.push(
         Move.fromSquare(rightDiag, this, this.getSquareContent(...rightDiag))
@@ -86,6 +87,12 @@ class Pawn extends Piece {
   onMove(move) {
     super.onMove(move);
     this.hasMoved = true;
+  }
+
+  get class() {
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
   }
 }
 

@@ -37,10 +37,6 @@ export default class Game {
   getMoves(piece) {
     return piece.moves.filter((move) => {
       this.executeMove(move);
-      // console.log({
-      //   move,
-      //   wasCheck: this.doesMoveExposeCheck(move.initiatingPiece),
-      // });
       if (this.doesMoveExposeCheck(move)) {
         this.undoMove(move);
         return false;

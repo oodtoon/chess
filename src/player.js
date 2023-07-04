@@ -8,6 +8,8 @@ export default class Player {
     this.livePieceMap = {};
     this.capturedPieces = {};
     this.opponent = null;
+    this.showMoves = false
+    this.selectedPiece = null
   }
 
   addLivePiece(piece) {

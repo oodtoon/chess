@@ -31,6 +31,10 @@ class Bishop extends Piece {
   get icon() {
     return this.isWhite() ? "♗" : "♝";
   }
+
+  get class() {
+    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wb.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bb.png"
+  }
 }
 
 export default Bishop;

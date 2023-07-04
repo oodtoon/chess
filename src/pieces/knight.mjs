@@ -35,6 +35,10 @@ class Knight extends Piece {
   get icon() {
     return this.isWhite() ? "♘" : "♞";
   }
+
+  get class() {
+    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wn.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bn.png"
+  }
 }
 
 export default Knight;

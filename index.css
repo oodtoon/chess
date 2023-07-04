@@ -88,3 +88,12 @@ html {
   grid-area: turn;
 }
 
+.bp {
+  background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bp.png);
+  background-size: contain;
+}
+
+.wp {
+  background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wp.png);
+  background-size: contain;
+}
