@@ -14,8 +14,9 @@ export default class ChessPiece extends HTMLElement {
     this.textContent = this.piece.icon;
     this.innerHTML = `<img src="${this.piece.class}" style="max-width: 100%;
     max-height: 100%;
-    display: block;"/>`;
-    console.log("this", this);
+    display: block;"
+    class="piece-img"/>`;
+    this.classList.add("piece");
 
     this.addEventListener("click", this.clickHandler);
     this.addEventListener("dragstart", console.log);
@@ -55,16 +56,25 @@ export default class ChessPiece extends HTMLElement {
     for (let move of this.piece.moves) {
       const square = this.board.getSquare(move.row, move.file);
       const dot = document.createElement("div");
+
       dot.classList.add("dot");
-      dot.textContent = "•";
-      if (square && !square.textContent) {
+
+      if (!square) {
+        return;
+      }
+
+      const squareContent = square.getElementsByTagName("chess-piece");
+
+      if (squareContent.length >= 1) {
+        square.classList.add("container");
+        dot.classList.add("crosshairs");
+        const circ = document.createElement("div");
+        circ.classList.add("circle");
         square.appendChild(dot);
-      } else if (square && square.textContent) {
-        dot.classList.add("z-index");
-        dot.textContent = this.getDotIcon(move.capturedPiece.player.color);
-        square.appendChild(dot);
+        square.appendChild(circ);
       } else {
-        console.log("Square not found for move:", move);
+        dot.textContent = "•";
+        square.appendChild(dot);
       }
     }
   }
@@ -73,6 +83,11 @@ export default class ChessPiece extends HTMLElement {
     const dots = this.board.shadowRoot.querySelectorAll(".dot");
     for (let dot of dots) {
       dot.remove();
+    }
+
+    const circs = this.board.shadowRoot.querySelectorAll(".circle");
+    for (let circ of circs) {
+      circ.remove();
     }
   }
 

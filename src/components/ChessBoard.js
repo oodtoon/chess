@@ -29,65 +29,32 @@ function generateTemplete() {
       font-size: 1.35em;
     }
 
-    .bp {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bp.png);
-      background-size: contain;
+    
+
+    .container {
+      position: relative;
+      display: inline-block;
     }
 
-    .br {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/br.png);
-      background-size: contain;
-    }
-
-    .bn {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bn.png);
-      background-size: contain;
-    }
-
-    .bb {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bb.png);
-      background-size: contain;
-    }
-
-    .bk {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bb.png);
-      background-size: contain;
-    }
-
-    .bq {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bb.png);
-      background-size: contain;
+    .circle {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+      border: 4px solid #000;
+      border-radius: 50%;
+      width: 90%;
+      height: 90%;
+      z-index: 1; 
+  }
+    
+    .crosshairs{
+      width:.1em;
+      height:.1em;
+      box-shadow: 15px 0 #000,20px 0 #000,25px 0 #000,-15px 0 #000,-20px 0 #000,-25px 0 #000,0 15px #000,0 20px #000,0 25px #000,0 -15px #000,0 -20px #000,0 -25px #000
     }
     
-    .wp {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wp.png);
-      background-size: contain;
-    }
+    
 
-    .wr {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wr.png);
-      background-size: contain;
-    }
-
-    .wn {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wn.png);
-      background-size: contain;
-    }
-
-    .wb {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wb.png);
-      background-size: contain;
-    }
-
-    .wq {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wq.png);
-      background-size: contain;
-    }
-
-    .wk {
-      background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wk.png);
-      background-size: contain;
-    }
   </style>
 `;
 
