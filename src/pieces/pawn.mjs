@@ -30,23 +30,6 @@ class Pawn extends Piece {
     const available = [];
     const direction = this.isWhite() ? 1 : -1;
 
-    const firstSquare = [this.row + 1 * direction, this.file];
-
-    if (this.isSquareOccupied(...firstSquare)) {
-      return available
-    }
-
-    if (!this.isSquareOccupied(...firstSquare)) {
-      available.push(Move.fromSquare(firstSquare, this));
-    }
-
-    const secondSquare = [this.row + 2 * direction, this.file];
-    if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
-        available.push(Move.fromSquare(secondSquare, this)); 
-    } 
-      
-    
-
     const leftDiag = [this.row + 1 * direction, this.file - 1];
 
     if (
@@ -54,8 +37,6 @@ class Pawn extends Piece {
       this.isSquareOccupied(...leftDiag) &&
       this.color !== this.getSquareContent(...leftDiag).color
     ) {
-      console.log("this", this.color);
-      console.log("leftdiag", this.getSquareContent(...leftDiag).color);
       available.push(
         Move.fromSquare(leftDiag, this, this.getSquareContent(...leftDiag))
       );
@@ -85,6 +66,23 @@ class Pawn extends Piece {
       );
     }
 
+    const firstSquare = [this.row + 1 * direction, this.file];
+
+    if (this.isSquareOccupied(...firstSquare)) {
+      return available
+    }
+
+    if (!this.isSquareOccupied(...firstSquare)) {
+      available.push(Move.fromSquare(firstSquare, this));
+    }
+
+    const secondSquare = [this.row + 2 * direction, this.file];
+    if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
+        available.push(Move.fromSquare(secondSquare, this)); 
+    } 
+
+
+
     return available;
   }
 
@@ -96,7 +94,7 @@ class Pawn extends Piece {
     this.hasMoved = true;
   }
 
-  get class() {
+  get img() {
     return this.isWhite()
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";

@@ -5,12 +5,14 @@ function generateTemplete() {
   const template = document.createElement("template");
   template.innerHTML = String.raw`
   <style>
+
     .square {
       width: var(--square-size);
       aspect-ratio: 1;
       font-size: calc(var(--square-size) * .75);
       text-align: center;
       position: relative;
+      display: flex;
     }
 
     .black {
@@ -21,39 +23,42 @@ function generateTemplete() {
       background-color: white;
     }
 
-    .dot {
+    .ghost-move {
       position: absolute;
-      top:50%;
-      left:50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.35em;
+      top: 50%;
+      left: 50%;
+      --translate: translate(-50%, -50%);
+      transform: var(--translate);
+      color: rgba(129, 133, 137, 0.6);
     }
 
-    
-
-    .container {
-      position: relative;
-      display: inline-block;
+    .ghost-move:hover {
+      animation: pulse-circle 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
 
-    .circle {
-      position: absolute;
-      top: 0%;
-      left: 0%;
-      border: 4px solid #000;
-      border-radius: 50%;
-      width: 90%;
-      height: 90%;
-      z-index: 1; 
-  }
-    
-    .crosshairs{
-      width:.1em;
-      height:.1em;
-      box-shadow: 15px 0 #000,20px 0 #000,25px 0 #000,-15px 0 #000,-20px 0 #000,-25px 0 #000,0 15px #000,0 20px #000,0 25px #000,0 -15px #000,0 -20px #000,0 -25px #000
+    .piece {
+      height: 100%;
+      width: 100%;
+      background-size: cover;
+      color: transparent;
+    }
+
+    .active {
+      background-color: rgba(241,213,155, 255)
+;
     }
     
-    
+    @keyframes pulse-circle {
+      0% {
+        transform: var(--translate) scale(1);
+      }
+      50% {
+        transform: var(--translate) scale(.9);
+      }
+      100% {
+        transform: var(--translate) scale(1);
+      }
+    }
 
   </style>
 `;
@@ -107,8 +112,12 @@ class ChessBoard extends HTMLElement {
 
     game.doMove(game.getMoves(WPC)[0]);
     game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(BB)[4]);
     game.doMove(game.getMoves(WB)[4]);
+    game.doMove(game.getMoves(BB)[4]);
+    game.doMove(game.getMoves(WPC)[0]);
+    game.doMove(game.getMoves(BPL)[0]);
+    game.doMove(game.getMoves(WPC)[1]);
+    game.doMove(game.getMoves(WPC)[0]);
     // game.doMove(game.getMoves(WPR)[1]);
     // game.doMove(game.getMoves(BPLL)[1]);
     // game.doMove(game.getMoves(WPRR)[0]);
@@ -139,6 +148,7 @@ class ChessBoard extends HTMLElement {
       const square = this.getSquare(piece.row, piece.file);
       const chessPiece = document.createElement("chess-piece");
       chessPiece.piece = piece;
+      // TODO: add click handler for ghosts - chessPiece.addEventListener()
       //square.classList.add(piece.class)
       square.appendChild(chessPiece);
     }

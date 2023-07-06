@@ -32,7 +32,7 @@ class Bishop extends Piece {
     return this.isWhite() ? "♗" : "♝";
   }
 
-  get class() {
+  get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wb.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bb.png"
   }
 }

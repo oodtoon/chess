@@ -103,7 +103,7 @@ class King extends Piece {
     this.hasMoved = true;
   }
 
-  get class() {
+  get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wk.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bk.png"
   }
 }

@@ -33,7 +33,7 @@ class Rook extends Piece {
     this.hasMoved = true;
   }
 
-  get class() {
+  get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wr.png" : "https://www.chess.com/chess-themes/pieces/neo/150/br.png"
   }
 }

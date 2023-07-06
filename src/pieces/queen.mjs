@@ -36,7 +36,7 @@ class Queen extends Piece {
     return this.isWhite() ? "♕" : "♛";
   }
 
-  get class() {
+  get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wq.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bq.png"
   }
 }
