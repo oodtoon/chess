@@ -24,5 +24,4 @@ class EventBus {
     this.bus.dispatchEvent(new CustomEvent(event, { detail }));
   }
 }
-
-window.eventBus = new EventBus();
+export default new EventBus();

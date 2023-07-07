@@ -16,11 +16,6 @@ export default class Game {
     this.blackPlayer.opponent = this.whitePlayer;
   }
 
-  doMove(move) {
-    this.executeMove(move);
-    this.moves.push(move);
-  }
-
   doesMoveExposeCheck(move) {
     const { livePieces } = move.opponent;
     for (let opponentPiece of livePieces) {
@@ -36,12 +31,12 @@ export default class Game {
 
   getMoves(piece) {
     return piece.moves.filter((move) => {
-      this.executeMove(move);
+      this.stageMove(move);
       if (this.doesMoveExposeCheck(move)) {
-        this.undoMove(move);
+        this.unstageMove(move);
         return false;
       } else {
-        this.undoMove(move);
+        this.unstageMove(move);
         return true;
       }
     });
@@ -60,9 +55,10 @@ export default class Game {
     }
   }
 
-  executeMove(move) {
+  stageMove(move) {
+   
     if (move.isCompoundMove) {
-      move.moves.forEach((move) => this.executeMove(move));
+      move.moves.forEach((move) => this.stageMove(move));
     } else {
       const { row, file, initiatingPiece, capturedPiece } = move;
       if (capturedPiece) {
@@ -80,9 +76,9 @@ export default class Game {
     }
   }
 
-  undoMove(move) {
+  unstageMove(move) {
     if (move.isCompoundMove) {
-      move.moves.forEach((move) => this.undoMove(move));
+      move.moves.forEach((move) => this.unstageMove(move));
     } else {
       const {
         row,
@@ -106,5 +102,14 @@ export default class Game {
 
   getActivePlayer() {
     return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer 
+  }
+  doMove(move) {
+    this.stageMove(move)
+    this.moves.push(move)
+  }
+
+  undoMove() {
+    this.unstageMove(this.moves.at(-1))
+    this.moves.pop()
   }
 }

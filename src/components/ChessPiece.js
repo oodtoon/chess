@@ -1,5 +1,5 @@
-
-export default class ChessPiece extends HTMLElement {
+import eventBus from "../event-bus.js";
+class ChessPiece extends HTMLElement {
   constructor() {
     super();
     this.piece = null;
@@ -18,7 +18,7 @@ export default class ChessPiece extends HTMLElement {
     //this.addEventListener("click", this.clickHandler);
     this.addEventListener("dragstart", console.log);
 
-    window.eventBus.addEventListener("piece-move", (event) => {
+    eventBus.addEventListener("piece-move", (event) => {
       if (event.detail.pieceId !== this.piece.id) return;
       this.remove();
       const destination = this.board.getSquare(...event.detail.to);

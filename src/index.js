@@ -1,5 +1,4 @@
 "use strict";
-import "./event-bus.js";
 
 import Game from "./game.js";
 import "./components/index.js";
