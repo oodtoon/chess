@@ -154,3 +154,6 @@ class ChessBoard extends HTMLElement {
     }
   }
 }
+
+
+window.customElements.define("chess-board", ChessBoard);

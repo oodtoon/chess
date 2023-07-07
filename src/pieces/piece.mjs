@@ -1,3 +1,4 @@
+import eventBus from '../event-bus.js';
 import Move from "../move.js";
 import Board from "../board.js";
 
@@ -76,13 +77,13 @@ class Piece {
   }
 
   onMove(move) {
-    window.eventBus.dispatchEvent("piece-move", {
+    eventBus.dispatchEvent("piece-move", {
       pieceId: move.initiatingPiece.id,
       from: [move.sourceRow, move.sourceFile],
       to: [move.row, move.file],
     });
     if (move.capturedPiece) {
-      window.eventBus.dispatchEvent("piece-capture", {
+      eventBus.dispatchEvent("piece-capture", {
         pieceId: move.initiatingPiece.id
       });
     }
