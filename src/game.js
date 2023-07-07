@@ -16,7 +16,7 @@ export default class Game {
     this.blackPlayer.opponent = this.whitePlayer;
   }
 
-  doMove(move) {
+  executeMove(move) {
     this.executeMove(move);
     this.moves.push(move);
   }
