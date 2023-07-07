@@ -1,6 +1,11 @@
 import Game from "../game.js";
 import { intToFile } from "../util.js";
 
+// const crossTemplate = document.createElement("template");
+// crossTemplate.innerHTML = String.raw`<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" class="ghost-move" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 896a384 384 0 1 0 0-768a384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896a448 448 0 0 1 0 896z"></path><path fill="currentColor" d="M512 96a32 32 0 0 1 32 32v192a32 32 0 0 1-64 0V128a32 32 0 0 1 32-32zm0 576a32 32 0 0 1 32 32v192a32 32 0 1 1-64 0V704a32 32 0 0 1 32-32zM96 512a32 32 0 0 1 32-32h192a32 32 0 0 1 0 64H128a32 32 0 0 1-32-32zm576 0a32 32 0 0 1 32-32h192a32 32 0 1 1 0 64H704a32 32 0 0 1-32-32z"></path></svg>`;
+// const dotTemplate = document.createElement("template");
+// dotTemplate.innerHTML = String.raw`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" class="ghost-move" viewBox="0 0 256 256"><circle cx="127" cy="129" r="81" fill="currentColor" fill-rule="evenodd"/></svg>`;
+
 function generateTemplete() {
   const template = document.createElement("template");
   template.innerHTML = String.raw`
@@ -99,34 +104,36 @@ class ChessBoard extends HTMLElement {
     const whiteKing = game.board.get(0, 4);
     const blackKing = game.board.get(7, 4);
     const blackQueen = game.board.get(7, 3);
-    const WPR = game.board.get(1, 5);
-    const WPC = game.board.get(1, 4);
-    const WPRR = game.board.get(1, 6);
+    const WP5 = game.board.get(1, 5);
+    const WP4 = game.board.get(1, 4);
+    const WP6 = game.board.get(1, 6);
     const BPL = game.board.get(6, 3);
-    const BPLLL = game.board.get(6, 1);
-    const BPLL = game.board.get(6, 2);
+    const BP1 = game.board.get(6, 1);
+    const BP2 = game.board.get(6, 2);
     const WK = game.board.get(0, 6);
     const BK = game.board.get(7, 1);
     const WB = game.board.get(0, 5);
     const BB = game.board.get(7, 2);
+    const BP5 = game.board.get(6, 5);
 
-    game.doMove(game.getMoves(WPC)[0]);
+    game.doMove(game.getMoves(WP4)[0]);
     game.doMove(game.getMoves(BPL)[0]);
     game.doMove(game.getMoves(WB)[4]);
     game.doMove(game.getMoves(BB)[4]);
-    game.doMove(game.getMoves(WPC)[0]);
+    game.doMove(game.getMoves(WP4)[0]);
     game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(WPC)[1]);
-    game.doMove(game.getMoves(WPC)[0]);
-    // game.doMove(game.getMoves(WPR)[1]);
-    // game.doMove(game.getMoves(BPLL)[1]);
-    // game.doMove(game.getMoves(WPRR)[0]);
-    // game.doMove(game.getMoves(BPLLL)[0]);
+    game.doMove(game.getMoves(WP4)[1]);
+    game.doMove(game.getMoves(BP5)[1]);
+
+    // game.doMove(game.getMoves(WP5)[1]);
+    // game.doMove(game.getMoves(BP2)[1]);
+    // game.doMove(game.getMoves(WP6)[0]);
+    // game.doMove(game.getMoves(BP1)[0]);
     // game.doMove(game.getMoves(WK)[1]);
     // game.doMove(game.getMoves(BK)[0]);
     // game.doMove(game.getMoves(WB)[0]);
     // game.doMove(game.getMoves(BB)[0]);
-    // game.doMove(game.getMoves(WPC)[0]);
+    // game.doMove(game.getMoves(WP4)[0]);
     // game.doMove(game.getMoves(blackQueen)[1]);
     // game.doMove(game.getMoves(whiteKing)[2]);
     // game.doMove(game.getMoves(blackKing)[1]);
@@ -149,11 +156,65 @@ class ChessBoard extends HTMLElement {
       const chessPiece = document.createElement("chess-piece");
       chessPiece.piece = piece;
       // TODO: add click handler for ghosts - chessPiece.addEventListener()
-      //square.classList.add(piece.class)
+      chessPiece.addEventListener("click", () => {
+        if (
+          !chessPiece.piece.player.selectedPiece ||
+          chessPiece.piece.player.selectedPiece === chessPiece.piece
+        ) {
+          chessPiece.piece.player.showMoves =
+            !chessPiece.piece.player.showMoves;
+          chessPiece.piece.player.selectedPiece = chessPiece.piece;
+        }
+
+        if (chessPiece.piece.player.showMoves) {
+          this.removeGhostMoves();
+          this.placeGhostMoves(chessPiece);
+          chessPiece.piece.player.selectedPiece = chessPiece.piece;
+        } else {
+          chessPiece.removeGhostMoves();
+          chessPiece.piece.player.selectedPiece = null;
+         }
+      });
       square.appendChild(chessPiece);
     }
   }
-}
 
+  placeGhostMoves(pieceHTML) {
+    pieceHTML.classList.add("active");
+    for (let move of pieceHTML.piece.moves) {
+      const square = this.getSquare(move.row, move.file);
+
+      if (!square) {
+        return;
+      }
+      const squareContent = square.getElementsByTagName("chess-piece");
+
+      if (squareContent.length >= 1) {
+        const ghostMove = document.createElement("ghost-move");
+        ghostMove.potentialMove = move
+        // const cross = crossTemplate.content.cloneNode(true);
+        // square.appendChild(cross);
+        square.appendChild(ghostMove)
+      } else {
+        const ghostMove = document.createElement("ghost-move");
+        ghostMove.potentialMove = move
+        square.appendChild(ghostMove)
+      }
+    }
+  }
+  
+  removeGhostMoves() {
+    const activeSquare = this.shadowRoot.querySelector(".active");
+
+    if (activeSquare) {
+      activeSquare.classList.remove("active");
+    }
+
+    const ghostMoves = this.shadowRoot.querySelectorAll(".ghost-move");
+    for (let ghost of ghostMoves) {
+      ghost.remove();
+    }
+  }
+}
 
 window.customElements.define("chess-board", ChessBoard);

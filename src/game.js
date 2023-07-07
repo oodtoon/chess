@@ -56,6 +56,7 @@ export default class Game {
   }
 
   stageMove(move) {
+   
     if (move.isCompoundMove) {
       move.moves.forEach((move) => this.stageMove(move));
     } else {
@@ -77,7 +78,7 @@ export default class Game {
 
   unstageMove(move) {
     if (move.isCompoundMove) {
-      move.moves.forEach((move) => this.undoMove(move));
+      move.moves.forEach((move) => this.unstageMove(move));
     } else {
       const {
         row,
@@ -109,6 +110,6 @@ export default class Game {
 
   undoMove() {
     this.unstageMove(this.moves.at(-1))
-    this.pop()
+    this.moves.pop()
   }
 }

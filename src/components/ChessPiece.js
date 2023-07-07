@@ -1,5 +1,5 @@
-
-export default class ChessPiece extends HTMLElement {
+import eventBus from "../event-bus.js";
+class ChessPiece extends HTMLElement {
   constructor() {
     super();
     this.piece = null;
