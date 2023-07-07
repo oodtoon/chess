@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <Link rel="stylesheet" href="index.css">
     <title>Chess</title>
-</head>
-<body>
-    
-    <script src="index.js"></script>
-</body>
-</html>
 
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="title">Chess!</h1>
+        <h2 class="turn">White's turn</h2>
+        <div class="captured-white">
+            Black's Pieces Taken
+            <div class="white-pieces"></div>
+        </div>
+        <div class="captured-black">
+            Whites's Pieces Taken
+            <div class="black-pieces"></div>
+        </div>
+        <chess-board/></chess-board>
+    </div>
+
+
+    <script src="src/index.js" type="module" crossorigin></script>
+</body>
+
+</html>
