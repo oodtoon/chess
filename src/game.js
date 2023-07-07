@@ -55,7 +55,6 @@ export default class Game {
         piece.color !== pieceInView.color &&
         pieceInView.name === "King"
       ) {
-        console.log("peep", pieceInView);
         pieceInView.setChecked();
       }
     }

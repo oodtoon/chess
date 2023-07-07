@@ -4,14 +4,22 @@ const dotTemplate = document.createElement("template");
 dotTemplate.innerHTML = String.raw`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" class="ghost-move" viewBox="0 0 256 256"><circle cx="127" cy="129" r="81" fill="currentColor" fill-rule="evenodd"/></svg>`;
 
 export default class GhostMove extends HTMLElement {
-    constructor() {
-        super()
-        this.piece = null
-    }
+  constructor() {
+    super();
+    this.potentialMove = null
+  }
 
-    connectedCallBack() {
-        console.log("piece", this.piece)
+  connectedCallback() {
+    
+    if (this.potentialMove.capturedPiece) {
+        const cross = crossTemplate.content.cloneNode(true);
+        this.appendChild(cross);
+    } else {
+        const dot = dotTemplate.content.cloneNode(true);
+        this.appendChild(dot) 
     }
+    
+  }
 }
 
-customElements.define("ghost-move", GhostMove)
+customElements.define("ghost-move", GhostMove);

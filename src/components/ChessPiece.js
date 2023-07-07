@@ -3,7 +3,7 @@ export default class ChessPiece extends HTMLElement {
   constructor() {
     super();
     this.piece = null;
-    
+    //this.clickHandler = this.clickHandler.bind(this);
   }
 
   connectedCallback() {
@@ -30,7 +30,7 @@ export default class ChessPiece extends HTMLElement {
   //   this.removeEventListener("click", this.clickHandler);
   // }
 
- 
+  
 }
 
 customElements.define("chess-piece", ChessPiece);
