@@ -4,11 +4,12 @@ class Bishop extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [2, 5];
 
+  name = "Bishop";
+  notation = "B"
+
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
   }
-
-  name = "Bishop";
 
   get moves() {
     const directions = [
@@ -28,6 +29,7 @@ class Bishop extends Piece {
     super.onMove(move);
     console.log(move);
   }
+
   get icon() {
     return this.isWhite() ? "♗" : "♝";
   }

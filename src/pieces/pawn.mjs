@@ -6,6 +6,7 @@ class Pawn extends Piece {
   static startingFiles = [0, 1, 2, 3, 4, 5, 6, 7];
 
   name = "Pawn";
+  notation = "P"
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -78,8 +79,8 @@ class Pawn extends Piece {
 
     const secondSquare = [this.row + 2 * direction, this.file];
     if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
-        available.push(Move.fromSquare(secondSquare, this)); 
-    } 
+      available.push(Move.fromSquare(secondSquare, this));
+    }
 
 
 

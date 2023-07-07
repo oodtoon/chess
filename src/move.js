@@ -37,6 +37,14 @@ export default class Move extends BaseMove {
   get opponent() {
     return this.initiatingPiece.opponent;
   }
+
+  get isCapture() {
+    return this.capturedPiece !== null
+  }
+
+  toString() {
+    return this.isCapture ? coordToAlgebraic([this.row, this.file]) : 
+  }
 }
 
 export class CompoundMove extends BaseMove {

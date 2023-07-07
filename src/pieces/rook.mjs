@@ -4,12 +4,13 @@ class Rook extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [0, 7];
 
+  name = "Rook";
+  notation = "R";
+
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
     this.hasMoved = false;
   }
-
-  name = "Rook";
 
   get icon() {
     return this.isWhite() ? "♖" : "♜";

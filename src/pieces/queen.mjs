@@ -4,11 +4,12 @@ class Queen extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [3];
 
+  name = "Queen";
+  notation = "Q";
+
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
   }
-
-  name = "Queen";
 
   get moves() {
     const directions = [
