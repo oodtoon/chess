@@ -103,4 +103,8 @@ export default class Game {
       this.board.set(sourceRow, sourceFile, initiatingPiece);
     }
   }
+
+  getActivePlayer() {
+    return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer 
+  }
 }
