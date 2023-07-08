@@ -9,13 +9,12 @@ function getPlayerCapturePool(player) {
 }
 
 export default class ChessGameController {
-  eventBus = new EventBus()
+  eventBus = new EventBus();
 
   constructor(selector) {
-    this.board = document.querySelector("chess-board" + selector)
-    this.moveList = document.querySelector("moves-list")
+    this.board = document.querySelector("chess-board" + selector);
+    this.moveList = document.querySelector("moves-list");
     this.game = window.game = new Game(this.eventBus);
-
   }
 
   initialize() {
@@ -29,14 +28,15 @@ export default class ChessGameController {
 
     this.eventBus.addEventListener("piece-move", (event) => {
       if (this.moveList.currentListItem.children.length === 2) {
-        this.moveList.nextListItem()
+        this.moveList.nextListItem();
       }
-      this.moveList.addMove(event.detail.notation)
-    })
+      this.moveList.addMove(event.detail.notation);
+    });
 
-    
     this.eventBus.addEventListener("piece-move", (event) => {
-      const chessPieceElement = this.board.chessPieces.find(element => element.piece.id === event.detail.pieceId)
+      const chessPieceElement = this.board.chessPieces.find(
+        (element) => element.piece.id === event.detail.pieceId
+      );
       chessPieceElement.remove();
       const destination = this.board.getSquare(...event.detail.to);
       destination.appendChild(chessPieceElement);
@@ -45,9 +45,22 @@ export default class ChessGameController {
 
   handleMove() {
     if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.board.setAttribute("rotate", "false")
+      this.board.setAttribute("rotate", "false");
     } else {
-      this.board.setAttribute("rotate", "true")
+      this.board.setAttribute("rotate", "true");
+    }
+
+    const activePlayer = this.game.getActivePlayer()
+
+    const color = activePlayer.color
+    if (activePlayer.opponent.moves.length === 0) {
+      setTimeout(() => {
+        if (this.game.isPlayerInCheck()) {
+          window.alert(`Checkmate! ${color} player wins!`);
+        } else {
+          window.alert("stalemate :( I lost the game");
+        }
+      }, 500);
     }
   }
 
@@ -98,7 +111,10 @@ export default class ChessGameController {
       const chessPieceElement = document.createElement("chess-piece");
       chessPieceElement.piece = piece;
 
-      chessPieceElement.addEventListener("click", this.handlePieceClick.bind(this));
+      chessPieceElement.addEventListener(
+        "click",
+        this.handlePieceClick.bind(this)
+      );
       squareElement.appendChild(chessPieceElement);
     }
   }
@@ -132,12 +148,11 @@ export default class ChessGameController {
       activeSquare.classList.remove("active");
     }
 
-    const ghostMoves = this.board.ghostMoves
+    const ghostMoves = this.board.ghostMoves;
     for (let ghost of ghostMoves) {
       ghost.remove();
     }
   }
-
 
   handlePieceClick(event) {
     const pieceElement = event.currentTarget;

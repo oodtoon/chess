@@ -56,6 +56,6 @@ describe("rook", () => {
     expect(game.blackPlayer.capturedPieceMap.Queen.length).toBe(1);
     expect(game.blackPlayer.livePieceMap.Queen.length).toBe(0);
     expect(game.blackPlayer.livePieces.length).toBe(15);
-    expect(game.board.getSquareContent(4, 0).player.color).toBe("white");
+    expect(game.board.getSquareContent(4, 0).player.color).toBe("White");
   });
 });

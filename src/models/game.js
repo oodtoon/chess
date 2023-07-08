@@ -5,8 +5,8 @@ export default class Game {
   constructor(eventBus) {
     this.board = new Board(this);
     this.eventBus = eventBus
-    this.whitePlayer = new Player("white");
-    this.blackPlayer = new Player("black");
+    this.whitePlayer = new Player("White", this);
+    this.blackPlayer = new Player("Black", this);
     this.wireUpOpposition();
     this.board.initialize();
     this.moves = [];
@@ -51,6 +51,8 @@ export default class Game {
     }
   }
 
+
+
   unstageMove(move) {
     if (move.isCompoundMove) {
       move.moves.forEach((move) => this.unstageMove(move));
@@ -81,6 +83,7 @@ export default class Game {
   doMove(move) {
     this.stageMove(move);
     this.moves.push(move);
+
   }
 
   undoMove() {
@@ -92,7 +95,7 @@ export default class Game {
     return this.moves.at(-1);
   }
 
-  isPlayerinCheck() {
+  isPlayerInCheck() {
     return this.lastMove.isCheck;
   }
 }

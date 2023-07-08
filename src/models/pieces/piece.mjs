@@ -1,4 +1,3 @@
-import eventBus from "../../event-bus.js";
 import Move from "../move.js";
 import Board from "../board.js";
 
@@ -23,11 +22,11 @@ class Piece {
   }
 
   isBlack() {
-    return this.color === "black";
+    return this.color === "Black";
   }
 
   isWhite() {
-    return this.color === "white";
+    return this.color === "White";
   }
 
   getSquareContent(row, file) {

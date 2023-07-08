@@ -71,6 +71,6 @@ describe("rook", () => {
     expect(game.blackPlayer.capturedPieceMap.Rook.length).toBe(1);
     expect(game.blackPlayer.livePieceMap.Rook.length).toBe(1);
     expect(game.blackPlayer.livePieces.length).toBe(15);
-    expect(game.board.getSquareContent(5, 1).player.color).toBe("white");
+    expect(game.board.getSquareContent(5, 1).player.color).toBe("White");
   });
 });
