@@ -4,11 +4,12 @@ class Knight extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [1, 6];
 
+  name = "Knight";
+  notation = "N";
+
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
   }
-
-  name = "Knight";
 
   get moves() {
     const directions = [

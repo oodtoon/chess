@@ -81,12 +81,41 @@ class Piece {
       pieceId: move.initiatingPiece.id,
       from: [move.sourceRow, move.sourceFile],
       to: [move.row, move.file],
+      notation: move.toString()
     });
     if (move.capturedPiece) {
       eventBus.dispatchEvent("piece-capture", {
         pieceId: move.initiatingPiece.id
       });
     }
+  }
+
+  #isPiece(name) {
+    return this.name === name
+  }
+
+  isPawn() {
+    return this.#isPiece("Pawn")
+  }
+
+  isRook() {
+    return this.#isPiece("Rook")
+  }
+
+  isKnight() {
+    return this.#isPiece("Knight")
+  }
+
+  isBishop() {
+    return this.#isPiece("Bishop")
+  }
+
+  isQueen() {
+    return this.#isPiece("Queen")
+  }
+
+  isKing() {
+    return this.#isPiece("King")
   }
 }
 

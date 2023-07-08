@@ -3,7 +3,7 @@ html {
 }
 
 :root {
-  --square-size: 80px
+  --square-size: 80px;
 }
 
 * {
@@ -17,7 +17,11 @@ html {
 
   align-self: center;
   grid-template-columns: 1fr 3fr 1fr;
-  grid-template-areas: ". title ." ". turn ." "captured-black board captured-white";
+  grid-template-areas:
+    ". title ."
+    ". turn ."
+    "captured-black board captured-white"
+    "moves-list moves-list moves-list";
 }
 
 .board {
@@ -34,6 +38,14 @@ html {
   align-self: center;
 }
 
+.moves-list {
+  grid-area: moves-list;
+  display: block;
+  border: 1px solid grey;
+  background-color: aliceblue;
+  border-radius: 1em;
+}
+
 .captured-black {
   color: #49a6e9;
   grid-area: captured-black;
@@ -41,7 +53,6 @@ html {
   align-self: center;
   font-size: 25px;
   font-weight: 800;
-
 }
 
 .captured-white {
@@ -51,7 +62,6 @@ html {
   align-self: center;
   font-size: 25px;
   font-weight: 800;
-  
 }
 
 .white-pieces {

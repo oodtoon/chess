@@ -1,3 +1,5 @@
+import { coordToAlgebraic } from "./util.js"
+
 class BaseMove {
   get isCompoundMove() {
     return false;
@@ -36,6 +38,17 @@ export default class Move extends BaseMove {
 
   get opponent() {
     return this.initiatingPiece.opponent;
+  }
+
+  get isCapture() {
+    return this.capturedPiece !== null
+  }
+
+  toString() {
+    const letter = this.initiatingPiece.isPawn() ? "" : this.initiatingPiece.notation
+    const capture = this.isCapture ? "x" : ""
+    const square = coordToAlgebraic([this.row, this.file])
+    return letter + capture + square
   }
 }
 

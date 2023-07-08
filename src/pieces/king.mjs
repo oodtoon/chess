@@ -5,13 +5,15 @@ class King extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [4];
 
+  name = "King";
+  notation = "K"
+
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
     this.hasMoved = false;
     this.isChecked = false;
   }
 
-  name = "King";
 
   setChecked() {
     this.isChecked = true;

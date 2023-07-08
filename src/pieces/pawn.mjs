@@ -1,5 +1,6 @@
 import Piece from "./piece.mjs";
 import Move from "../move.js";
+import { intToFile } from "../util.js";
 
 class Pawn extends Piece {
   static startingRows = [1, 6];
@@ -78,8 +79,8 @@ class Pawn extends Piece {
 
     const secondSquare = [this.row + 2 * direction, this.file];
     if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
-        available.push(Move.fromSquare(secondSquare, this)); 
-    } 
+      available.push(Move.fromSquare(secondSquare, this));
+    }
 
 
 
@@ -98,6 +99,10 @@ class Pawn extends Piece {
     return this.isWhite()
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
+  }
+
+  get notation() {
+    return intToFile(this.file)
   }
 }
 
