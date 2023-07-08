@@ -85,7 +85,7 @@ class Piece {
     });
     if (move.capturedPiece) {
       eventBus.dispatchEvent("piece-capture", {
-        pieceId: move.initiatingPiece.id
+        pieceId: move.capturedPiece.id
       });
     }
   }

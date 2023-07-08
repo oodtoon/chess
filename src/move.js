@@ -58,6 +58,14 @@ export class CompoundMove extends BaseMove {
     this.moves = moves;
   }
 
+  get row() {
+    return this.moves[0].row
+  }
+
+  get file() {
+    return this.moves[0].file
+  }
+
   get isCompoundMove() {
     return true;
   }

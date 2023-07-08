@@ -10,7 +10,10 @@ class ChessPiece extends HTMLElement {
     this.setAttribute("draggable", false);
     this.board = document.querySelector(".board");
 
-    this.style.backgroundImage = `url(${this.piece.img})`;
+    this.style.backgroundSize = "cover";
+    this.style.color = "transparent";
+    this.style.backgroundImage = `url(${this.piece.img})`
+    this.style.aspectRatio = '1';
     this.textContent = this.piece.icon;
 
     this.classList.add("piece");
@@ -29,8 +32,6 @@ class ChessPiece extends HTMLElement {
   // disconnectedCallback() {
   //   this.removeEventListener("click", this.clickHandler);
   // }
-
-  
 }
 
 customElements.define("chess-piece", ChessPiece);
