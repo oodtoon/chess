@@ -84,16 +84,6 @@ export default class Game {
     this.stageMove(move);
     this.moves.push(move);
 
-    const opponent = move.player.opponent
-    const color = move.player.color
-    if (opponent.moves.length === 0) {
-      if (this.isPlayerInCheck()) {
-        window.alert(`Checkmate! ${color} player wins!`)
-      } else {
-        window.alert("stalemate :( I lost the game")
-      }
-      
-    }
   }
 
   undoMove() {
