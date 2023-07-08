@@ -1,7 +1,6 @@
-import eventBus from '../event-bus.js';
+import eventBus from "../../event-bus.js";
 import Move from "../move.js";
 import Board from "../board.js";
-
 
 class Piece {
   name = null;
@@ -77,15 +76,15 @@ class Piece {
   }
 
   onMove(move) {
-    eventBus.dispatchEvent("piece-move", {
+    this.game.eventBus.dispatchEvent("piece-move", {
       pieceId: move.initiatingPiece.id,
       from: [move.sourceRow, move.sourceFile],
       to: [move.row, move.file],
       notation: move.toString()
     });
     if (move.capturedPiece) {
-      eventBus.dispatchEvent("piece-capture", {
-        pieceId: move.initiatingPiece.id
+      this.game.eventBus.dispatchEvent("piece-capture", {
+        pieceId: move.capturedPiece.id,
       });
     }
   }

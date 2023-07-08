@@ -114,7 +114,7 @@ describe("pawn", () => {
     ]);
     expect(game.board.isSquareOccupied(3, 1)).toBe(false);
     expect(game.whitePlayer.livePieces.length).toBe(15);
-    expect(game.whitePlayer.capturedPieces.Pawn.length).toBe(1);
+    expect(game.whitePlayer.capturedPieceMap.Pawn.length).toBe(1);
     expect(game.getMoves(wp0).map((move) => [move.row, move.file])).toEqual([
       [2, 0],
       [3, 0],

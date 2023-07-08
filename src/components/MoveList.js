@@ -31,13 +31,6 @@ class MoveList extends HTMLElement {
     this.listRoot = this.shadowRoot.querySelector("ol")
     console.log(this.listRoot)
     this.nextListItem()
-
-    window.eventBus.addEventListener("piece-move", (event) => {
-      if (this.currentListItem.children.length === 2) {
-        this.nextListItem()
-      }
-      this.addMove(event.detail.notation)
-    })
   }
 
   addMove(move) {

@@ -23,6 +23,7 @@ class Bishop extends Piece {
     );
 
     return available;
+;
   }
 
   onMove(move) {

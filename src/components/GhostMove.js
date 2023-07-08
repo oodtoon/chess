@@ -6,11 +6,11 @@ dotTemplate.innerHTML = String.raw`<svg xmlns="http://www.w3.org/2000/svg" width
 export default class GhostMove extends HTMLElement {
   constructor() {
     super();
+    this.game = null
     this.potentialMove = null
   }
 
   connectedCallback() {
-    
     if (this.potentialMove.capturedPiece) {
         const cross = crossTemplate.content.cloneNode(true);
         this.appendChild(cross);

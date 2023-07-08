@@ -6,7 +6,7 @@ export default class Player {
      * @type Object<String, Array<Piece>>
      */
     this.livePieceMap = {};
-    this.capturedPieces = {};
+    this.capturedPieceMap = {};
     this.opponent = null;
     this.showMoves = false
     this.selectedPiece = null
@@ -35,22 +35,26 @@ export default class Player {
     return Object.values(this.livePieceMap).flat();
   }
 
+  get capturedPieces() {
+    return Object.values(this.capturedPieceMap).flat();
+  }
+
   addCapturedPiece(piece) {
     const pieceType = piece.name;
-    if (!(pieceType in this.capturedPieces)) {
-      this.capturedPieces[pieceType] = [];
+    if (!(pieceType in this.capturedPieceMap)) {
+      this.capturedPieceMap[pieceType] = [];
     }
-    this.capturedPieces[pieceType].push(piece);
+    this.capturedPieceMap[pieceType].push(piece);
   }
 
   removeCapturedPiece(piece) {
     const pieceType = piece.name;
-    const indexToRemove = this.capturedPieces[pieceType].findIndex(
+    const indexToRemove = this.capturedPieceMap[pieceType].findIndex(
       (p) => p === piece
     );
 
     if (indexToRemove >= 0) {
-      this.capturedPieces[pieceType].splice(indexToRemove, 1);
+      this.capturedPieceMap[pieceType].splice(indexToRemove, 1);
     }
   }
 

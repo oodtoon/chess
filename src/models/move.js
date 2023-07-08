@@ -1,12 +1,8 @@
-import { coordToAlgebraic } from "./util.js"
+import { coordToAlgebraic } from "../util.js"
 
 class BaseMove {
   get isCompoundMove() {
     return false;
-  }
-
-  toString() {
-    return "I'm a move";
   }
 }
 
@@ -23,7 +19,6 @@ export default class Move extends BaseMove {
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
     this.capturedPiece = capturedPiece;
-    this.isCheck = false;
   }
 
   get isPawnDoubleMove() {
@@ -50,12 +45,44 @@ export default class Move extends BaseMove {
     const square = coordToAlgebraic([this.row, this.file])
     return letter + capture + square
   }
+
+  get isCheck() {
+    return this.doesMoveExposeOpponentToCheck();
+  }
+
+  #doesMoveExposeCheck(targetPlayer) {
+    const { livePieces } = targetPlayer;
+    for (let targetPlayerPiece of livePieces) {
+      for (let move of targetPlayerPiece.moves) {
+        if (move.capturedPiece?.name === "King") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  doesMoveExposePlayerToCheck() {
+    return this.#doesMoveExposeCheck(this.opponent);
+  }
+
+  doesMoveExposeOpponentToCheck() {
+    return this.#doesMoveExposeCheck(this.player);
+  }
 }
 
 export class CompoundMove extends BaseMove {
   constructor(...moves) {
     super();
     this.moves = moves;
+  }
+
+  get row() {
+    return this.moves[0].row;
+  }
+
+  get file() {
+    return this.moves[0].file;
   }
 
   get isCompoundMove() {
@@ -70,9 +97,3 @@ export class CompoundMove extends BaseMove {
     return this.moves[0].opponent;
   }
 }
-
-/**
- * 1. Different classes for different types of moves. Some examples might be Castle, Capture, Simple, Promotion
- * 2. Set flags for different move types
- * 3. create auxilary class for compound moves i.e. castle, promotion
- */

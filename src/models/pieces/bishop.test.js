@@ -73,10 +73,10 @@ describe("bishop", () => {
 
     expect(game.whitePlayer.livePieces.length).toBe(15);
     expect(game.whitePlayer.livePieceMap.Pawn.length).toBe(7);
-    expect(game.whitePlayer.capturedPieces.Pawn.length).toBe(1);
+    expect(game.whitePlayer.capturedPieceMap.Pawn.length).toBe(1);
     expect(game.blackPlayer.livePieces.length).toBe(15);
     expect(game.blackPlayer.livePieceMap.Pawn.length).toBe(7);
-    expect(game.blackPlayer.capturedPieces.Pawn.length).toBe(1);
+    expect(game.blackPlayer.capturedPieceMap.Pawn.length).toBe(1);
   });
 
   test("bishop can get captured", () => {
@@ -92,7 +92,7 @@ describe("bishop", () => {
     game.doMove(game.getMoves(whiteBishop)[1]);
     game.doMove(game.getMoves(blackBishop)[4]);
 
-    expect(game.whitePlayer.capturedPieces.Bishop.length).toBe(1);
+    expect(game.whitePlayer.capturedPieceMap.Bishop.length).toBe(1);
     expect(game.whitePlayer.livePieceMap.Bishop.length).toBe(1);
     expect(game.whitePlayer.livePieces.length).toBe(15);
     expect(game.board.getSquareContent(2, 0).player.color).toBe("black");

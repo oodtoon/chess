@@ -30,7 +30,7 @@ describe("knight", () => {
     game.doMove(game.getMoves(blackKnight)[2]);
     game.doMove(game.getMoves(whiteKnight)[5]);
 
-    expect(game.blackPlayer.capturedPieces.Knight.length).toBe(1);
+    expect(game.blackPlayer.capturedPieceMap.Knight.length).toBe(1);
     expect(game.blackPlayer.livePieceMap.Knight.length).toBe(1);
     expect(game.blackPlayer.livePieces.length).toBe(15);
     expect(game.board.getSquareContent(3, 1).player.color).toBe("white");

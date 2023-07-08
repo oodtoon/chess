@@ -53,7 +53,7 @@ describe("rook", () => {
     game.doMove(game.getMoves(blackQueen)[2]);
     game.doMove(game.getMoves(whiteQueen)[6]);
 
-    expect(game.blackPlayer.capturedPieces.Queen.length).toBe(1);
+    expect(game.blackPlayer.capturedPieceMap.Queen.length).toBe(1);
     expect(game.blackPlayer.livePieceMap.Queen.length).toBe(0);
     expect(game.blackPlayer.livePieces.length).toBe(15);
     expect(game.board.getSquareContent(4, 0).player.color).toBe("white");
