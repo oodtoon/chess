@@ -25,7 +25,7 @@ html {
     "moves-list moves-list moves-list";
 }
 
-.board {
+chess-board {
   width: calc(var(--square-size) * 8);
   height: calc(var(--square-size) * 8);
   border: solid rgb(23, 23, 23) 5px;

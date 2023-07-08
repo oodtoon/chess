@@ -1,6 +1,6 @@
 import Piece from "./piece.mjs";
 import Move from "../move.js";
-import { intToFile } from "../util.js";
+import { intToFile } from "../../util.js";
 
 class Pawn extends Piece {
   static startingRows = [1, 6];

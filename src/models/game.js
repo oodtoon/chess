@@ -2,8 +2,9 @@ import Board from "./board.js";
 import Player from "./player.js";
 
 export default class Game {
-  constructor() {
+  constructor(eventBus) {
     this.board = new Board(this);
+    this.eventBus = eventBus
     this.whitePlayer = new Player("white");
     this.blackPlayer = new Player("black");
     this.wireUpOpposition();

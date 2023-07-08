@@ -1,4 +1,4 @@
-import { coordToAlgebraic } from "./util.js"
+import { coordToAlgebraic } from "../util.js"
 
 class BaseMove {
   get isCompoundMove() {

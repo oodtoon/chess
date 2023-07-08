@@ -1,13 +1,4 @@
-import eventBus from "../event-bus.js";
-import Game from "../game.js";
 import { intToFile } from "../util.js";
-
-const whitePieces = document.getElementById("white-pieces");
-const blackPieces = document.getElementById("black-pieces");
-
-function getPlayerCapturePool(player) {
-  return player.color === "white" ? whitePieces : blackPieces;
-}
 
 function generateTemplete() {
   const template = document.createElement("template");
@@ -44,7 +35,7 @@ function generateTemplete() {
       animation: pulse-circle 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
 
-    .piece {
+    chess-piece {
       height: 100%;
       width: 100%;
     }
@@ -86,78 +77,31 @@ function generateTemplete() {
 const template = generateTemplete();
 
 class ChessBoard extends HTMLElement {
+  static get observedAttributes() {
+    return ["rotate"]
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     this.squares = this.shadowRoot.querySelectorAll(".square");
-    window.game = this.game = new Game();
   }
 
   connectedCallback() {
-    this.classList.add("board");
-    this.mountPieces();
-
-    eventBus.addEventListener(
-      "piece-capture",
-      this.handlePieceCapture.bind(this)
-    );
-
-    eventBus.addEventListener("piece-move", this.handleMove.bind(this));
   }
 
-  handleMove() {
-    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.style.transform = "";
-      this.squares.forEach((square) => (square.style.transform = ""));
-    } else {
+  attributeChangedCallback(name, oldValue, newValue) {
+    console.log([name, oldValue, newValue])
+    if (newValue === "true") {
       this.style.transform = "rotate(180deg)";
       this.squares.forEach(
         (square) => (square.style.transform = "rotate(180deg)")
       );
+    } else {
+      this.style.transform = "";
+      this.squares.forEach((square) => (square.style.transform = ""));
     }
-  }
-
-  handlePieceCapture(event) {
-    const chessPieces = [...this.shadowRoot.querySelectorAll("chess-piece")];
-    const capturedPiece = chessPieces.find(
-      (piece) => piece.piece.id === event.detail.pieceId
-    );
-    capturedPiece.remove();
-    const capturedPieceBin = getPlayerCapturePool(capturedPiece.piece.player);
-    capturedPieceBin.appendChild(capturedPiece);
-  }
-
-  testScenario() {
-    const game = this.game;
-    const whiteKing = game.board.get(0, 4);
-    const blackKing = game.board.get(7, 4);
-    const blackQueen = game.board.get(7, 3);
-    const WP5 = game.board.get(1, 5);
-    const WP4 = game.board.get(1, 4);
-    const WP6 = game.board.get(1, 6);
-    const BPL = game.board.get(6, 3);
-    const BP1 = game.board.get(6, 1);
-    const BP2 = game.board.get(6, 2);
-    const WK = game.board.get(0, 6);
-    const BK = game.board.get(7, 1);
-    const WB = game.board.get(0, 5);
-    const BB = game.board.get(7, 2);
-    const BP5 = game.board.get(6, 5);
-
-    game.doMove(game.getMoves(WP4)[0]);
-    game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(WB)[4]);
-    game.doMove(game.getMoves(BB)[4]);
-    game.doMove(game.getMoves(WP4)[0]);
-    game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(WP4)[1]);
-    game.doMove(game.getMoves(BP5)[1]);
-  }
-
-  mountPieces() {
-    this.mountPlayerPieces(this.game.whitePlayer);
-    this.mountPlayerPieces(this.game.blackPlayer);
   }
 
   getSquare(row, file) {
@@ -166,74 +110,16 @@ class ChessBoard extends HTMLElement {
     );
   }
 
-  mountPlayerPieces(player) {
-    for (let piece of player.livePieces) {
-      const square = this.getSquare(piece.row, piece.file);
-      const chessPiece = document.createElement("chess-piece");
-      chessPiece.piece = piece;
-
-      chessPiece.addEventListener("click", this.handlePieceClick.bind(this));
-      square.appendChild(chessPiece);
-    }
+  get chessPieces() {
+    return [...this.shadowRoot.querySelectorAll("chess-piece")]
   }
 
-  handlePieceClick(event) {
-    const pieceElement = event.currentTarget;
-    const { player } = pieceElement.piece;
-    if (this.game.getActivePlayer() !== player) {
-      return;
-    }
-
-    if (!player.selectedPiece || player.selectedPiece === pieceElement.piece) {
-      player.showMoves = !player.showMoves;
-      player.selectedPiece = pieceElement.piece;
-    }
-
-    if (player.showMoves) {
-      this.removeGhostMoves();
-      this.placeGhostMoves(pieceElement);
-      player.selectedPiece = pieceElement.piece;
-    } else {
-      this.removeGhostMoves();
-      player.selectedPiece = null;
-    }
+  get activeSquare() {
+    return this.shadowRoot.querySelector(".active")
   }
 
-  placeGhostMoves(pieceElement) {
-    pieceElement.classList.add("active");
-
-    for (let move of this.game.getMoves(pieceElement.piece)) {
-      const square = this.getSquare(move.row, move.file);
-
-      if (!square) {
-        return;
-      }
-
-      const ghostMove = document.createElement("ghost-move");
-      ghostMove.addEventListener("click", () => {
-        this.game.doMove(move);
-        this.removeGhostMoves();
-      });
-
-      ghostMove.potentialMove = move;
-      ghostMove.game = this.game;
-      square.appendChild(ghostMove);
-    }
-
-    //console.log("activ", activePlayer.king[0])
-  }
-
-  removeGhostMoves() {
-    const activeSquare = this.shadowRoot.querySelector(".active");
-
-    if (activeSquare) {
-      activeSquare.classList.remove("active");
-    }
-
-    const ghostMoves = this.shadowRoot.querySelectorAll(".ghost-move");
-    for (let ghost of ghostMoves) {
-      ghost.remove();
-    }
+  get ghostMoves() {
+    return [...this.shadowRoot.querySelectorAll(".ghost-move")];
   }
 }
 
