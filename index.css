@@ -48,9 +48,9 @@ chess-board {
 }
 
 #captured-black {
-  color: #49a6e9;
   grid-area: captured-black;
   justify-self: center;
+  color: #49a6e9;
   align-self: center;
 }
 

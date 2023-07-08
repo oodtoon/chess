@@ -1,4 +1,3 @@
-import eventBus from "../../event-bus.js";
 import Move from "../move.js";
 import Board from "../board.js";
 
