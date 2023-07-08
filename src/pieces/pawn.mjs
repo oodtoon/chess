@@ -1,12 +1,12 @@
 import Piece from "./piece.mjs";
 import Move from "../move.js";
+import { intToFile } from "../util.js";
 
 class Pawn extends Piece {
   static startingRows = [1, 6];
   static startingFiles = [0, 1, 2, 3, 4, 5, 6, 7];
 
   name = "Pawn";
-  notation = "P"
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -99,6 +99,10 @@ class Pawn extends Piece {
     return this.isWhite()
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
+  }
+
+  get notation() {
+    return intToFile(this.file)
   }
 }
 
