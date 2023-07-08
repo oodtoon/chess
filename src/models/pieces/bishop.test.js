@@ -95,6 +95,6 @@ describe("bishop", () => {
     expect(game.whitePlayer.capturedPieceMap.Bishop.length).toBe(1);
     expect(game.whitePlayer.livePieceMap.Bishop.length).toBe(1);
     expect(game.whitePlayer.livePieces.length).toBe(15);
-    expect(game.board.getSquareContent(2, 0).player.color).toBe("black");
+    expect(game.board.getSquareContent(2, 0).player.color).toBe("Black");
   });
 });

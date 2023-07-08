@@ -33,6 +33,6 @@ describe("knight", () => {
     expect(game.blackPlayer.capturedPieceMap.Knight.length).toBe(1);
     expect(game.blackPlayer.livePieceMap.Knight.length).toBe(1);
     expect(game.blackPlayer.livePieces.length).toBe(15);
-    expect(game.board.getSquareContent(3, 1).player.color).toBe("white");
+    expect(game.board.getSquareContent(3, 1).player.color).toBe("White");
   });
 });

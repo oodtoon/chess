@@ -1,5 +1,5 @@
 export default class Player {
-  constructor(color) {
+  constructor(color, game) {
     this.color = color;
     /**
      * piece names map to the players' live pieces
@@ -10,6 +10,7 @@ export default class Player {
     this.opponent = null;
     this.showMoves = false
     this.selectedPiece = null
+    this.game = game
   }
 
   addLivePiece(piece) {
@@ -60,5 +61,11 @@ export default class Player {
 
   get king() {
     return this.livePieceMap["King"];
+  }
+
+  get moves() {
+    return this.livePieces.flatMap((piece) => {
+      return this.game.getMoves(piece)
+    })
   }
 }
