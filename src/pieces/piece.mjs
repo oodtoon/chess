@@ -1,7 +1,6 @@
-import eventBus from '../event-bus.js';
+import eventBus from "../event-bus.js";
 import Move from "../move.js";
 import Board from "../board.js";
-
 
 class Piece {
   name = null;
@@ -85,7 +84,7 @@ class Piece {
     });
     if (move.capturedPiece) {
       eventBus.dispatchEvent("piece-capture", {
-        pieceId: move.capturedPiece.id
+        pieceId: move.capturedPiece.id,
       });
     }
   }

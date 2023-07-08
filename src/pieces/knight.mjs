@@ -26,11 +26,11 @@ class Knight extends Piece {
       this.getLegalDirectionalMoves(dir, 1)
     );
     return available;
+;
   }
 
   onMove(move) {
     super.onMove(move);
-    console.log(move);
   }
 
   get icon() {

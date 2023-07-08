@@ -3,7 +3,6 @@ class ChessPiece extends HTMLElement {
   constructor() {
     super();
     this.piece = null;
-    //this.clickHandler = this.clickHandler.bind(this);
   }
 
   connectedCallback() {
@@ -17,8 +16,6 @@ class ChessPiece extends HTMLElement {
     this.textContent = this.piece.icon;
 
     this.classList.add("piece");
-
-    //this.addEventListener("click", this.clickHandler);
     this.addEventListener("dragstart", console.log);
 
     eventBus.addEventListener("piece-move", (event) => {
@@ -29,9 +26,6 @@ class ChessPiece extends HTMLElement {
     });
   }
 
-  // disconnectedCallback() {
-  //   this.removeEventListener("click", this.clickHandler);
-  // }
 }
 
 customElements.define("chess-piece", ChessPiece);

@@ -16,23 +16,11 @@ export default class Game {
     this.blackPlayer.opponent = this.whitePlayer;
   }
 
-  doesMoveExposeCheck(move) {
-    const { livePieces } = move.opponent;
-    for (let opponentPiece of livePieces) {
-      for (let move of opponentPiece.moves) {
-        if (move.capturedPiece?.name === "King") {
-          move.capturedPiece.setChecked();
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   getMoves(piece) {
-    return piece.moves.filter((move) => {
-      this.stageMove(move);
-      if (this.doesMoveExposeCheck(move)) {
+    const moves = piece.moves;
+    return moves.filter((move) => {
+      this.stageMove(move, false);
+      if (move.doesMoveExposePlayerToCheck()) {
         this.unstageMove(move);
         return false;
       } else {
@@ -42,21 +30,7 @@ export default class Game {
     });
   }
 
-  didCheck(piece) {
-    for (let move of piece.moves) {
-      const pieceInView = this.board.getSquareContent(move.row, move.file);
-      if (
-        pieceInView !== null &&
-        piece.color !== pieceInView.color &&
-        pieceInView.name === "King"
-      ) {
-        pieceInView.setChecked();
-      }
-    }
-  }
-
-  stageMove(move) {
-   
+  stageMove(move, shouldCommitMove = true) {
     if (move.isCompoundMove) {
       move.moves.forEach((move) => this.stageMove(move));
     } else {
@@ -70,9 +44,9 @@ export default class Game {
       const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
       this.board.set(initiatingRow, initiatingFile, null);
       this.board.set(row, file, initiatingPiece);
-      move.initiatingPiece.onMove(move);
-
-      this.didCheck(initiatingPiece);
+      if (shouldCommitMove) {
+        move.initiatingPiece.onMove(move);
+      }
     }
   }
 
@@ -92,7 +66,6 @@ export default class Game {
         this.board.set(row, file, capturedPiece);
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
-        capturedPiece.player.livePieceMap.King[0].setNotChecked();
       } else {
         this.board.set(row, file, null);
       }
@@ -101,15 +74,24 @@ export default class Game {
   }
 
   getActivePlayer() {
-    return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer 
+    return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
   }
+
   doMove(move) {
-    this.stageMove(move)
-    this.moves.push(move)
+    this.stageMove(move);
+    this.moves.push(move);
   }
 
   undoMove() {
-    this.unstageMove(this.moves.at(-1))
-    this.moves.pop()
+    this.unstageMove(this.moves.at(-1));
+    this.moves.pop();
+  }
+
+  get lastMove() {
+    return this.moves.at(-1);
+  }
+
+  isPlayerinCheck() {
+    return this.lastMove.isCheck;
   }
 }

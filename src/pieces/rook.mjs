@@ -27,6 +27,7 @@ class Rook extends Piece {
       this.getLegalDirectionalMoves(dir)
     );
     return available;
+;
   }
 
   onMove(move) {
