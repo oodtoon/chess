@@ -54,3 +54,15 @@ export function declareDraw(game, modal, msg = "Draw") {
     title.textContent = msg
     game.result = "1/2-1/2"
 }
+
+export function handleUndoMove(modal) {
+    modal.removeAttribute("hidden")
+}
+
+export function handleUndoRequest(color, request, modal) {
+    modal.removeAttribute("hidden")
+    const title = modal.shadowRoot.getElementById("review-title")
+    const msg = modal.shadowRoot.getElementById("undo-review-msg")
+    title.textContetn = `${color} player wants to undo most recent move. Do you accept?`
+    msg.textContent = request.msg
+}

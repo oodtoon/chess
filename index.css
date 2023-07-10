@@ -118,3 +118,17 @@ draw-modal {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+undo-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+undo-review-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

@@ -1,6 +1,6 @@
 import EventBus from "../event-bus.js";
 import Game from "../models/game.js";
-import { copyPgn, declareDraw, declareWinner, exportToPgn, offerDraw } from "../io.js";
+import { copyPgn, declareDraw, declareWinner, exportToPgn, handleUndoMove, offerDraw, handleUndoRequest } from "../io.js";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
@@ -22,6 +22,9 @@ export default class ChessGameController {
 
     this.drawModal = document.querySelector("draw-modal")
     this.endGameModal = document.querySelector("end-game-modal");
+
+    this.undoModal = document.querySelector("undo-modal")
+    this.undoReviewModal = document.querySelector("undo-review-modal")
   }
 
   initialize() {
@@ -83,13 +86,39 @@ export default class ChessGameController {
       this.drawModal.hidden = true
     })
 
-    this.gameButtons.concedeButton.addEventListener("click", () => {
+    this.gameButtons.resignButton.addEventListener("click", () => {
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
       const resignMsg = `${color} resigns. ${opponentColor} wins!`
       declareWinner(color, this.game, this.turn, this.endGameModal, resignMsg);
     });
+
+    this.gameButtons.undoButton.addEventListener("click", () => {
+      handleUndoMove(this.undoModal)
+    })
+
+    this.undoModal.requestButton.addEventListener("click", () => {
+      const activePlayer = this.game.getActivePlayer();
+      const color = activePlayer.color;
+      this.undoModal.hidden = true;
+      handleUndoRequest(color, this.undoModal, this.undoReviewModal)
+    })
+
+    this.undoModal.cancelButton.addEventListener("click", () => {
+      this.undoModal.hidden = true;
+    })
+
+    this.undoReviewModal.acceptButton.addEventListener("click", () => {
+      console.log("accept")
+      this.undoReviewModal.hidden = true;
+      this.undoModal.textarea.value = null
+    })
+
+    this.undoReviewModal.declineButton.addEventListener("click", () => {
+      this.undoReviewModal.hidden = true;
+      this.undoModal.textarea.value = null
+    })
 
     this.endGameModal.playAgainButton.addEventListener("click", () => {
       console.log("play again");
