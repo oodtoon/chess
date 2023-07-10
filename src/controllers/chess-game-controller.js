@@ -1,5 +1,6 @@
 import EventBus from "../event-bus.js";
 import Game from "../models/game.js";
+import { copyPgn, declareDraw, declareWinner, exportToPgn, offerDraw } from "../io.js";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
@@ -13,8 +14,14 @@ export default class ChessGameController {
 
   constructor(selector) {
     this.board = document.querySelector("chess-board" + selector);
-    this.moveList = document.querySelector("moves-list");
     this.game = window.game = new Game(this.eventBus);
+    this.turn = document.getElementById("turn");
+
+    this.gameButtons = document.querySelector("game-buttons");
+    this.movesList = document.querySelector("moves-list");
+
+    this.drawModal = document.querySelector("draw-modal")
+    this.endGameModal = document.querySelector("end-game-modal");
   }
 
   initialize() {
@@ -27,10 +34,10 @@ export default class ChessGameController {
     this.eventBus.addEventListener("piece-move", this.handleMove.bind(this));
 
     this.eventBus.addEventListener("piece-move", (event) => {
-      if (this.moveList.currentListItem.children.length === 2) {
-        this.moveList.nextListItem();
+      if (this.movesList.currentListItem.children.length === 2) {
+        this.movesList.nextListItem();
       }
-      this.moveList.addMove(event.detail.notation);
+      this.movesList.addMove(event.detail.notation);
     });
 
     this.eventBus.addEventListener("piece-move", (event) => {
@@ -41,6 +48,60 @@ export default class ChessGameController {
       const destination = this.board.getSquare(...event.detail.to);
       destination.appendChild(chessPieceElement);
     });
+
+    this.movesList.exportButton.addEventListener("click", () => {
+      console.log(this.movesList);
+      exportToPgn(this.game);
+    });
+
+    this.movesList.copyButton.addEventListener("click", () => {
+      copyPgn(this.game);
+    });
+
+    this.movesList.importButton.addEventListener("click", () => {
+      console.log("import");
+    });
+
+    this.gameButtons.drawButton.addEventListener("click", () => {
+      const activePlayer = this.game.getActivePlayer();
+      const color = activePlayer.color;
+      const opponentColor = activePlayer.opponent.color;
+    
+      const drawMsg = `${color} wishes to draw. ${opponentColor}, do you accept?`
+    
+      offerDraw(this.drawModal, drawMsg)
+    });
+
+    this.drawModal.acceptButton.addEventListener("click", () => {
+        this.game.result = "1/2-1/2";
+        this.turn.textContent = "Draw";
+        this.drawModal.hidden = true
+        declareDraw(this.game, this.endGameModal)
+    })
+
+    this.drawModal.declineButton.addEventListener("click", () => {
+      this.drawModal.hidden = true
+    })
+
+    this.gameButtons.concedeButton.addEventListener("click", () => {
+      const activePlayer = this.game.getActivePlayer();
+      const color = activePlayer.color;
+      const opponentColor = activePlayer.opponent.color;
+      const resignMsg = `${color} resigns. ${opponentColor} wins!`
+      declareWinner(color, this.game, this.turn, this.endGameModal, resignMsg);
+    });
+
+    this.endGameModal.playAgainButton.addEventListener("click", () => {
+      console.log("play again");
+    });
+
+    this.endGameModal.exportButton.addEventListener("click", () => {
+      exportToPgn(this.game);
+    });
+
+    this.endGameModal.copyButton.addEventListener("click", () => {
+      copyPgn(this.game);
+    });
   }
 
   handleMove() {
@@ -50,18 +111,22 @@ export default class ChessGameController {
       this.board.setAttribute("rotate", "true");
     }
 
-    const activePlayer = this.game.getActivePlayer()
+    const activePlayer = this.game.getActivePlayer();
 
-    const color = activePlayer.color
+    const color = activePlayer.color;
     if (activePlayer.opponent.moves.length === 0) {
       setTimeout(() => {
         if (this.game.isPlayerInCheck()) {
-          window.alert(`Checkmate! ${color} player wins!`);
+          const checkmate = `Checkmate! ${color} player wins!`;
+          declareWinner(color, this.game, this.turn, this.endGameModal, checkmate);
         } else {
-          window.alert("stalemate :( I lost the game");
+          const stalemate = "Stalemate"
+          declareDraw(this.game, this.endGameModal, stalemate)
         }
       }, 500);
     }
+
+    this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
   handlePieceCapture(event) {
@@ -123,6 +188,7 @@ export default class ChessGameController {
     pieceElement.classList.add("active");
 
     for (let move of this.game.getMoves(pieceElement.piece)) {
+      console.log(move.row, move.file);
       const square = this.board.getSquare(move.row, move.file);
 
       if (!square) {

@@ -1,8 +1,28 @@
-import { coordToAlgebraic } from "../util.js"
+import { coordToAlgebraic } from "../util.js";
 
 class BaseMove {
   get isCompoundMove() {
     return false;
+  }
+
+  #doesMoveExposeCheck(targetPlayer) {
+    const { livePieces } = targetPlayer;
+    for (let targetPlayerPiece of livePieces) {
+      for (let move of targetPlayerPiece.moves) {
+        if (move.capturedPiece?.name === "King") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  doesMoveExposePlayerToCheck() {
+    return this.#doesMoveExposeCheck(this.opponent);
+  }
+
+  doesMoveExposeOpponentToCheck() {
+    return this.#doesMoveExposeCheck(this.player);
   }
 }
 
@@ -36,38 +56,20 @@ export default class Move extends BaseMove {
   }
 
   get isCapture() {
-    return this.capturedPiece !== null
+    return this.capturedPiece !== null;
   }
 
   toString() {
-    const letter = this.initiatingPiece.isPawn() ? "" : this.initiatingPiece.notation
-    const capture = this.isCapture ? "x" : ""
-    const square = coordToAlgebraic([this.row, this.file])
-    return letter + capture + square
+    const letter = this.initiatingPiece.isPawn()
+      ? ""
+      : this.initiatingPiece.notation;
+    const capture = this.isCapture ? "x" : "";
+    const square = coordToAlgebraic([this.row, this.file]);
+    return letter + capture + square;
   }
 
   get isCheck() {
     return this.doesMoveExposeOpponentToCheck();
-  }
-
-  #doesMoveExposeCheck(targetPlayer) {
-    const { livePieces } = targetPlayer;
-    for (let targetPlayerPiece of livePieces) {
-      for (let move of targetPlayerPiece.moves) {
-        if (move.capturedPiece?.name === "King") {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  doesMoveExposePlayerToCheck() {
-    return this.#doesMoveExposeCheck(this.opponent);
-  }
-
-  doesMoveExposeOpponentToCheck() {
-    return this.#doesMoveExposeCheck(this.player);
   }
 }
 

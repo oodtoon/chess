@@ -13,8 +13,7 @@
 <body>
 
     <div class="container">
-        <h1 class="title">Chess!</h1>
-        <h2 class="turn">White's turn</h2>
+        <h2 class="turn" id="turn">White's Turn</h2>
         <div id="captured-white">
             <h2>Black's Pieces Taken</h2>
             <div id="white-pieces"></div>
@@ -23,9 +22,12 @@
             <h2>Whites's Pieces Taken</h2>
             <div id="black-pieces"></div>
         </div>
-        <chess-board id="main-game"/>
-        </chess-board>
+        
+        <chess-board id="main-game"/></chess-board>
+        <game-buttons class="game-btns"></game-buttons>
         <moves-list class="moves-list"></moves-list>
+        <draw-modal class="draw-modal" hidden></draw-modal>
+        <end-game-modal class="modal" hidden></end-game-modal>
     </div>
 
 

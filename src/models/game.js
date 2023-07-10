@@ -10,6 +10,7 @@ export default class Game {
     this.wireUpOpposition();
     this.board.initialize();
     this.moves = [];
+    this.result = null
   }
 
   wireUpOpposition() {
@@ -33,7 +34,7 @@ export default class Game {
 
   stageMove(move, shouldCommitMove = true) {
     if (move.isCompoundMove) {
-      move.moves.forEach((move) => this.stageMove(move));
+      move.moves.forEach((move) => this.stageMove(move, shouldCommitMove));
     } else {
       const { row, file, initiatingPiece, capturedPiece } = move;
       if (capturedPiece) {
@@ -97,5 +98,9 @@ export default class Game {
 
   isPlayerInCheck() {
     return this.lastMove.isCheck;
+  }
+
+  get isGameOver() {
+    return this.result !== null
   }
 }

@@ -5,6 +5,7 @@ html {
 :root {
   --square-size: 80px;
   --captured-piece-size: 40px;
+  --font-size: 1rem;
 }
 
 * {
@@ -14,15 +15,16 @@ html {
 .container {
   display: grid;
   margin: auto;
-  justify-content: center;
+  justify-content: start;
+  margin: auto 3em;
 
   align-self: center;
   grid-template-columns: 1fr 3fr 1fr;
   grid-template-areas:
-    ". title ."
-    ". turn ."
-    "captured-black board captured-white"
-    "moves-list moves-list moves-list";
+    " turn board moves-list"
+    "captured-black board moves-list"
+    "captured-white board moves-list"
+    "btns board  moves-list";
 }
 
 chess-board {
@@ -31,27 +33,31 @@ chess-board {
   border: solid rgb(23, 23, 23) 5px;
   display: flex;
   flex-wrap: wrap-reverse;
-  margin-top: 50px;
-  margin-bottom: 100px;
+  margin: 3em auto;
   box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
   grid-area: board;
   justify-self: center;
   align-self: center;
 }
 
+.game-btns {
+  grid-area: btns;
+  display: block;
+}
+
 .moves-list {
   grid-area: moves-list;
   display: block;
-  border: 1px solid grey;
+  border: 3px solid black;
   background-color: aliceblue;
   border-radius: 1em;
+  margin-top: 3em;
+  margin-bottom: auto;
 }
 
 #captured-black {
   grid-area: captured-black;
-  justify-self: center;
   color: #49a6e9;
-  align-self: center;
 }
 
 #captured-black > h2 {
@@ -62,8 +68,7 @@ chess-board {
 
 #captured-white {
   grid-area: captured-white;
-  justify-self: center;
-  align-self: center;
+  
 }
 #captured-white > h2 {
   color: brown;
@@ -74,7 +79,6 @@ chess-board {
 #white-pieces {
   width: 250px;
   height: 100px;
-  margin-top: 25px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: brown;
   display: flex;
@@ -88,33 +92,29 @@ chess-piece {
 #black-pieces {
   width: 250px;
   height: 100px;
-  margin-top: 25px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: #49a6e9;
   display: flex;
   flex-wrap: wrap;
 }
 
-.title {
-  margin: auto;
-  margin-top: 50px;
-  margin-bottom: 25px;
-  color: #49a6e9;
-  grid-area: title;
-}
-
 .turn {
-  margin: auto;
+  margin-top: 3em;
   color: #49a6e9;
   grid-area: turn;
+  align-self: end;
 }
 
-.bp {
-  background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/bp.png);
-  background-size: contain;
+end-game-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.wp {
-  background-image: url(https://www.chess.com/chess-themes/pieces/neo/150/wp.png);
-  background-size: contain;
+draw-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
