@@ -68,7 +68,6 @@ chess-board {
 
 #captured-white {
   grid-area: captured-white;
-  
 }
 #captured-white > h2 {
   color: brown;
@@ -78,7 +77,7 @@ chess-board {
 
 #white-pieces {
   width: 250px;
-  height: 100px;
+  min-height: 100px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: brown;
   display: flex;
@@ -91,7 +90,7 @@ chess-piece {
 
 #black-pieces {
   width: 250px;
-  height: 100px;
+  min-height: 100px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: #49a6e9;
   display: flex;
@@ -105,28 +104,10 @@ chess-piece {
   align-self: end;
 }
 
-end-game-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-draw-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-undo-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-undo-review-modal {
+end-game-dialog,
+undo-dialog,
+review-dialog,
+promotion-dialog {
   position: fixed;
   top: 50%;
   left: 50%;

@@ -3,7 +3,9 @@ import "./ChessPiece.js"
 import "./ChessBoard.js";
 import "./GhostMove.js"
 import "./GameButtons.js"
-import "./EndGameModal.js"
-import "./DrawModal.js"
-import "./UndoModal.js"
-import "./UndoReviewModal.js"
+
+
+import "./dialogs/EndGameDialog.js"
+import "./dialogs/UndoDialog.js"
+import "./dialogs/ReviewDialog.js"
+import "./dialogs/PromotionDialog.js"
