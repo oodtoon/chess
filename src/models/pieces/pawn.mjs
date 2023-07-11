@@ -1,5 +1,9 @@
 import Piece from "./piece.mjs";
 import Move from "../move.js";
+import Queen from "./queen.mjs";
+import Rook from "./rook.mjs";
+import Knight from "./knight.mjs";
+import Bishop from "./bishop.mjs";
 import { intToFile } from "../../util.js";
 
 class Pawn extends Piece {
@@ -12,6 +16,7 @@ class Pawn extends Piece {
     super(game, board, player, row, file);
     this.hasMoved = false;
     this.hasDoubleMoved = false;
+    this.isPromoted = false;
   }
 
   canEnPassant(row, file) {
@@ -69,12 +74,17 @@ class Pawn extends Piece {
 
     const firstSquare = [this.row + 1 * direction, this.file];
 
-    if (this.isSquareOccupied(...firstSquare)) {
+    if (
+      this.isValidSquare(...firstSquare) &&
+      this.isSquareOccupied(...firstSquare)
+    ) {
       return available;
-
     }
 
-    if (!this.isSquareOccupied(...firstSquare)) {
+    if (
+      this.isValidSquare(...firstSquare) &&
+      !this.isSquareOccupied(...firstSquare)
+    ) {
       available.push(Move.fromSquare(firstSquare, this));
     }
 
@@ -83,19 +93,46 @@ class Pawn extends Piece {
       available.push(Move.fromSquare(secondSquare, this));
     }
 
-
-
     return available;
-;
+  }
+
+  setPromote(move) {
+    if (move.row === 0 || move.row === 7) {
+      this.isPromoted = true;
+    }
+  }
+
+  promote(move, type) {
+    move.player.removeLivePiece(this);
+    move.player.addPromotedPawn(this);
+
+    const pieceConstuctors = {
+      "Queen": Queen,
+      "Knight": Knight,
+      "Bishop": Bishop,
+      "Rook": Rook,
+    };
+
+    const PieceClass = pieceConstuctors[type];
+    const promotedPiece = new PieceClass(
+      this.game,
+      this.board,
+      this.player,
+      move.row,
+      move.file
+    );
+    move.player.addLivePiece(promotedPiece);
+    return promotedPiece;
   }
 
   get icon() {
     return this.isWhite() ? "♙" : "♟";
   }
-  
+
   onMove(move) {
     super.onMove(move);
     this.hasMoved = true;
+    this.setPromote(move);
   }
 
   get img() {
@@ -105,7 +142,7 @@ class Pawn extends Piece {
   }
 
   get notation() {
-    return intToFile(this.file)
+    return intToFile(this.file);
   }
 }
 

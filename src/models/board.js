@@ -25,7 +25,10 @@ export default class Board {
     }
   }
 
+  
+
   initialize() {
+
     this.initializePiece(Pawn);
     this.initializePiece(Rook);
     this.initializePiece(Bishop);
