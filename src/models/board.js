@@ -12,6 +12,8 @@ export default class Board {
       const file = new Array(Board.LANE_SIZE).fill(null);
       this.#board[i] = file;
     }
+
+    this.willRotate = true
   }
 
   initializePiece(PieceConstructor) {

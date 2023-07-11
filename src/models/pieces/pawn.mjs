@@ -121,6 +121,7 @@ class Pawn extends Piece {
       move.row,
       move.file
     );
+    
     move.player.addLivePiece(promotedPiece);
     return promotedPiece;
   }

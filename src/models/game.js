@@ -78,13 +78,21 @@ export default class Game {
   }
 
   getActivePlayer() {
-    return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
+    if (this.board.willRotate) {
+      return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
+    } else {
+      return this.moves.length % 2 === 0 ? this.blackPlayer : this.whitePlayer;
+    }
+    
   }
 
   doMove(move) {
+    if (move.initiatingPiece.name === "Pawn" && (move.row === 7 || move.row === 0)) {
+      this.board.willRotate = false
+    }
+
     this.stageMove(move);
     this.moves.push(move);
-
   }
 
   undoMove() {

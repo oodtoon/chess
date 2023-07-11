@@ -67,7 +67,7 @@ export default class ChessGameController {
         chessPieceElement.piece.name === "Pawn" &&
         (destinationSquareRank === 7 || destinationSquareRank === 0)
       ) {
-        console.log(this.promotionDialog);
+        this.game.board.willRotate = false
         displayPromotionDialog(this.promotionDialog);
       }
     });
@@ -115,7 +115,6 @@ export default class ChessGameController {
     });
 
     this.reviewDialog.declineButton.addEventListener("close", (event) => {
-      console.log(event);
       event.preventDefault();
     });
 
@@ -203,12 +202,15 @@ export default class ChessGameController {
       );
 
       this.mountSinglePiece(promatedPiece);
+
+      setTimeout(() => {
+        this.rotateBoard()
+        this.game.board.willRotate = true
+      }, 700)
     });
   }
 
   handleMove() {
-    let pause = false;
-
     const activePlayer = this.game.getActivePlayer();
 
     const color = activePlayer.color;
@@ -226,19 +228,14 @@ export default class ChessGameController {
         } else {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
-
         }
       }, 500);
-      pause = true
+      this.game.board.willRotate = false;
     }
 
-    if (pause === false) {
-      if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-        this.board.setAttribute("rotate", "false");
-      } else {
-        this.board.setAttribute("rotate", "true");
-      }
-
+    if (this.game.board.willRotate === true) {
+      this.rotateBoard();
+      this.game.getActivePlayer()
       this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
     }
   }
@@ -279,6 +276,14 @@ export default class ChessGameController {
     game.doMove(game.getMoves(BP5)[1]);
   }
 
+  rotateBoard() {
+    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
+      this.board.setAttribute("rotate", "false");
+    } else {
+      this.board.setAttribute("rotate", "true");
+    }
+  }
+
   mountPieces() {
     this.mountPlayerPieces(this.game.whitePlayer);
     this.mountPlayerPieces(this.game.blackPlayer);
@@ -303,7 +308,6 @@ export default class ChessGameController {
 
   placeGhostMoves(pieceElement) {
     pieceElement.classList.add("active");
-    console.log(pieceElement.piece);
 
     for (let move of this.game.getMoves(pieceElement.piece)) {
       const square = this.board.getSquare(move.row, move.file);
