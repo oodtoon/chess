@@ -201,17 +201,13 @@ export default class ChessGameController {
         this.game.lastMove,
         this.promotionDialog.pieceSelect.value
       );
-     
+
       this.mountSinglePiece(promatedPiece);
     });
   }
 
   handleMove() {
-    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.board.setAttribute("rotate", "false");
-    } else {
-      this.board.setAttribute("rotate", "true");
-    }
+    let pause = false;
 
     const activePlayer = this.game.getActivePlayer();
 
@@ -220,7 +216,7 @@ export default class ChessGameController {
       setTimeout(() => {
         if (this.game.isPlayerInCheck()) {
           const checkmate = `Checkmate! ${color} player wins!`;
-          this.declareWinner(
+          declareWinner(
             color,
             this.game,
             this.turn,
@@ -230,11 +226,21 @@ export default class ChessGameController {
         } else {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
+
         }
       }, 500);
+      pause = true
     }
 
-    this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+    if (pause === false) {
+      if (this.game.getActivePlayer() !== this.game.whitePlayer) {
+        this.board.setAttribute("rotate", "false");
+      } else {
+        this.board.setAttribute("rotate", "true");
+      }
+
+      this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+    }
   }
 
   handlePieceCapture(event) {
