@@ -90,6 +90,8 @@ chess-board {
 chess-piece {
   width: var(--captured-piece-size);
   height: var(--captured-piece-size);
+  min-width: calc(var(--min-size) / 2);
+  min-height: calc(var(--min-size) / 2);
 }
 
 #black-pieces {
@@ -152,6 +154,10 @@ promotion-dialog {
     min-height: 100px;
   }
 
+  #black-pieces {
+    min-height: 100px;
+  }
+
   .moves-list {
     margin: auto;
   }
@@ -175,6 +181,9 @@ promotion-dialog {
 
   .container {
     display: grid;
+    justify-content: start;
+    margin: auto 3em;
+    align-self: center;
     grid-template-columns: 1fr 3fr 1fr;
     grid-template-areas:
       " turn board moves-list"
@@ -198,7 +207,7 @@ promotion-dialog {
     margin-bottom: 3em;
   }
 
-  moves-list {
+  .moves-list {
     justify-self: start;
     width: 100%;
   }
