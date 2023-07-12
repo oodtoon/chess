@@ -3,8 +3,12 @@ html {
 }
 
 :root {
-  --square-size: 80px;
-  --captured-piece-size: 40px;
+  --square-size: 6vw;
+  --v-w: 11vw;
+  --full-size: 5.5rem;
+  --medium-size: 4rem;
+  --small-size: 3rem;
+  --captured-piece-size: 3vw;
   --font-size: 1rem;
 }
 
@@ -13,23 +17,22 @@ html {
 }
 
 .container {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   margin: auto;
   justify-content: start;
-  margin: auto 3em;
+}
 
-  align-self: center;
-  grid-template-columns: 1fr 3fr 1fr;
-  grid-template-areas:
-    " turn board moves-list"
-    "captured-black board moves-list"
-    "captured-white board moves-list"
-    "btns board  moves-list";
+.capture-container {
+  display: flex;
+  margin: auto;
 }
 
 chess-board {
-  width: calc(var(--square-size) * 8);
-  height: calc(var(--square-size) * 8);
+  width: calc(var(--v-w) * 8);
+  height: calc(var(--v-w) * 8);
+  min-width: calc(var(--small-size) * 8);
+  min-height: calc(var(--small-size) * 8);
   border: solid rgb(23, 23, 23) 5px;
   display: flex;
   flex-wrap: wrap-reverse;
@@ -76,7 +79,6 @@ chess-board {
 }
 
 #white-pieces {
-  width: 250px;
   min-height: 100px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: brown;
@@ -86,10 +88,11 @@ chess-board {
 chess-piece {
   width: var(--captured-piece-size);
   height: var(--captured-piece-size);
+  min-width: calc(var(--min-size) / 2);
+  min-height: calc(var(--min-size) / 2);
 }
 
 #black-pieces {
-  width: 250px;
   min-height: 100px;
   border: solid rgb(23, 23, 23) 5px;
   background-color: #49a6e9;
@@ -101,7 +104,7 @@ chess-piece {
   margin-top: 3em;
   color: #49a6e9;
   grid-area: turn;
-  align-self: end;
+  place-self: center;
 }
 
 end-game-dialog,
@@ -112,4 +115,65 @@ promotion-dialog {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+@media (min-width: 700px) {
+  .container {
+    display: grid;
+    margin: auto;
+    justify-content: start;
+    align-self: center;
+    grid-template-columns: 1fr 2fr;
+    grid-template-areas:
+      " turn board"
+      "captured-black board"
+      "captured-white board"
+      "btns moves-list";
+  }
+
+  .capture-container {
+    display: block;
+  }
+
+  chess-board {
+    width: calc(var(--medium-size) * 8);
+    height: calc(var(--medium-size) * 8);
+    margin-left: 1em;
+  }
+
+  #white-pieces {
+    min-height: 100px;
+  }
+
+  #black-pieces {
+    min-width: ;
+  }
+}
+
+@media (min-width: 1000px) {
+  .container {
+    display: grid;
+    margin: auto;
+    justify-content: start;
+    margin: auto 3em;
+    align-self: center;
+    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-areas:
+      " turn board moves-list"
+      "captured-black board moves-list"
+      "btns board moves-list"
+      ". board  moves-list";
+  }
+
+  chess-board {
+    min-width: calc(var(--full-size) * 8);
+    min-height: calc(var(--full-size) * 8);
+  }
+
+  .capture-container {
+    display: block;
+    margin-bottom: 3em;
+  }
+
+
 }
