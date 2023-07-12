@@ -24,9 +24,17 @@ listTemplate.innerHTML = String.raw`
     }
 
     .btns-container{
+      display: flex;
+      justify-content: end;
+    }
+
+    @media(min-width: 1000px) {
+      .btns-container{
       display: grid;
       justify-content: start;
     }
+    }
+   
 
     .btns-container > button {
       font-size: var(--font-size);
