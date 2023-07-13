@@ -5,7 +5,7 @@ html {
 :root {
   --square-size: 6vw;
   --v-w: 11vw;
-  --full-size: 5.5rem;
+  --full-size: 8vw;
   --medium-size: 4rem;
   --small-size: 3rem;
   --captured-piece-size: 3vw;
@@ -20,12 +20,15 @@ html {
   display: flex;
   flex-direction: column;
   margin: auto;
-  justify-content: start;
+  max-width: 1400px;
 }
 
 .capture-container {
   display: flex;
   margin: auto;
+  gap: 1em;
+  width: 100%;
+  justify-content: center;
 }
 
 chess-board {
@@ -39,8 +42,7 @@ chess-board {
   margin: 3em auto;
   box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
   grid-area: board;
-  justify-self: center;
-  align-self: center;
+  place-self: start;
 }
 
 .game-btns {
@@ -56,6 +58,7 @@ chess-board {
   border-radius: 1em;
   margin-top: 3em;
   margin-bottom: auto;
+  width: 100%;
 }
 
 #captured-black {
@@ -101,7 +104,6 @@ chess-piece {
 }
 
 .turn {
-  margin-top: 3em;
   color: #49a6e9;
   grid-area: turn;
   place-self: center;
@@ -120,54 +122,70 @@ promotion-dialog {
 @media (min-width: 700px) {
   .container {
     display: grid;
+    gap: 1em;
     margin: auto;
-    justify-content: start;
+    margin-top: 2em;
+    justify-items: center;
     align-self: center;
     grid-template-columns: 1fr 2fr;
     grid-template-areas:
-      " turn board"
+      "turn board"
       "captured-black board"
       "captured-white board"
-      "btns moves-list";
+      "btns board"
+      ". moves-list";
   }
 
   .capture-container {
     display: block;
+    width: 100%;
   }
 
   chess-board {
     width: calc(var(--medium-size) * 8);
     height: calc(var(--medium-size) * 8);
-    margin-left: 1em;
+    margin: auto;
   }
 
   #white-pieces {
     min-height: 100px;
   }
 
-  #black-pieces {
-    min-width: ;
+  .moves-list {
+    margin: auto;
+  }
+
+  .turn {
+    margin: auto;
+    place-self: center;
+  }
+}
+
+@media (min-width: 775px) {
+  .moves-list {
+    margin-top: 2em;
   }
 }
 
 @media (min-width: 1000px) {
   .container {
     display: grid;
-    margin: auto;
-    justify-content: start;
-    margin: auto 3em;
-    align-self: center;
     grid-template-columns: 1fr 3fr 1fr;
     grid-template-areas:
       " turn board moves-list"
       "captured-black board moves-list"
-      "btns board moves-list"
-      ". board  moves-list";
+      "btns board ."
+      ". board  .";
   }
 
   chess-board {
-    min-width: calc(var(--full-size) * 8);
-    min-height: calc(var(--full-size) * 8);
+    width: calc(var(--full-size) * 8);
+    height: calc(var(--full-size) * 8);
+    max-height: calc(88px * 8);
+    max-width: calc(88px * 8);
+    min-width: calc(75px * 8);
+    min-height: calc(75px * 8);
+    margin: 2em auto;
   }
 
   .capture-container {
@@ -175,5 +193,9 @@ promotion-dialog {
     margin-bottom: 3em;
   }
 
+  moves-list {
+    justify-self: start;
+    width: 100%;
+  }
 
 }

@@ -2,7 +2,7 @@ const undo = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" vie
 
 const gameButtonsTemplate = document.createElement("template");
 gameButtonsTemplate.innerHTML = String.raw`
-<section class="btns-container">
+<section class="btns-container dual">
 <button class="draw">Draw</button>
 <button class="resign">Resign</button>
 </section>
@@ -13,7 +13,9 @@ gameButtonsTemplate.innerHTML = String.raw`
 <style>
     .btns-container {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
+        width: 100%;
     }
 
     .btns-container > button {
@@ -60,6 +62,10 @@ gameButtonsTemplate.innerHTML = String.raw`
         height: var(--font-size);
         weight: var(--font-weight);
     }
+
+    
+
+    
 </style>
 `;
 
