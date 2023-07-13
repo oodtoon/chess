@@ -14,7 +14,7 @@ const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
 
 function getPlayerCapturePool(player) {
-  return player.color === "white" ? whitePieces : blackPieces;
+  return player.color === "White" ? whitePieces : blackPieces;
 }
 
 export default class ChessGameController {
@@ -67,7 +67,7 @@ export default class ChessGameController {
         chessPieceElement.piece.name === "Pawn" &&
         (destinationSquareRank === 7 || destinationSquareRank === 0)
       ) {
-        this.game.board.willRotate = false
+        this.game.board.willRotate = false;
         displayPromotionDialog(this.promotionDialog);
       }
     });
@@ -204,13 +204,15 @@ export default class ChessGameController {
       this.mountSinglePiece(promatedPiece);
 
       setTimeout(() => {
-        this.rotateBoard()
-        this.game.board.willRotate = true
-      }, 700)
+        this.rotateBoard();
+        this.game.board.willRotate = true;
+      }, 700);
     });
   }
 
   handleMove() {
+    
+
     const activePlayer = this.game.getActivePlayer();
 
     const color = activePlayer.color;
@@ -235,7 +237,7 @@ export default class ChessGameController {
 
     if (this.game.board.willRotate === true) {
       this.rotateBoard();
-      this.game.getActivePlayer()
+      this.game.getActivePlayer();
       this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
     }
   }
@@ -317,14 +319,28 @@ export default class ChessGameController {
       }
 
       const ghostMove = document.createElement("ghost-move");
-      ghostMove.addEventListener("click", () => {
-        this.game.doMove(move);
-        this.removeGhostMoves();
-      });
+
+      
 
       ghostMove.potentialMove = move;
       ghostMove.game = this.game;
       square.appendChild(ghostMove);
+
+
+      const moveHelper = () => {
+        this.removeAllSquareListeners(pieceElement.piece, moveHelper)
+        this.removeGhostMoves();
+        this.game.doMove(move)
+      }
+
+      square.addEventListener("click", moveHelper)
+    }
+  }
+
+  removeAllSquareListeners(piece, functionToRemove) {
+    for (let move of this.game.getMoves(piece)) {
+      const square = this.board.getSquare(move.row, move.file)
+      square.removeEventListener("click", functionToRemove)
     }
   }
 
@@ -340,6 +356,8 @@ export default class ChessGameController {
       ghost.remove();
     }
   }
+
+ 
 
   handlePieceClick(event) {
     const pieceElement = event.currentTarget;
