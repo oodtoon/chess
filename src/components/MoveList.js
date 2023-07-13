@@ -25,7 +25,7 @@ listTemplate.innerHTML = String.raw`
 
     .btns-container{
       display: flex;
-      justify-content: end;
+      justify-content: center;
     }
 
     @media(min-width: 1000px) {

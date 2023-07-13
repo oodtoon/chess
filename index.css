@@ -21,6 +21,7 @@ html {
   flex-direction: column;
   margin: auto;
   max-width: 1400px;
+  justify-items: center;
 }
 
 .capture-container {
@@ -28,7 +29,6 @@ html {
   margin: auto;
   gap: 1em;
   width: 100%;
-  justify-content: center;
 }
 
 chess-board {
