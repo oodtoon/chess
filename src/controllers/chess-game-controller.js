@@ -33,16 +33,20 @@ export default class ChessGameController {
     this.reviewDialog = document.querySelector("review-dialog");
 
     this.endGameDialog = document.querySelector("end-game-dialog");
+
+    this.handleMove = this.handleMove.bind(this);
+    this.handleSquareClick = this.handleSquareClick.bind(this);
+
+    this.handlePieceCapture = this.handlePieceCapture.bind(this);
   }
 
   initialize() {
     this.mountPieces();
-    this.eventBus.addEventListener(
-      "piece-capture",
-      this.handlePieceCapture.bind(this)
-    );
+    this.activateSquares();
 
-    this.eventBus.addEventListener("piece-move", this.handleMove.bind(this));
+    this.eventBus.addEventListener("piece-capture", this.handlePieceCapture);
+
+    this.eventBus.addEventListener("piece-move", this.handleMove);
 
     this.eventBus.addEventListener("piece-move", (event) => {
       if (this.movesList.currentListItem.children.length === 2) {
@@ -211,8 +215,6 @@ export default class ChessGameController {
   }
 
   handleMove() {
-    
-
     const activePlayer = this.game.getActivePlayer();
 
     const color = activePlayer.color;
@@ -251,31 +253,13 @@ export default class ChessGameController {
     capturedPieceBin.appendChild(capturedPiece);
   }
 
-  testScenario() {
-    const game = this.game;
-    const whiteKing = game.board.get(0, 4);
-    const blackKing = game.board.get(7, 4);
-    const blackQueen = game.board.get(7, 3);
-    const WP5 = game.board.get(1, 5);
-    const WP4 = game.board.get(1, 4);
-    const WP6 = game.board.get(1, 6);
-    const BPL = game.board.get(6, 3);
-    const BP1 = game.board.get(6, 1);
-    const BP2 = game.board.get(6, 2);
-    const WK = game.board.get(0, 6);
-    const BK = game.board.get(7, 1);
-    const WB = game.board.get(0, 5);
-    const BB = game.board.get(7, 2);
-    const BP5 = game.board.get(6, 5);
-
-    game.doMove(game.getMoves(WP4)[0]);
-    game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(WB)[4]);
-    game.doMove(game.getMoves(BB)[4]);
-    game.doMove(game.getMoves(WP4)[0]);
-    game.doMove(game.getMoves(BPL)[0]);
-    game.doMove(game.getMoves(WP4)[1]);
-    game.doMove(game.getMoves(BP5)[1]);
+  activateSquares() {
+    for (let row = 0; row < 8; row++) {
+      for (let file = 0; file < 8; file++) {
+        const square = this.board.getSquare(row, file);
+        square.addEventListener("click", this.handleSquareClick);
+      }
+    }
   }
 
   rotateBoard() {
@@ -301,46 +285,18 @@ export default class ChessGameController {
     const squareElement = this.board.getSquare(piece.row, piece.file);
     const chessPieceElement = document.createElement("chess-piece");
     chessPieceElement.piece = piece;
-    chessPieceElement.addEventListener(
-      "click",
-      this.handlePieceClick.bind(this)
-    );
+    chessPieceElement.addEventListener("click", this.handlePieceClick);
     squareElement.appendChild(chessPieceElement);
   }
 
   placeGhostMoves(pieceElement) {
     pieceElement.classList.add("active");
-
     for (let move of this.game.getMoves(pieceElement.piece)) {
       const square = this.board.getSquare(move.row, move.file);
-
-      if (!square) {
-        return;
-      }
-
       const ghostMove = document.createElement("ghost-move");
-
-      
-
       ghostMove.potentialMove = move;
       ghostMove.game = this.game;
       square.appendChild(ghostMove);
-
-
-      const moveHelper = () => {
-        this.removeAllSquareListeners(pieceElement.piece, moveHelper)
-        this.removeGhostMoves();
-        this.game.doMove(move)
-      }
-
-      square.addEventListener("click", moveHelper)
-    }
-  }
-
-  removeAllSquareListeners(piece, functionToRemove) {
-    for (let move of this.game.getMoves(piece)) {
-      const square = this.board.getSquare(move.row, move.file)
-      square.removeEventListener("click", functionToRemove)
     }
   }
 
@@ -357,27 +313,73 @@ export default class ChessGameController {
     }
   }
 
- 
+  moveHelper(move) {
+    this.removeGhostMoves();
+    this.game.doMove(move);
+  }
 
-  handlePieceClick(event) {
-    const pieceElement = event.currentTarget;
-    const { player } = pieceElement.piece;
-    if (this.game.getActivePlayer() !== player) {
-      return;
+  handleSquareClick(event) {
+    if (event.target.piece) {
+      const pieceElement = event.target;
+      const { player } = pieceElement.piece;
+      if (this.game.getActivePlayer() !== player) {
+        return;
+      }
+
+      if (
+        !player.selectedPiece ||
+        player.selectedPiece === pieceElement.piece
+      ) {
+        player.showMoves = !player.showMoves;
+        player.selectedPiece = pieceElement.piece;
+      }
+
+      if (player.showMoves) {
+        this.removeGhostMoves();
+        this.placeGhostMoves(pieceElement);
+        player.selectedPiece = pieceElement.piece;
+      } else {
+        this.removeGhostMoves();
+        player.selectedPiece = null;
+      }
     }
 
-    if (!player.selectedPiece || player.selectedPiece === pieceElement.piece) {
-      player.showMoves = !player.showMoves;
-      player.selectedPiece = pieceElement.piece;
-    }
+    const ghostElements = this.board.shadowRoot.querySelectorAll("ghost-move");
+    ghostElements.forEach((ghostElem) => {
+      if (event.currentTarget.firstChild === ghostElem) {
+        const move = event.currentTarget.firstChild.potentialMove;
+        this.moveHelper(move)
+      } else if (event.currentTarget.lastChild === ghostElem) {
+        const move = event.currentTarget.lastChild.potentialMove;
+        this.moveHelper(move)
+      }
+    });
+  }
 
-    if (player.showMoves) {
-      this.removeGhostMoves();
-      this.placeGhostMoves(pieceElement);
-      player.selectedPiece = pieceElement.piece;
-    } else {
-      this.removeGhostMoves();
-      player.selectedPiece = null;
-    }
+  testScenario() {
+    const game = this.game;
+    const whiteKing = game.board.get(0, 4);
+    const blackKing = game.board.get(7, 4);
+    const blackQueen = game.board.get(7, 3);
+    const WP5 = game.board.get(1, 5);
+    const WP4 = game.board.get(1, 4);
+    const WP6 = game.board.get(1, 6);
+    const BPL = game.board.get(6, 3);
+    const BP1 = game.board.get(6, 1);
+    const BP2 = game.board.get(6, 2);
+    const WK = game.board.get(0, 6);
+    const BK = game.board.get(7, 1);
+    const WB = game.board.get(0, 5);
+    const BB = game.board.get(7, 2);
+    const BP5 = game.board.get(6, 5);
+
+    game.doMove(game.getMoves(WP4)[0]);
+    game.doMove(game.getMoves(BPL)[0]);
+    game.doMove(game.getMoves(WB)[4]);
+    game.doMove(game.getMoves(BB)[4]);
+    game.doMove(game.getMoves(WP4)[0]);
+    game.doMove(game.getMoves(BPL)[0]);
+    game.doMove(game.getMoves(WP4)[1]);
+    game.doMove(game.getMoves(BP5)[1]);
   }
 }
