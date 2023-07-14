@@ -6,13 +6,32 @@ function generateTemplete() {
   <style>
 
     .square {
-      width: var(--square-size);
+      width: var(--v-w);
+      min-width: calc(var(--small-size));
       aspect-ratio: 1;
       font-size: calc(var(--square-size) * .75);
       text-align: center;
       position: relative;
       display: flex;
     }
+
+    @media(min-width: 700px) {
+      .square {
+        width: var(--medium-size)
+      }
+    }
+
+    @media(min-width: 1000px) {
+      .square {
+    width: calc(var(--full-size));
+    max-height: 88px;
+    max-width: 88px;
+    min-width: 75px;
+    min-height: 75px;
+      }
+    }
+
+
 
     .black {
       background-color: brown;
@@ -89,10 +108,12 @@ class ChessBoard extends HTMLElement {
   }
 
   connectedCallback() {
+    
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log([name, oldValue, newValue])
+
+    
     if (newValue === "true") {
       this.style.transform = "rotate(180deg)";
       this.squares.forEach(
@@ -119,7 +140,7 @@ class ChessBoard extends HTMLElement {
   }
 
   get ghostMoves() {
-    return [...this.shadowRoot.querySelectorAll(".ghost-move")];
+    return [...this.shadowRoot.querySelectorAll("ghost-move")];
   }
 }
 
