@@ -13,7 +13,7 @@ export default class Board {
       this.#board[i] = file;
     }
 
-    this.willRotate = true
+    this.willRotate = true;
   }
 
   initializePiece(PieceConstructor) {
@@ -27,10 +27,7 @@ export default class Board {
     }
   }
 
-  
-
   initialize() {
-
     this.initializePiece(Pawn);
     this.initializePiece(Rook);
     this.initializePiece(Bishop);

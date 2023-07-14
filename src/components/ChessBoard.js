@@ -108,6 +108,7 @@ class ChessBoard extends HTMLElement {
   }
 
   connectedCallback() {
+    
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -139,7 +140,7 @@ class ChessBoard extends HTMLElement {
   }
 
   get ghostMoves() {
-    return [...this.shadowRoot.querySelectorAll(".ghost-move")];
+    return [...this.shadowRoot.querySelectorAll("ghost-move")];
   }
 }
 
