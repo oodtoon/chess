@@ -51,7 +51,6 @@ export function displayUndoMoveDialog(modal) {
 
 export function displayPromotionDialog(modal) {
     const dialog = modal.shadowRoot.getElementById("promotion-dialog");
-    console.log("dialog");
     dialog.showModal();
   }
 

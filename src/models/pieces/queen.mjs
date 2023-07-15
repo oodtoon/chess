@@ -30,7 +30,6 @@ class Queen extends Piece {
 
   onMove(move) {
     super.onMove(move);
-    console.log(move);
   }
 
   get icon() {
