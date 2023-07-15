@@ -254,12 +254,10 @@ export default class ChessGameController {
   }
 
   activateSquares() {
-    for (let row = 0; row < 8; row++) {
-      for (let file = 0; file < 8; file++) {
-        const square = this.board.getSquare(row, file);
-        square.addEventListener("click", this.handleSquareClick);
-      }
-    }
+    const squares = this.board.shadowRoot.querySelectorAll(".square");
+    squares.forEach((square) => {
+      square.addEventListener("click", this.handleSquareClick);
+    });
   }
 
   rotateBoard() {
@@ -346,14 +344,15 @@ export default class ChessGameController {
 
     const ghostElements = this.board.shadowRoot.querySelectorAll("ghost-move");
     ghostElements.forEach((ghostElem) => {
-      if (event.currentTarget.firstChild === ghostElem) {
-        const move = event.currentTarget.firstChild.potentialMove;
-        this.moveHelper(move)
-      } else if (event.currentTarget.lastChild === ghostElem) {
+       if (event.currentTarget.lastChild === ghostElem) {
         const move = event.currentTarget.lastChild.potentialMove;
-        this.moveHelper(move)
+        this.moveHelper(move);
       }
     });
+
+    if (!event.currentTarget.firstChild) {
+      this.removeGhostMoves();
+    }
   }
 
   testScenario() {
