@@ -35,36 +35,48 @@ export default class ChessGameController {
     this.endGameDialog = document.querySelector("end-game-dialog");
 
     this.handleMove = this.handleMove.bind(this);
+    this.handlePieceMove = this.handlePieceMove.bind(this);
+
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.handlePieceCapture = this.handlePieceCapture.bind(this);
-
-    this.handle;
   }
 
   initialize() {
     this.mountPieces();
-    this.activateSquares();
-    this.activateGameButtons()
-    this.activateMoveListBtns()
-    this.activateDialongBtns()
+    this.attachSquareListeners();
+    this.activateGameButtons();
+    this.activateMoveListBtns();
+    this.activateDialongBtns();
+
+    this.eventBus.addEventListener("piece-move", this.handlePieceMove);
 
     this.eventBus.addEventListener("piece-capture", this.handlePieceCapture);
-
-    this.eventBus.addEventListener("piece-move", this.handleMove);
-
-    this.eventBus.addEventListener("piece-move", (event) => {
-      if (this.movesList.currentListItem.children.length === 2) {
-        this.movesList.nextListItem();
-      }
-      this.movesList.addMove(event.detail.notation);
-    });
-
-    this.eventBus.addEventListener("piece-move", (event) => {
-      this.pieceMoveHelper(event)
-    });
   }
 
-  pieceMoveHelper(event) {
+  handlePieceMove(event) {
+    this.handleMove();
+    this.updateMovesList(event);
+    this.movePiece(event);
+  }
+
+  handleMove() {
+    const activePlayer = this.game.getActivePlayer();
+
+    this.checkForTerminalState(activePlayer);
+
+    if (this.game.board.willRotate) {
+      this.updatePlayerTurnAndText(activePlayer);
+    }
+  }
+
+  updateMovesList(event) {
+    if (this.movesList.currentListItem.children.length === 2) {
+      this.movesList.nextListItem();
+    }
+    this.movesList.addMove(event.detail.notation);
+  }
+
+  movePiece(event) {
     const chessPieceElement = this.board.chessPieces.find(
       (element) => element.piece.id === event.detail.pieceId
     );
@@ -85,9 +97,7 @@ export default class ChessGameController {
     }
   }
 
-  handleMove() {
-    const activePlayer = this.game.getActivePlayer();
-
+  checkForTerminalState(activePlayer) {
     const color = activePlayer.color;
     if (activePlayer.opponent.moves.length === 0) {
       setTimeout(() => {
@@ -107,12 +117,11 @@ export default class ChessGameController {
       }, 500);
       this.game.board.willRotate = false;
     }
+  }
 
-    if (this.game.board.willRotate === true) {
-      this.rotateBoard();
-      this.game.getActivePlayer();
-      this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
-    }
+  updatePlayerTurnAndText(activePlayer) {
+    this.rotateBoard();
+    this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
   handlePieceCapture(event) {
@@ -124,7 +133,7 @@ export default class ChessGameController {
     capturedPieceBin.appendChild(capturedPiece);
   }
 
-  activateSquares() {
+  attachSquareListeners() {
     const squares = this.board.shadowRoot.querySelectorAll(".square");
     squares.forEach((square) => {
       square.addEventListener("click", this.handleSquareClick);
@@ -179,7 +188,6 @@ export default class ChessGameController {
   }
 
   activateDialongBtns() {
-
     this.reviewDialog.acceptButton.addEventListener("click", (event) => {
       event.preventDefault();
 
@@ -189,6 +197,7 @@ export default class ChessGameController {
         declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
       } else {
         console.log("accept undo move");
+        console.log(this.game.lastMove);
         const dialog =
           this.reviewDialog.shadowRoot.getElementById("review-dialog");
         dialog.close();
@@ -198,8 +207,6 @@ export default class ChessGameController {
     this.reviewDialog.declineButton.addEventListener("close", (event) => {
       event.preventDefault();
     });
-
-
 
     this.undoDialog.requestButton.addEventListener("click", (event) => {
       event.preventDefault();
