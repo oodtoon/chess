@@ -79,6 +79,43 @@ export default class ChessGameController {
     }
   }
 
+  handleUndoMove() {
+    const prevMove = this.game.lastMove;
+
+    if (prevMove.isCompoundMove) {
+      for (let move of prevMove) {
+        this.movePiece(move, true);
+        this.game.undoMove();
+      }
+    } else {
+      this.movePiece(prevMove, true);
+    }
+
+    if (prevMove.capturedPiece) {
+      this.undoPieceCapture(prevMove);
+    }
+
+    const piece = prevMove.initiatingPiece;
+
+    if (
+      piece.name === "Pawn" ||
+      piece.name === "Rook" ||
+      piece.name === "King"
+    ) {
+      if (
+        !this.game.moves.find((move) => {
+          move.initiatingPiece === piece;
+        })
+      ) {
+        piece.hasMoved = false;
+      }
+    }
+
+    this.game.undoMove();
+    const prevPlayer = this.game.getActivePlayer().opponent;
+    this.updatePlayerTurnAndText(prevPlayer, true);
+  }
+
   updateMovesList(event) {
     if (this.movesList.currentListItem.children.length === 2) {
       this.movesList.nextListItem();
@@ -86,14 +123,14 @@ export default class ChessGameController {
     this.movesList.addMove(event.detail.move.toString());
   }
 
-  movePiece(move) {
-    const { row, file, initiatingPiece } = move;
+  movePiece(move, undo = false) {
+    const { row, file, initiatingPiece, sourceRow, sourceFile } = move;
 
     const chessPieceElement = this.board.chessPieces.find(
       (element) => element.piece.id === initiatingPiece.id
     );
 
-    const destinationSquare = [row, file];
+    const destinationSquare = undo ? [sourceRow, sourceFile] : [row, file];
     const destinationSquareRank = destinationSquare[0];
 
     chessPieceElement.remove();
@@ -131,8 +168,8 @@ export default class ChessGameController {
     }
   }
 
-  updatePlayerTurnAndText(activePlayer) {
-    this.rotateBoard();
+  updatePlayerTurnAndText(activePlayer, undo = false) {
+    this.rotateBoard(undo);
     this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
@@ -143,6 +180,14 @@ export default class ChessGameController {
     capturedPiece.remove();
     const capturedPieceBin = getPlayerCapturePool(capturedPiece.piece.player);
     capturedPieceBin.appendChild(capturedPiece);
+  }
+
+  undoPieceCapture(move) {
+    const zombiePiece = move.capturedPiece;
+    this.mountSinglePiece(zombiePiece);
+    const capturedPieceBin = getPlayerCapturePool(zombiePiece.player);
+    const zombieElement = capturedPieceBin.lastChild;
+    capturedPieceBin.removeChild(zombieElement);
   }
 
   attachSquareListeners() {
@@ -208,8 +253,7 @@ export default class ChessGameController {
         this.turn.textContent = "Draw";
         declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
       } else {
-        console.log("accept undo move");
-        console.log(this.game.lastMove);
+        this.handleUndoMove();
         const dialog =
           this.reviewDialog.shadowRoot.getElementById("review-dialog");
         dialog.close();
@@ -224,7 +268,7 @@ export default class ChessGameController {
       event.preventDefault();
 
       const activePlayer = this.game.getActivePlayer();
-      const color = activePlayer.color;
+      const color = activePlayer.opponent.color;
       const title = `${color} player wants to undo most recent move. Do you accept?`;
       displayReviewDialog(
         this.reviewDialog,
@@ -296,11 +340,15 @@ export default class ChessGameController {
     });
   }
 
-  rotateBoard() {
-    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.board.setAttribute("rotate", "false");
-    } else {
+  rotateBoard(undo = false) {
+    if (undo) {
       this.board.setAttribute("rotate", "true");
+    } else {
+      if (this.game.getActivePlayer() !== this.game.whitePlayer) {
+        this.board.setAttribute("rotate", "false");
+      } else {
+        this.board.setAttribute("rotate", "true");
+      }
     }
   }
 
@@ -359,16 +407,11 @@ export default class ChessGameController {
 
     if (pieceElement) {
       const { player } = pieceElement.piece;
-      if (this.game.getActivePlayer() !== player) {
+      if (this.game.getActivePlayer() !== player && !ghostElement) {
         return;
       } else {
-        const { activeSquare } = this.board;
-        if (activeSquare) {
-          this.removeGhostMoves();
-          this.placeGhostMoves(pieceElement);
-        } else {
-          this.placeGhostMoves(pieceElement);
-        }
+        this.removeGhostMoves();
+        this.placeGhostMoves(pieceElement);
       }
     }
 
