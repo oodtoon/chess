@@ -112,8 +112,10 @@ export default class ChessGameController {
     }
 
     this.game.undoMove();
+    this.movesList.removeMove();
     const prevPlayer = this.game.getActivePlayer().opponent;
-    this.updatePlayerTurnAndText(prevPlayer, true);
+    const rotate = true;
+    this.updatePlayerTurnAndText(prevPlayer, rotate);
   }
 
   updateMovesList(event) {
