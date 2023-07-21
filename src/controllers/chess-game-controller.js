@@ -114,8 +114,7 @@ export default class ChessGameController {
     this.game.undoMove();
     this.movesList.removeMove();
     const prevPlayer = this.game.getActivePlayer().opponent;
-    const rotate = true;
-    this.updatePlayerTurnAndText(prevPlayer, rotate);
+    this.updatePlayerTurnAndText(prevPlayer);
   }
 
   updateMovesList(event) {
@@ -170,8 +169,8 @@ export default class ChessGameController {
     }
   }
 
-  updatePlayerTurnAndText(activePlayer, undo = false) {
-    this.rotateBoard(undo);
+  updatePlayerTurnAndText(activePlayer) {
+    this.rotateBoard(activePlayer);
     this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
@@ -317,6 +316,7 @@ export default class ChessGameController {
       event.preventDefault();
 
       const pawnToPromote = this.game.lastMove.initiatingPiece;
+      const activePlayer = pawnToPromote.player;
       const chessPieceElement = this.board.chessPieces.find(
         (element) => element.piece.id === pawnToPromote.id
       );
@@ -336,21 +336,17 @@ export default class ChessGameController {
       this.mountSinglePiece(promatedPiece);
 
       setTimeout(() => {
-        this.rotateBoard();
+        this.rotateBoard(activePlayer);
         this.game.board.willRotate = true;
       }, 700);
     });
   }
 
-  rotateBoard(undo = false) {
-    if (undo) {
-      this.board.setAttribute("rotate", "true");
+  rotateBoard(activePlayer) {
+    if (activePlayer !== this.game.whitePlayer) {
+      this.board.setAttribute("rotate", "false");
     } else {
-      if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-        this.board.setAttribute("rotate", "false");
-      } else {
-        this.board.setAttribute("rotate", "true");
-      }
+      this.board.setAttribute("rotate", "true");
     }
   }
 
