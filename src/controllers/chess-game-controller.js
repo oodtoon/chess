@@ -9,6 +9,7 @@ import {
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
 import { copyPgn, exportToPgn } from "../io.js";
+import { promote } from "../models/pieces/index.mjs";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
@@ -48,15 +49,24 @@ export default class ChessGameController {
     this.activateMoveListBtns();
     this.activateDialongBtns();
 
-    this.eventBus.addEventListener("piece-move", this.handlePieceMove);
-
-    this.eventBus.addEventListener("piece-capture", this.handlePieceCapture);
+    this.eventBus.addEventListener("move", this.handlePieceMove);
   }
 
   handlePieceMove(event) {
     this.handleMove();
     this.updateMovesList(event);
-    this.movePiece(event);
+
+    if (event.detail.move.isCompoundMove) {
+      for (let move of event.detail.move.moves) {
+        this.movePiece(move);
+      }
+    } else {
+      this.movePiece(event.detail.move);
+    }
+
+    if (event.detail.move.capturedPiece) {
+      this.handlePieceCapture(event);
+    }
   }
 
   handleMove() {
@@ -73,15 +83,17 @@ export default class ChessGameController {
     if (this.movesList.currentListItem.children.length === 2) {
       this.movesList.nextListItem();
     }
-    this.movesList.addMove(event.detail.notation);
+    this.movesList.addMove(event.detail.move.toString());
   }
 
-  movePiece(event) {
+  movePiece(move) {
+    const { row, file, initiatingPiece } = move;
+
     const chessPieceElement = this.board.chessPieces.find(
-      (element) => element.piece.id === event.detail.pieceId
+      (element) => element.piece.id === initiatingPiece.id
     );
 
-    const destinationSquare = event.detail.to;
+    const destinationSquare = [row, file];
     const destinationSquareRank = destinationSquare[0];
 
     chessPieceElement.remove();
@@ -126,7 +138,7 @@ export default class ChessGameController {
 
   handlePieceCapture(event) {
     const capturedPiece = this.board.chessPieces.find(
-      (piece) => piece.piece.id === event.detail.pieceId
+      (piece) => piece.piece.id === event.detail.move.capturedPiece.id
     );
     capturedPiece.remove();
     const capturedPieceBin = getPlayerCapturePool(capturedPiece.piece.player);
@@ -270,7 +282,7 @@ export default class ChessGameController {
       );
       chessPieceElement.remove();
 
-      const promatedPiece = chessPieceElement.piece.promote(
+      const promatedPiece = promote(
         this.game.lastMove,
         this.promotionDialog.pieceSelect.value
       );
@@ -341,38 +353,28 @@ export default class ChessGameController {
   }
 
   handleSquareClick(event) {
-    if (event.target.piece) {
-      const pieceElement = event.target;
+    const square = event.currentTarget;
+    const pieceElement = square.querySelector("chess-piece");
+    const ghostElement = square.querySelector("ghost-move");
+
+    if (pieceElement) {
       const { player } = pieceElement.piece;
       if (this.game.getActivePlayer() !== player) {
         return;
-      }
-
-      if (
-        !player.selectedPiece ||
-        player.selectedPiece === pieceElement.piece
-      ) {
-        player.showMoves = !player.showMoves;
-        player.selectedPiece = pieceElement.piece;
-      }
-
-      if (player.showMoves) {
-        this.removeGhostMoves();
-        this.placeGhostMoves(pieceElement);
-        player.selectedPiece = pieceElement.piece;
       } else {
-        this.removeGhostMoves();
-        player.selectedPiece = null;
+        const { activeSquare } = this.board;
+        if (activeSquare) {
+          this.removeGhostMoves();
+          this.placeGhostMoves(pieceElement);
+        } else {
+          this.placeGhostMoves(pieceElement);
+        }
       }
     }
 
-    const ghostElements = this.board.shadowRoot.querySelectorAll("ghost-move");
-    ghostElements.forEach((ghostElem) => {
-      if (event.currentTarget.lastChild === ghostElem) {
-        const move = event.currentTarget.lastChild.potentialMove;
-        this.moveHelper(move);
-      }
-    });
+    if (ghostElement) {
+      this.moveHelper(ghostElement.potentialMove);
+    }
 
     if (!event.currentTarget.firstChild) {
       this.removeGhostMoves();

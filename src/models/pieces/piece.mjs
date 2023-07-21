@@ -75,45 +75,37 @@ class Piece {
   }
 
   onMove(move) {
-    this.game.eventBus.dispatchEvent("piece-move", {
-      pieceId: move.initiatingPiece.id,
-      from: [move.sourceRow, move.sourceFile],
-      to: [move.row, move.file],
-      notation: move.toString()
+    this.game.eventBus.dispatchEvent("move", {
+      move,
     });
-    if (move.capturedPiece) {
-      this.game.eventBus.dispatchEvent("piece-capture", {
-        pieceId: move.capturedPiece.id,
-      });
-    }
   }
 
   #isPiece(name) {
-    return this.name === name
+    return this.name === name;
   }
 
   isPawn() {
-    return this.#isPiece("Pawn")
+    return this.#isPiece("Pawn");
   }
 
   isRook() {
-    return this.#isPiece("Rook")
+    return this.#isPiece("Rook");
   }
 
   isKnight() {
-    return this.#isPiece("Knight")
+    return this.#isPiece("Knight");
   }
 
   isBishop() {
-    return this.#isPiece("Bishop")
+    return this.#isPiece("Bishop");
   }
 
   isQueen() {
-    return this.#isPiece("Queen")
+    return this.#isPiece("Queen");
   }
 
   isKing() {
-    return this.#isPiece("King")
+    return this.#isPiece("King");
   }
 }
 

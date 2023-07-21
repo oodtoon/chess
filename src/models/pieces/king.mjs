@@ -35,7 +35,6 @@ class King extends Piece {
 
   getAvailableCastlingMoves() {
     if (this.hasMoved) return [];
-    const currentSquare = [this.row, this.file];
 
     const leftSquareCount = this.countEmptySquares(this.row, 1, 4);
     const rightSquareCount = this.countEmptySquares(this.row, 5, 7);
@@ -50,6 +49,7 @@ class King extends Piece {
         actualSquares: leftSquareCount,
         targetSquare: [this.row, 2],
         rookTargetSquare: [this.row, 3],
+        isShort: false,
       },
       {
         rook: rightRook,
@@ -57,6 +57,7 @@ class King extends Piece {
         actualSquares: rightSquareCount,
         targetSquare: [this.row, 6],
         rookTargetSquare: [this.row, 5],
+        isShort: true,
       },
     ];
 
@@ -68,10 +69,11 @@ class King extends Piece {
           !rook.hasMoved
       )
       .map(
-        ({ rook, targetSquare, rookTargetSquare }) =>
+        ({ rook, targetSquare, rookTargetSquare, isShort }) =>
           new CompoundMove(
             Move.fromSquare(targetSquare, this),
-            Move.fromSquare(rookTargetSquare, rook)
+            Move.fromSquare(rookTargetSquare, rook),
+            isShort
           )
       );
   }

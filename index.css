@@ -87,11 +87,10 @@ chess-board {
   display: flex;
   flex-wrap: wrap;
 }
+
 chess-piece {
   width: var(--captured-piece-size);
   height: var(--captured-piece-size);
-  min-width: calc(var(--min-size) / 2);
-  min-height: calc(var(--min-size) / 2);
 }
 
 #black-pieces {
