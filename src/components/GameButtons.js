@@ -2,7 +2,7 @@ const undo = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" vie
 
 const gameButtonsTemplate = document.createElement("template");
 gameButtonsTemplate.innerHTML = String.raw`
-<section class="btns-container">
+<section class="btns-container dual">
 <button class="draw">Draw</button>
 <button class="resign">Resign</button>
 </section>
@@ -13,7 +13,9 @@ gameButtonsTemplate.innerHTML = String.raw`
 <style>
     .btns-container {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
+        width: 100%;
     }
 
     .btns-container > button {
@@ -37,6 +39,7 @@ gameButtonsTemplate.innerHTML = String.raw`
     .undo {
         border: 3px solid black;
         color: black;
+        max-height: 3em;
     }
 
     .btns-container > button:hover {
@@ -57,9 +60,13 @@ gameButtonsTemplate.innerHTML = String.raw`
     }
 
     .icon {
-        height: var(--font-size);
+        height: var(--element-size);
         weight: var(--font-weight);
     }
+
+    
+
+    
 </style>
 `;
 

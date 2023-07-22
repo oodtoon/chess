@@ -6,13 +6,32 @@ function generateTemplete() {
   <style>
 
     .square {
-      width: var(--square-size);
+      width: var(--responsive-size);
+      min-width: var(--min-size);
       aspect-ratio: 1;
-      font-size: calc(var(--square-size) * .75);
+      font-size: calc(var(--responsive-size) * .75);
       text-align: center;
       position: relative;
       display: flex;
     }
+
+    @media(min-width: 700px) {
+      .square {
+        width: var(--responsive-size)
+      }
+    }
+
+    @media(min-width: 1000px) {
+      .square {
+    width: var(--responsive-size);
+    max-height: 88px;
+    max-width: 88px;
+    min-width: 75px;
+    min-height: 75px;
+      }
+    }
+
+
 
     .black {
       background-color: brown;
