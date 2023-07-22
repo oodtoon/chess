@@ -1,9 +1,5 @@
 import Piece from "./piece.mjs";
 import Move from "../move.js";
-import Queen from "./queen.mjs";
-import Rook from "./rook.mjs";
-import Knight from "./knight.mjs";
-import Bishop from "./bishop.mjs";
 import { intToFile } from "../../util.js";
 
 class Pawn extends Piece {
@@ -96,29 +92,7 @@ class Pawn extends Piece {
   }
 
 
-  promote(move, type) {
-    move.player.removeLivePiece(this);
-    move.player.addPromotedPawn(this);
 
-    const pieceConstuctors = {
-      "Queen": Queen,
-      "Knight": Knight,
-      "Bishop": Bishop,
-      "Rook": Rook,
-    };
-
-    const PieceClass = pieceConstuctors[type];
-    const promotedPiece = new PieceClass(
-      this.game,
-      this.board,
-      this.player,
-      move.row,
-      move.file
-    );
-    
-    move.player.addLivePiece(promotedPiece);
-    return promotedPiece;
-  }
 
   get icon() {
     return this.isWhite() ? "♙" : "♟";

@@ -24,6 +24,14 @@ class BaseMove {
   doesMoveExposeOpponentToCheck() {
     return this.#doesMoveExposeCheck(this.player);
   }
+
+  checkPawnPromotion() {
+    if (this.initiatingPiece.isPawn() && (this.row === 0 || this.row === 7)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 export default class Move extends BaseMove {
@@ -59,12 +67,42 @@ export default class Move extends BaseMove {
     return this.capturedPiece !== null;
   }
 
+  isShortCastle() {
+    if (this.initiatingPiece.name !== "King") {
+      return;
+    }
+    if (this.file === 6) {
+      return true;
+    } else if (this.file === 2) {
+      return false;
+    }
+  }
+
   toString() {
     const letter = this.initiatingPiece.isPawn()
       ? ""
       : this.initiatingPiece.notation;
     const capture = this.isCapture ? "x" : "";
+    //TODO add promotion into notation similar to capture e8=Q
+    const promotedPawn = this.checkPawnPromotion() ? letter : "";
+
+    // const promotedPiece = this.game.board.getSquareContent(this.row, this.file).notation
+    // console.log(promotedPiece)
+    // also add caslte o-o or o-o-o
+    //check +
+    //checkmate #
+    //stalemate no notation but we can make it and it can be :(
+    debugger
     const square = coordToAlgebraic([this.row, this.file]);
+
+    if (this.specialMove === "castle") {
+      if (this.initiatingPiece.name === "King") {
+        const castle = this.isShortCastle() ? "o-o" : "o-o-o";
+        return castle;
+      } else {
+        return;
+      }
+    }
     return letter + capture + square;
   }
 
@@ -74,17 +112,27 @@ export default class Move extends BaseMove {
 }
 
 export class CompoundMove extends BaseMove {
-  constructor(...moves) {
+  constructor(kingMove, rookMove, isShort) {
     super();
-    this.moves = moves;
+    this.kingMove = kingMove
+    this.rookMove = rookMove
+    this.isShort = isShort
+  }
+
+  toString() {
+    if (this.isShort) {
+      return "o-o"
+    } else {
+      return "o-o-o"
+    }
   }
 
   get row() {
-    return this.moves[0].row;
+    return this.kingMove.row;
   }
 
   get file() {
-    return this.moves[0].file;
+    return this.kingMove.file;
   }
 
   get isCompoundMove() {
@@ -92,10 +140,14 @@ export class CompoundMove extends BaseMove {
   }
 
   get player() {
-    return this.moves[0].player;
+    return this.kingMove.player;
   }
 
   get opponent() {
-    return this.moves[0].opponent;
+    return this.kingMove.opponent;
+  }
+
+  get moves() {
+    return [this.kingMove, this.rookMove]
   }
 }

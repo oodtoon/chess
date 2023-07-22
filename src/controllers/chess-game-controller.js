@@ -9,6 +9,7 @@ import {
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
 import { copyPgn, exportToPgn } from "../io.js";
+import { promote } from "../models/pieces/index.mjs";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
@@ -33,60 +34,171 @@ export default class ChessGameController {
     this.reviewDialog = document.querySelector("review-dialog");
 
     this.endGameDialog = document.querySelector("end-game-dialog");
+
+    this.handleMove = this.handleMove.bind(this);
+    this.handlePieceMove = this.handlePieceMove.bind(this);
+
+    this.handleSquareClick = this.handleSquareClick.bind(this);
+    this.handlePieceCapture = this.handlePieceCapture.bind(this);
   }
 
   initialize() {
     this.mountPieces();
-    this.eventBus.addEventListener(
-      "piece-capture",
-      this.handlePieceCapture.bind(this)
+    this.attachSquareListeners();
+    this.activateGameButtons();
+    this.activateMoveListBtns();
+    this.activateDialongBtns();
+
+    this.eventBus.addEventListener("move", this.handlePieceMove);
+  }
+
+  handlePieceMove(event) {
+    this.handleMove();
+    this.updateMovesList(event);
+
+    if (event.detail.move.isCompoundMove) {
+      for (let move of event.detail.move.moves) {
+        this.movePiece(move);
+      }
+    } else {
+      this.movePiece(event.detail.move);
+    }
+
+    if (event.detail.move.capturedPiece) {
+      this.handlePieceCapture(event);
+    }
+  }
+
+  handleMove() {
+    const activePlayer = this.game.getActivePlayer();
+
+    this.checkForTerminalState(activePlayer);
+
+    if (this.game.board.willRotate) {
+      this.updatePlayerTurnAndText(activePlayer);
+    }
+  }
+
+  handleUndoMove() {
+    const prevMove = this.game.lastMove;
+
+    if (prevMove.isCompoundMove) {
+      for (let move of prevMove) {
+        this.movePiece(move, true);
+        this.game.undoMove();
+      }
+    } else {
+      this.movePiece(prevMove, true);
+    }
+
+    if (prevMove.capturedPiece) {
+      this.undoPieceCapture(prevMove);
+    }
+
+    const piece = prevMove.initiatingPiece;
+
+    if (
+      piece.name === "Pawn" ||
+      piece.name === "Rook" ||
+      piece.name === "King"
+    ) {
+      if (
+        !this.game.moves.find((move) => {
+          move.initiatingPiece === piece;
+        })
+      ) {
+        piece.hasMoved = false;
+      }
+    }
+
+    this.game.undoMove();
+    this.movesList.removeMove();
+    const prevPlayer = this.game.getActivePlayer().opponent;
+    this.updatePlayerTurnAndText(prevPlayer);
+  }
+
+  updateMovesList(event) {
+    if (this.movesList.currentListItem.children.length === 2) {
+      this.movesList.nextListItem();
+    }
+    this.movesList.addMove(event.detail.move.toString());
+  }
+
+  movePiece(move, undo = false) {
+    const { row, file, initiatingPiece, sourceRow, sourceFile } = move;
+
+    const chessPieceElement = this.board.chessPieces.find(
+      (element) => element.piece.id === initiatingPiece.id
     );
 
-    this.eventBus.addEventListener("piece-move", this.handleMove.bind(this));
+    const destinationSquare = undo ? [sourceRow, sourceFile] : [row, file];
+    const destinationSquareRank = destinationSquare[0];
 
-    this.eventBus.addEventListener("piece-move", (event) => {
-      if (this.movesList.currentListItem.children.length === 2) {
-        this.movesList.nextListItem();
-      }
-      this.movesList.addMove(event.detail.notation);
+    chessPieceElement.remove();
+    const destination = this.board.getSquare(...destinationSquare);
+    destination.appendChild(chessPieceElement);
+
+    if (
+      chessPieceElement.piece.name === "Pawn" &&
+      (destinationSquareRank === 7 || destinationSquareRank === 0)
+    ) {
+      this.game.board.willRotate = false;
+      displayPromotionDialog(this.promotionDialog);
+    }
+  }
+
+  checkForTerminalState(activePlayer) {
+    const color = activePlayer.color;
+    if (activePlayer.opponent.moves.length === 0) {
+      setTimeout(() => {
+        if (this.game.isPlayerInCheck()) {
+          const checkmate = `Checkmate! ${color} player wins!`;
+          declareWinner(
+            color,
+            this.game,
+            this.turn,
+            this.endGameDialog,
+            checkmate
+          );
+        } else {
+          const stalemate = "Stalemate";
+          declareDraw(this.game, this.endGameDialog, stalemate);
+        }
+      }, 500);
+      this.game.board.willRotate = false;
+    }
+  }
+
+  updatePlayerTurnAndText(activePlayer) {
+    this.rotateBoard(activePlayer);
+    this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+  }
+
+  handlePieceCapture(event) {
+    const capturedPiece = this.board.chessPieces.find(
+      (piece) => piece.piece.id === event.detail.move.capturedPiece.id
+    );
+    capturedPiece.remove();
+    const capturedPieceBin = getPlayerCapturePool(capturedPiece.piece.player);
+    capturedPieceBin.appendChild(capturedPiece);
+  }
+
+  undoPieceCapture(move) {
+    const zombiePiece = move.capturedPiece;
+    this.mountSinglePiece(zombiePiece);
+    const capturedPieceBin = getPlayerCapturePool(zombiePiece.player);
+    const zombieElement = capturedPieceBin.lastChild;
+    capturedPieceBin.removeChild(zombieElement);
+  }
+
+  attachSquareListeners() {
+    const squares = this.board.shadowRoot.querySelectorAll(".square");
+    squares.forEach((square) => {
+      square.addEventListener("click", this.handleSquareClick);
     });
+  }
 
-    this.eventBus.addEventListener("piece-move", (event) => {
-      const chessPieceElement = this.board.chessPieces.find(
-        (element) => element.piece.id === event.detail.pieceId
-      );
-
-      const destinationSquare = event.detail.to;
-      const destinationSquareRank = destinationSquare[0];
-
-      chessPieceElement.remove();
-      const destination = this.board.getSquare(...destinationSquare);
-      destination.appendChild(chessPieceElement);
-
-      if (
-        chessPieceElement.piece.name === "Pawn" &&
-        (destinationSquareRank === 7 || destinationSquareRank === 0)
-      ) {
-        this.game.board.willRotate = false;
-        displayPromotionDialog(this.promotionDialog);
-      }
-    });
-
-    this.movesList.exportButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      exportToPgn(this.game);
-    });
-
-    this.movesList.copyButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      copyPgn(this.game);
-    });
-
-    this.movesList.importButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      console.log("import");
-    });
-
+  activateGameButtons() {
     this.gameButtons.drawButton.addEventListener("click", (event) => {
       event.preventDefault();
 
@@ -97,25 +209,6 @@ export default class ChessGameController {
       const drawMsg = `${color} wishes to draw. ${opponentColor}, do you accept?`;
 
       displayReviewDialog(this.reviewDialog, drawMsg, "Draw");
-    });
-
-    this.reviewDialog.acceptButton.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      if (this.reviewDialog.type === "Draw") {
-        this.game.result = "1/2-1/2";
-        this.turn.textContent = "Draw";
-        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
-      } else {
-        console.log("accept undo move");
-        const dialog =
-          this.reviewDialog.shadowRoot.getElementById("review-dialog");
-        dialog.close();
-      }
-    });
-
-    this.reviewDialog.declineButton.addEventListener("close", (event) => {
-      event.preventDefault();
     });
 
     this.gameButtons.resignButton.addEventListener("click", (event) => {
@@ -133,12 +226,50 @@ export default class ChessGameController {
 
       displayUndoMoveDialog(this.undoDialog);
     });
+  }
+
+  activateMoveListBtns() {
+    this.movesList.exportButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      exportToPgn(this.game);
+    });
+
+    this.movesList.copyButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      copyPgn(this.game);
+    });
+
+    this.movesList.importButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      console.log("import");
+    });
+  }
+
+  activateDialongBtns() {
+    this.reviewDialog.acceptButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (this.reviewDialog.type === "Draw") {
+        this.game.result = "1/2-1/2";
+        this.turn.textContent = "Draw";
+        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
+      } else {
+        this.handleUndoMove();
+        const dialog =
+          this.reviewDialog.shadowRoot.getElementById("review-dialog");
+        dialog.close();
+      }
+    });
+
+    this.reviewDialog.declineButton.addEventListener("close", (event) => {
+      event.preventDefault();
+    });
 
     this.undoDialog.requestButton.addEventListener("click", (event) => {
       event.preventDefault();
 
       const activePlayer = this.game.getActivePlayer();
-      const color = activePlayer.color;
+      const color = activePlayer.opponent.color;
       const title = `${color} player wants to undo most recent move. Do you accept?`;
       displayReviewDialog(
         this.reviewDialog,
@@ -185,6 +316,7 @@ export default class ChessGameController {
       event.preventDefault();
 
       const pawnToPromote = this.game.lastMove.initiatingPiece;
+      const activePlayer = pawnToPromote.player;
       const chessPieceElement = this.board.chessPieces.find(
         (element) => element.piece.id === pawnToPromote.id
       );
@@ -196,7 +328,7 @@ export default class ChessGameController {
       );
       chessPieceElement.remove();
 
-      const promatedPiece = chessPieceElement.piece.promote(
+      const promatedPiece = promote(
         this.game.lastMove,
         this.promotionDialog.pieceSelect.value
       );
@@ -204,51 +336,90 @@ export default class ChessGameController {
       this.mountSinglePiece(promatedPiece);
 
       setTimeout(() => {
-        this.rotateBoard();
+        this.rotateBoard(activePlayer);
         this.game.board.willRotate = true;
       }, 700);
     });
   }
 
-  handleMove() {
-    
-
-    const activePlayer = this.game.getActivePlayer();
-
-    const color = activePlayer.color;
-    if (activePlayer.opponent.moves.length === 0) {
-      setTimeout(() => {
-        if (this.game.isPlayerInCheck()) {
-          const checkmate = `Checkmate! ${color} player wins!`;
-          declareWinner(
-            color,
-            this.game,
-            this.turn,
-            this.endGameDialog,
-            checkmate
-          );
-        } else {
-          const stalemate = "Stalemate";
-          declareDraw(this.game, this.endGameDialog, stalemate);
-        }
-      }, 500);
-      this.game.board.willRotate = false;
-    }
-
-    if (this.game.board.willRotate === true) {
-      this.rotateBoard();
-      this.game.getActivePlayer();
-      this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+  rotateBoard(activePlayer) {
+    if (activePlayer !== this.game.whitePlayer) {
+      this.board.setAttribute("rotate", "false");
+    } else {
+      this.board.setAttribute("rotate", "true");
     }
   }
 
-  handlePieceCapture(event) {
-    const capturedPiece = this.board.chessPieces.find(
-      (piece) => piece.piece.id === event.detail.pieceId
-    );
-    capturedPiece.remove();
-    const capturedPieceBin = getPlayerCapturePool(capturedPiece.piece.player);
-    capturedPieceBin.appendChild(capturedPiece);
+  mountPieces() {
+    this.mountPlayerPieces(this.game.whitePlayer);
+    this.mountPlayerPieces(this.game.blackPlayer);
+  }
+
+  mountPlayerPieces(player) {
+    for (let piece of player.livePieces) {
+      this.mountSinglePiece(piece);
+    }
+  }
+
+  mountSinglePiece(piece) {
+    const squareElement = this.board.getSquare(piece.row, piece.file);
+    const chessPieceElement = document.createElement("chess-piece");
+    chessPieceElement.piece = piece;
+    chessPieceElement.addEventListener("click", this.handlePieceClick);
+    squareElement.appendChild(chessPieceElement);
+  }
+
+  placeGhostMoves(pieceElement) {
+    pieceElement.classList.add("active");
+    for (let move of this.game.getMoves(pieceElement.piece)) {
+      const square = this.board.getSquare(move.row, move.file);
+      const ghostMove = document.createElement("ghost-move");
+      ghostMove.potentialMove = move;
+      ghostMove.game = this.game;
+      square.appendChild(ghostMove);
+    }
+  }
+
+  removeGhostMoves() {
+    const activeSquare = this.board.activeSquare;
+
+    if (activeSquare) {
+      activeSquare.classList.remove("active");
+    }
+
+    const ghostMoves = this.board.ghostMoves;
+    for (let ghost of ghostMoves) {
+      ghost.remove();
+    }
+  }
+
+  moveHelper(move) {
+    this.removeGhostMoves();
+    this.game.doMove(move);
+  }
+
+  handleSquareClick(event) {
+    const square = event.currentTarget;
+    const pieceElement = square.querySelector("chess-piece");
+    const ghostElement = square.querySelector("ghost-move");
+
+    if (pieceElement) {
+      const { player } = pieceElement.piece;
+      if (this.game.getActivePlayer() !== player && !ghostElement) {
+        return;
+      } else {
+        this.removeGhostMoves();
+        this.placeGhostMoves(pieceElement);
+      }
+    }
+
+    if (ghostElement) {
+      this.moveHelper(ghostElement.potentialMove);
+    }
+
+    if (!event.currentTarget.firstChild) {
+      this.removeGhostMoves();
+    }
   }
 
   testScenario() {
@@ -276,108 +447,5 @@ export default class ChessGameController {
     game.doMove(game.getMoves(BPL)[0]);
     game.doMove(game.getMoves(WP4)[1]);
     game.doMove(game.getMoves(BP5)[1]);
-  }
-
-  rotateBoard() {
-    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.board.setAttribute("rotate", "false");
-    } else {
-      this.board.setAttribute("rotate", "true");
-    }
-  }
-
-  mountPieces() {
-    this.mountPlayerPieces(this.game.whitePlayer);
-    this.mountPlayerPieces(this.game.blackPlayer);
-  }
-
-  mountPlayerPieces(player) {
-    for (let piece of player.livePieces) {
-      this.mountSinglePiece(piece);
-    }
-  }
-
-  mountSinglePiece(piece) {
-    const squareElement = this.board.getSquare(piece.row, piece.file);
-    const chessPieceElement = document.createElement("chess-piece");
-    chessPieceElement.piece = piece;
-    chessPieceElement.addEventListener(
-      "click",
-      this.handlePieceClick.bind(this)
-    );
-    squareElement.appendChild(chessPieceElement);
-  }
-
-  placeGhostMoves(pieceElement) {
-    pieceElement.classList.add("active");
-
-    for (let move of this.game.getMoves(pieceElement.piece)) {
-      const square = this.board.getSquare(move.row, move.file);
-
-      if (!square) {
-        return;
-      }
-
-      const ghostMove = document.createElement("ghost-move");
-
-      
-
-      ghostMove.potentialMove = move;
-      ghostMove.game = this.game;
-      square.appendChild(ghostMove);
-
-
-      const moveHelper = () => {
-        this.removeAllSquareListeners(pieceElement.piece, moveHelper)
-        this.removeGhostMoves();
-        this.game.doMove(move)
-      }
-
-      square.addEventListener("click", moveHelper)
-    }
-  }
-
-  removeAllSquareListeners(piece, functionToRemove) {
-    for (let move of this.game.getMoves(piece)) {
-      const square = this.board.getSquare(move.row, move.file)
-      square.removeEventListener("click", functionToRemove)
-    }
-  }
-
-  removeGhostMoves() {
-    const activeSquare = this.board.activeSquare;
-
-    if (activeSquare) {
-      activeSquare.classList.remove("active");
-    }
-
-    const ghostMoves = this.board.ghostMoves;
-    for (let ghost of ghostMoves) {
-      ghost.remove();
-    }
-  }
-
- 
-
-  handlePieceClick(event) {
-    const pieceElement = event.currentTarget;
-    const { player } = pieceElement.piece;
-    if (this.game.getActivePlayer() !== player) {
-      return;
-    }
-
-    if (!player.selectedPiece || player.selectedPiece === pieceElement.piece) {
-      player.showMoves = !player.showMoves;
-      player.selectedPiece = pieceElement.piece;
-    }
-
-    if (player.showMoves) {
-      this.removeGhostMoves();
-      this.placeGhostMoves(pieceElement);
-      player.selectedPiece = pieceElement.piece;
-    } else {
-      this.removeGhostMoves();
-      player.selectedPiece = null;
-    }
   }
 }

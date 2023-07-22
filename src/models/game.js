@@ -4,13 +4,13 @@ import Player from "./player.js";
 export default class Game {
   constructor(eventBus) {
     this.board = new Board(this);
-    this.eventBus = eventBus
+    this.eventBus = eventBus;
     this.whitePlayer = new Player("White", this);
     this.blackPlayer = new Player("Black", this);
     this.wireUpOpposition();
     this.board.initialize();
     this.moves = [];
-    this.result = null
+    this.result = null;
   }
 
   wireUpOpposition() {
@@ -33,10 +33,20 @@ export default class Game {
   }
 
   stageMove(move, shouldCommitMove = true) {
+    let moves;
     if (move.isCompoundMove) {
-      move.moves.forEach((move) => this.stageMove(move, shouldCommitMove));
+      moves = [move.kingMove, move.rookMove];
     } else {
+      moves = [move];
+    }
+
+    for (let move of moves) {
       const { row, file, initiatingPiece, capturedPiece } = move;
+
+      if (initiatingPiece.name === "Pawn" && (row === 7 || row === 0)) {
+        this.board.willRotate = false;
+      }
+
       if (capturedPiece) {
         const { row: capturedRow, file: capturedFile } = capturedPiece;
         this.board.set(capturedRow, capturedFile, null);
@@ -46,13 +56,18 @@ export default class Game {
       const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
       this.board.set(initiatingRow, initiatingFile, null);
       this.board.set(row, file, initiatingPiece);
-      if (shouldCommitMove) {
+    }
+
+    if (shouldCommitMove) {
+      if (move.isCompoundMove) {
+        move.kingMove.initiatingPiece.hasMoved = true;
+        move.rookMove.initiatingPiece.hasMoved = true;
+        move.kingMove.initiatingPiece.onMove(move)
+      } else {
         move.initiatingPiece.onMove(move);
       }
     }
   }
-
-
 
   unstageMove(move) {
     if (move.isCompoundMove) {
@@ -83,14 +98,9 @@ export default class Game {
     } else {
       return this.moves.length % 2 === 0 ? this.blackPlayer : this.whitePlayer;
     }
-    
   }
 
   doMove(move) {
-    if (move.initiatingPiece.name === "Pawn" && (move.row === 7 || move.row === 0)) {
-      this.board.willRotate = false
-    }
-
     this.stageMove(move);
     this.moves.push(move);
   }
@@ -109,6 +119,6 @@ export default class Game {
   }
 
   get isGameOver() {
-    return this.result !== null
+    return this.result !== null;
   }
 }
