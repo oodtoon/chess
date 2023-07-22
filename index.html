@@ -14,39 +14,32 @@
 
     <div class="container">
         <h2 class="turn" id="turn">White's Turn</h2>
-        <div id="captured-white">
-            <h2>Black's Pieces Taken</h2>
-            <div id="white-pieces"></div>
-        </div>
-        <div id="captured-black">
-            <h2>Whites's Pieces Taken</h2>
-            <div id="black-pieces"></div>
-        </div>
-        
-        <chess-board id="main-game"/></chess-board>
+
+
+        <chess-board id="main-game" /></chess-board>
         <game-buttons class="game-btns"></game-buttons>
         <moves-list class="moves-list"></moves-list>
         <section class="capture-container">
-            <div id="captured-black" style="position: relative">
-                <h2>Whites's Pieces Taken</h2>
-                <div id="black-pieces"></div>
-            </div>
             <div id="captured-white">
                 <h2>Black's Pieces Taken</h2>
                 <div id="white-pieces"></div>
             </div>
- 
+            <div id="captured-black">
+                <h2>Whites's Pieces Taken</h2>
+                <div id="black-pieces"></div>
+            </div>
+
         </section>
-        
-        
-        
+
+
+
 
         <end-game-dialog class="end-game-dialog"></end-game-dialog>
         <undo-dialog class="undo-dialog"></undo-dialog>
         <review-dialog class="review-dialog"></review-dialog>
         <promotion-dialog class="promotion-dialog"></promotion-dialog>
     </div>
-    
+
 
     <script src="src/index.js" type="module" crossorigin></script>
 </body>
