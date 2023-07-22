@@ -1,7 +1,7 @@
-const copySvg = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 16 16"><path fill="currentColor" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path fill="currentColor" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>` 
-const checkMarkSvg = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 12 16"><path fill-rule="evenodd" d="M12 5l-8 8l-4-4l1.5-1.5L4 10l6.5-6.5L12 5z" fill="currentColor"/></svg>`
+const copySvg = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 16 16"><path fill="currentColor" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path fill="currentColor" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>`;
+const checkMarkSvg = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 12 16"><path fill-rule="evenodd" d="M12 5l-8 8l-4-4l1.5-1.5L4 10l6.5-6.5L12 5z" fill="currentColor"/></svg>`;
 
-const listTemplate = document.createElement("template")
+const listTemplate = document.createElement("template");
 listTemplate.innerHTML = String.raw`
   <h3>moves list</h3>
   <ol>
@@ -9,6 +9,7 @@ listTemplate.innerHTML = String.raw`
   <section class="btns-container">
     <button class="export">export pgn</button>
     <button class="copy">copy pgn <span class="copy-icon">${copySvg}</span></button>
+    <input type="file" id="file-input" style="display: none"/>
     <button class="import">import pgn</button>
   </section>
   <style>
@@ -82,39 +83,47 @@ listTemplate.innerHTML = String.raw`
       width: var(--element-size);
     }
   </style>
-`
+`;
 
 class MoveList extends HTMLElement {
   style = {
-    padding: "1em"
-  }
+    padding: "1em",
+  };
 
   constructor() {
-    super()
-    this.attachShadow({ mode: "open" })
-    this.shadowRoot.append(listTemplate.content.cloneNode(true))
-    this.exportButton = this.shadowRoot.querySelector(".export")
-    this.copyButton = this.shadowRoot.querySelector(".copy")
-    this.importButton = this.shadowRoot.querySelector(".import")
-    this.copyIcon = this.shadowRoot.querySelector(".copy-icon")
+    super();
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot.append(listTemplate.content.cloneNode(true));
+    this.exportButton = this.shadowRoot.querySelector(".export");
+    this.copyButton = this.shadowRoot.querySelector(".copy");
+    this.importButton = this.shadowRoot.querySelector(".import");
+    this.copyIcon = this.shadowRoot.querySelector(".copy-icon");
+    this.fileInput = this.shadowRoot.getElementById("file-input");
   }
 
   connectedCallback() {
-    this.listRoot = this.shadowRoot.querySelector("ol")
-    this.nextListItem()
+    this.listRoot = this.shadowRoot.querySelector("ol");
+    this.nextListItem();
     this.copyButton.addEventListener("click", () => {
-      this.copyIcon.innerHTML = checkMarkSvg
+      this.copyIcon.innerHTML = checkMarkSvg;
       setTimeout(() => {
-        this.copyIcon.innerHTML = copySvg
-      }, 4000)
-    })
+        this.copyIcon.innerHTML = copySvg;
+      }, 4000);
+    });
   }
 
   addMove(move) {
-    const moveSpan = document.createElement("span")
-    moveSpan.style.flex = "1 0 auto"
-    moveSpan.textContent = move + " "
-    this.currentListItem.appendChild(moveSpan)
+    const moveSpan = document.createElement("span");
+    moveSpan.style.flex = "1 0 auto";
+    moveSpan.textContent = move + " ";
+    this.currentListItem.appendChild(moveSpan);
+  }
+
+  removeMove() {
+    const orderedListElement = this.shadowRoot.querySelector("ol");
+    const lastListElement = orderedListElement.lastChild;
+    const lastSpan = lastListElement.lastChild;
+    lastListElement.removeChild(lastSpan);
   }
 
   removeMove() {
@@ -125,12 +134,9 @@ class MoveList extends HTMLElement {
   }
 
   nextListItem() {
-    this.currentListItem = document.createElement("li")
-    this.listRoot?.appendChild(this.currentListItem)
+    this.currentListItem = document.createElement("li");
+    this.listRoot?.appendChild(this.currentListItem);
   }
- 
 }
 
-
-
-window.customElements.define("moves-list", MoveList)
+window.customElements.define("moves-list", MoveList);

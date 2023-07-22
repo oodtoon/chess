@@ -1,3 +1,6 @@
+const { parse } = window.PgnParser;
+import Game from "./models/game.js";
+
 export function derivePgn(game) {
   let movesPgn = game.moves.reduce((acc, move, index) => {
     if (index % 2 === 0) {
@@ -8,21 +11,27 @@ export function derivePgn(game) {
   }, "");
 
   if (game.isGameOver) {
-    movesPgn = movesPgn + game.result
+    movesPgn = movesPgn + game.result;
   }
-  return movesPgn
+  
+  return movesPgn;
 }
 
 export function exportToPgn(game) {
-    const pgn = derivePgn(game)
-    const anchor = document.createElement("a")
-    anchor.href = "data:text/plain;charset=utf-8," + encodeURIComponent(pgn)
-    anchor.download = "chess_result.pgn"
+  const pgn = derivePgn(game);
+  const anchor = document.createElement("a");
+  anchor.href = "data:text/plain;charset=utf-8," + encodeURIComponent(pgn);
+  anchor.download = "chess_result.pgn";
 
-    anchor.click()
+  anchor.click();
 }
 
 export function copyPgn(game) {
-    const pgn = derivePgn(game)
-    navigator.clipboard.writeText(pgn)
+  const pgn = derivePgn(game);
+  navigator.clipboard.writeText(pgn);
+}
+
+export function parsePgn(pgn) {
+  const parsedPgn = parse(pgn)
+  return Game.fromParsedToken(parsedPgn)
 }

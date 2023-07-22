@@ -4,9 +4,10 @@ import Move, { CompoundMove } from "../move.js";
 class King extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [4];
+  static notation = "K"
 
   name = "King";
-  notation = "K"
+  
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -109,6 +110,10 @@ class King extends Piece {
 
   get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wk.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bk.png"
+  }
+
+  get notation() {
+    return King.notation
   }
 }
 

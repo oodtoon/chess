@@ -3,9 +3,9 @@ import Piece from "./piece.mjs";
 class Knight extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [1, 6];
+  static notation = "N";
 
   name = "Knight";
-  notation = "N";
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -39,6 +39,10 @@ class Knight extends Piece {
 
   get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wn.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bn.png"
+  }
+
+  get notation() {
+    return Knight.notation
   }
 }
 

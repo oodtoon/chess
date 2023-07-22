@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
-    "@fortawesome/free-regular-svg-icons": "^6.4.0"
+    "@fortawesome/free-regular-svg-icons": "^6.4.0",
+    "@mliebelt/pgn-parser": "^1.4.12"
   }
 }

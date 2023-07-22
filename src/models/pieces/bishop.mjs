@@ -3,9 +3,9 @@ import Piece from "./piece.mjs";
 class Bishop extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [2, 5];
+  static notation = "B"
 
   name = "Bishop";
-  notation = "B"
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -28,7 +28,6 @@ class Bishop extends Piece {
 
   onMove(move) {
     super.onMove(move);
-    console.log(move);
   }
 
   get icon() {
@@ -37,6 +36,10 @@ class Bishop extends Piece {
 
   get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wb.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bb.png"
+  }
+
+  get notation() {
+    return Bishop.notation
   }
 }
 

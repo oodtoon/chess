@@ -92,7 +92,6 @@ export default class Move extends BaseMove {
     //check +
     //checkmate #
     //stalemate no notation but we can make it and it can be :(
-    debugger
     const square = coordToAlgebraic([this.row, this.file]);
 
     if (this.specialMove === "castle") {
@@ -105,6 +104,8 @@ export default class Move extends BaseMove {
     }
     return letter + capture + square;
   }
+
+ 
 
   get isCheck() {
     return this.doesMoveExposeOpponentToCheck();

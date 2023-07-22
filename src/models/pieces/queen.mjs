@@ -3,9 +3,10 @@ import Piece from "./piece.mjs";
 class Queen extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [3];
+  static notation = "Q";
 
   name = "Queen";
-  notation = "Q";
+ 
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -38,6 +39,10 @@ class Queen extends Piece {
 
   get img() {
     return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wq.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bq.png"
+  }
+
+  get notation() {
+    return Queen.notation
   }
 }
 
