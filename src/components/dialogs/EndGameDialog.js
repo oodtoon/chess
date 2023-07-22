@@ -10,9 +10,9 @@ endGameTemplate.innerHTML = String.raw`
     <button class="exit" formmethod="dialog">${exit}</button>
        <h2 class="title" id="end-title">white wins!</h2> 
        <span class="btn-container">
-           <button class="play-again">play again!</button>
-           <button class="export-dialog">export pgn</button>
-           <button class="copy-dialog">copy pgn <span class="copy-icon">${copySvg}</span></button>
+           <button class="play-again-btn">play again!</button>
+           <button class="export-btn">export pgn</button>
+           <button class="copy-btn">copy pgn <span class="copy-icon">${copySvg}</span></button>
        </span>
     </form>
 </dialog>
@@ -67,32 +67,32 @@ endGameTemplate.innerHTML = String.raw`
     box-shadow: .2em .2em .2em black;
  }
 
- .play-again {
+ .play-again-btn {
     border: 3px solid #49a6e9;
     color: #49a6e9;
  }
 
- .export-dialog {
+ .export-btn {
     border: 3px solid brown;
     color: brown;
  }
 
- .copy-dialog {
+ .copy-btn {
     border: 3px solid black;
     color: black;
  }
 
- .play-again:hover {
+ .play-again-btn:hover {
     color: white;
     background-color: #49a6e9;
  }
 
- .export-dialog:hover {
+ .export-btn:hover {
     color: white;
     background-color: brown;
 }
 
-.copy-dialog:hover {
+.copy-btn:hover {
     color: white;
     background-color: black;
 }
@@ -109,12 +109,15 @@ export default class EndGameDialog extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.shadowRoot.append(endGameTemplate.content.cloneNode(true));
-    this.exportButton = this.shadowRoot.querySelector(".export-dialog");
-    this.copyButton = this.shadowRoot.querySelector(".copy-dialog");
-    this.playAgainButton = this.shadowRoot.querySelector(".play-again");
-    this.copyIcon = this.shadowRoot.querySelector(".copy-icon");
+
     this.title = this.shadowRoot.querySelector(".title");
     this.exitButton = this.shadowRoot.querySelector(".exit");
+
+    this.exportButton = this.shadowRoot.querySelector(".export-btn");
+    this.copyButton = this.shadowRoot.querySelector(".copy-btn");
+    this.playAgainButton = this.shadowRoot.querySelector(".play-again-btn");
+
+    this.copyIcon = this.shadowRoot.querySelector(".copy-icon");
   }
 
   connectedCallback() {

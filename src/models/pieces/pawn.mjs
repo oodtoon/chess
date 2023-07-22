@@ -16,7 +16,6 @@ class Pawn extends Piece {
     super(game, board, player, row, file);
     this.hasMoved = false;
     this.hasDoubleMoved = false;
-    this.isPromoted = false;
   }
 
   canEnPassant(row, file) {
@@ -96,11 +95,6 @@ class Pawn extends Piece {
     return available;
   }
 
-  setPromote(move) {
-    if (move.row === 0 || move.row === 7) {
-      this.isPromoted = true;
-    }
-  }
 
   promote(move, type) {
     move.player.removeLivePiece(this);
@@ -133,7 +127,6 @@ class Pawn extends Piece {
   onMove(move) {
     super.onMove(move);
     this.hasMoved = true;
-    this.setPromote(move);
   }
 
   get img() {
