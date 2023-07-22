@@ -1,6 +1,14 @@
 import EventBus from "../event-bus.js";
+import {
+  declareWinner,
+  declareDraw,
+  displayReviewDialog,
+  displayUndoMoveDialog,
+  displayPromotionDialog,
+  closePromotionSelect,
+} from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
-import { copyPgn, declareDraw, declareWinner, exportToPgn, handleUndoMove, offerDraw, handleUndoRequest } from "../io.js";
+import { copyPgn, exportToPgn } from "../io.js";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
@@ -20,11 +28,11 @@ export default class ChessGameController {
     this.gameButtons = document.querySelector("game-buttons");
     this.movesList = document.querySelector("moves-list");
 
-    this.drawModal = document.querySelector("draw-modal")
-    this.endGameModal = document.querySelector("end-game-modal");
+    this.undoDialog = document.querySelector("undo-dialog");
+    this.promotionDialog = document.querySelector("promotion-dialog");
+    this.reviewDialog = document.querySelector("review-dialog");
 
-    this.undoModal = document.querySelector("undo-modal")
-    this.undoReviewModal = document.querySelector("undo-review-modal")
+    this.endGameDialog = document.querySelector("end-game-dialog");
   }
 
   initialize() {
@@ -47,99 +55,162 @@ export default class ChessGameController {
       const chessPieceElement = this.board.chessPieces.find(
         (element) => element.piece.id === event.detail.pieceId
       );
+
+      const destinationSquare = event.detail.to;
+      const destinationSquareRank = destinationSquare[0];
+
       chessPieceElement.remove();
-      const destination = this.board.getSquare(...event.detail.to);
+      const destination = this.board.getSquare(...destinationSquare);
       destination.appendChild(chessPieceElement);
+
+      if (
+        chessPieceElement.piece.name === "Pawn" &&
+        (destinationSquareRank === 7 || destinationSquareRank === 0)
+      ) {
+        this.game.board.willRotate = false
+        displayPromotionDialog(this.promotionDialog);
+      }
     });
 
-    this.movesList.exportButton.addEventListener("click", () => {
-      console.log(this.movesList);
+    this.movesList.exportButton.addEventListener("click", (event) => {
+      event.preventDefault();
       exportToPgn(this.game);
     });
 
-    this.movesList.copyButton.addEventListener("click", () => {
+    this.movesList.copyButton.addEventListener("click", (event) => {
+      event.preventDefault();
       copyPgn(this.game);
     });
 
-    this.movesList.importButton.addEventListener("click", () => {
+    this.movesList.importButton.addEventListener("click", (event) => {
+      event.preventDefault();
       console.log("import");
     });
 
-    this.gameButtons.drawButton.addEventListener("click", () => {
+    this.gameButtons.drawButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
-    
-      const drawMsg = `${color} wishes to draw. ${opponentColor}, do you accept?`
-    
-      offerDraw(this.drawModal, drawMsg)
+
+      const drawMsg = `${color} wishes to draw. ${opponentColor}, do you accept?`;
+
+      displayReviewDialog(this.reviewDialog, drawMsg, "Draw");
     });
 
-    this.drawModal.acceptButton.addEventListener("click", () => {
+    this.reviewDialog.acceptButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (this.reviewDialog.type === "Draw") {
         this.game.result = "1/2-1/2";
         this.turn.textContent = "Draw";
-        this.drawModal.hidden = true
-        declareDraw(this.game, this.endGameModal)
-    })
+        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
+      } else {
+        console.log("accept undo move");
+        const dialog =
+          this.reviewDialog.shadowRoot.getElementById("review-dialog");
+        dialog.close();
+      }
+    });
 
-    this.drawModal.declineButton.addEventListener("click", () => {
-      this.drawModal.hidden = true
-    })
+    this.reviewDialog.declineButton.addEventListener("close", (event) => {
+      event.preventDefault();
+    });
 
-    this.gameButtons.resignButton.addEventListener("click", () => {
+    this.gameButtons.resignButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
-      const resignMsg = `${color} resigns. ${opponentColor} wins!`
-      declareWinner(color, this.game, this.turn, this.endGameModal, resignMsg);
+      const resignMsg = `${color} resigns. ${opponentColor} wins!`;
+      declareWinner(color, this.game, this.turn, this.endGameDialog, resignMsg);
     });
 
-    this.gameButtons.undoButton.addEventListener("click", () => {
-      handleUndoMove(this.undoModal)
-    })
+    this.gameButtons.undoButton.addEventListener("click", (event) => {
+      event.preventDefault();
 
-    this.undoModal.requestButton.addEventListener("click", () => {
+      displayUndoMoveDialog(this.undoDialog);
+    });
+
+    this.undoDialog.requestButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
-      this.undoModal.hidden = true;
-      handleUndoRequest(color, this.undoModal, this.undoReviewModal)
-    })
+      const title = `${color} player wants to undo most recent move. Do you accept?`;
+      displayReviewDialog(
+        this.reviewDialog,
+        title,
+        "Undo move",
+        true,
+        this.undoDialog
+      );
+    });
 
-    this.undoModal.cancelButton.addEventListener("click", () => {
-      this.undoModal.hidden = true;
-    })
+    this.undoDialog.cancelButton.addEventListener("click", () => {
+      const diag = this.undoDialog.shadowRoot.getElementById("undo-dialog");
+      diag.close();
+    });
 
-    this.undoReviewModal.acceptButton.addEventListener("click", () => {
-      console.log("accept")
-      this.undoReviewModal.hidden = true;
-      this.undoModal.textarea.value = null
-    })
+    this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
+      event.preventDefault();
 
-    this.undoReviewModal.declineButton.addEventListener("click", () => {
-      this.undoReviewModal.hidden = true;
-      this.undoModal.textarea.value = null
-    })
-
-    this.endGameModal.playAgainButton.addEventListener("click", () => {
+      const endDialog =
+        this.endGameDialog.shadowRoot.getElementById("end-dialog");
+      endDialog.close();
       console.log("play again");
     });
 
-    this.endGameModal.exportButton.addEventListener("click", () => {
+    this.endGameDialog.exportButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
       exportToPgn(this.game);
     });
 
-    this.endGameModal.copyButton.addEventListener("click", () => {
+    this.endGameDialog.copyButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
       copyPgn(this.game);
+    });
+
+    this.promotionDialog.pieceSelect.addEventListener("change", (event) => {
+      event.preventDefault();
+      this.promotionDialog.acceptButton.value =
+        this.promotionDialog.pieceSelect.value;
+    });
+
+    this.promotionDialog.acceptButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const pawnToPromote = this.game.lastMove.initiatingPiece;
+      const chessPieceElement = this.board.chessPieces.find(
+        (element) => element.piece.id === pawnToPromote.id
+      );
+
+      closePromotionSelect(
+        this.promotionDialog,
+        this.promotionDialog.pieceSelect.value,
+        pawnToPromote
+      );
+      chessPieceElement.remove();
+
+      const promatedPiece = chessPieceElement.piece.promote(
+        this.game.lastMove,
+        this.promotionDialog.pieceSelect.value
+      );
+
+      this.mountSinglePiece(promatedPiece);
+
+      setTimeout(() => {
+        this.rotateBoard()
+        this.game.board.willRotate = true
+      }, 700)
     });
   }
 
   handleMove() {
-    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
-      this.board.setAttribute("rotate", "false");
-    } else {
-      this.board.setAttribute("rotate", "true");
-    }
-
     const activePlayer = this.game.getActivePlayer();
 
     const color = activePlayer.color;
@@ -147,15 +218,26 @@ export default class ChessGameController {
       setTimeout(() => {
         if (this.game.isPlayerInCheck()) {
           const checkmate = `Checkmate! ${color} player wins!`;
-          declareWinner(color, this.game, this.turn, this.endGameModal, checkmate);
+          declareWinner(
+            color,
+            this.game,
+            this.turn,
+            this.endGameDialog,
+            checkmate
+          );
         } else {
-          const stalemate = "Stalemate"
-          declareDraw(this.game, this.endGameModal, stalemate)
+          const stalemate = "Stalemate";
+          declareDraw(this.game, this.endGameDialog, stalemate);
         }
       }, 500);
+      this.game.board.willRotate = false;
     }
 
-    this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+    if (this.game.board.willRotate === true) {
+      this.rotateBoard();
+      this.game.getActivePlayer()
+      this.turn.textContent = `${activePlayer.opponent.color}'s Turn`;
+    }
   }
 
   handlePieceCapture(event) {
@@ -194,6 +276,14 @@ export default class ChessGameController {
     game.doMove(game.getMoves(BP5)[1]);
   }
 
+  rotateBoard() {
+    if (this.game.getActivePlayer() !== this.game.whitePlayer) {
+      this.board.setAttribute("rotate", "false");
+    } else {
+      this.board.setAttribute("rotate", "true");
+    }
+  }
+
   mountPieces() {
     this.mountPlayerPieces(this.game.whitePlayer);
     this.mountPlayerPieces(this.game.blackPlayer);
@@ -201,23 +291,25 @@ export default class ChessGameController {
 
   mountPlayerPieces(player) {
     for (let piece of player.livePieces) {
-      const squareElement = this.board.getSquare(piece.row, piece.file);
-      const chessPieceElement = document.createElement("chess-piece");
-      chessPieceElement.piece = piece;
-
-      chessPieceElement.addEventListener(
-        "click",
-        this.handlePieceClick.bind(this)
-      );
-      squareElement.appendChild(chessPieceElement);
+      this.mountSinglePiece(piece);
     }
+  }
+
+  mountSinglePiece(piece) {
+    const squareElement = this.board.getSquare(piece.row, piece.file);
+    const chessPieceElement = document.createElement("chess-piece");
+    chessPieceElement.piece = piece;
+    chessPieceElement.addEventListener(
+      "click",
+      this.handlePieceClick.bind(this)
+    );
+    squareElement.appendChild(chessPieceElement);
   }
 
   placeGhostMoves(pieceElement) {
     pieceElement.classList.add("active");
 
     for (let move of this.game.getMoves(pieceElement.piece)) {
-      console.log(move.row, move.file);
       const square = this.board.getSquare(move.row, move.file);
 
       if (!square) {

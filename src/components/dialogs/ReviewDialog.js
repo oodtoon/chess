@@ -1,25 +1,29 @@
-const undoReviewTemplate = document.createElement("template");
-undoReviewTemplate.innerHTML = String.raw`
-<div class="review-modal">
-    <h2 class="title" id="review-title">White player wants to undo most recent move</h2>
-    <div class="msg" id="undo-review-msg">Message message message message</div>
+const reviewDialogTemplate = document.createElement("template");
+reviewDialogTemplate.innerHTML = String.raw`
+<dialog id="review-dialog" class="review-dialog">
+   <form class="review-form">
+<h2 class="title" id="review-title">Want to review?</h2>
+<div id="undo-review-msg" class="msg"></div>
     <span class="btn-container">
-        <button class="accept">Accept</button>
-        <button class="decline">Decline</button>
+        <button class="accept" value="accpet">Accept</button>
+        <button class="decline" formmethod="dialog">Decline</button>
     </span>
-</div>
+</form>
+</dialog>
 
 <style>
- .review-modal {
+   .review-dialog {
+   background-color: white;
+    border-radius: 8px;
+    border: 3px solid black;
+   }
+
+ .review-form {
     display: grid;
     grid-template-areas: 
     "title"
     "msg"
     "btn";
-    background-color: white;
-    border-radius: 8px;
-    border: 3px solid black;
-    padding: 1em;
  }
 
  .title {
@@ -70,22 +74,23 @@ undoReviewTemplate.innerHTML = String.raw`
     color: white;
     background-color: brown;
 }
-
 </style>
 `;
 
-export default class UndoReviewModal extends HTMLElement {
+export default class ReviewDialog extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.shadowRoot.append(undoReviewTemplate.content.cloneNode(true));
+    this.shadowRoot.append(reviewDialogTemplate.content.cloneNode(true));
     this.acceptButton = this.shadowRoot.querySelector(".accept");
     this.declineButton = this.shadowRoot.querySelector(".decline");
     this.title = this.shadowRoot.querySelector(".title");
-    this.msg = this.shadowRoot.querySelector(".msg")
+    this.reviewDialog = this.shadowRoot.getElementById("review-dialog");
+    this.reviewMsg = this.shadowRoot.getElementById("undo-review-msg");
+    this.type = null;
   }
 
   connectedCallback() {}
 }
 
-window.customElements.define("undo-review-modal", UndoReviewModal);
+window.customElements.define("review-dialog", ReviewDialog);

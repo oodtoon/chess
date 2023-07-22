@@ -92,7 +92,8 @@ class ChessBoard extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log([name, oldValue, newValue])
+
+    
     if (newValue === "true") {
       this.style.transform = "rotate(180deg)";
       this.squares.forEach(
