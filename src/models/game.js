@@ -1,5 +1,8 @@
 import Board from "./board.js";
 import Player from "./player.js";
+import EventBus from "../event-bus.js";
+import { fileToInt } from "../util.js";
+import { PIECE_NAME_MAPPING } from "./pieces/index.mjs";
 
 export default class Game {
   constructor(eventBus) {
@@ -62,7 +65,7 @@ export default class Game {
       if (move.isCompoundMove) {
         move.kingMove.initiatingPiece.hasMoved = true;
         move.rookMove.initiatingPiece.hasMoved = true;
-        move.kingMove.initiatingPiece.onMove(move)
+        move.kingMove.initiatingPiece.onMove(move);
       } else {
         move.initiatingPiece.onMove(move);
       }
@@ -118,7 +121,97 @@ export default class Game {
     return this.lastMove.isCheck;
   }
 
+  static fromParsedToken(pgn) {
+    const eventBus = new EventBus();
+    const game = new Game(eventBus);
+
+    console.log("these are all the moves", pgn[0].moves);
+    pgn[0].moves.forEach((token) => {
+      if (token.notation.notation === "O-O") {
+        if (token.turn === "w") {
+          const shortObj = { row: 0, file: 6 };
+          console.log(shortObj);
+          return;
+        } else {
+          const blackKing = game.blackPlayer.livePieceMap.King[0];
+          const castleMove = game
+            .getMoves(blackKing)
+            .find((m) => m.isCompoundMove);
+          game.doMove(castleMove);
+        }
+      } else if (token.notation.notation === "O-O-O") {
+        if (token.turn === "b") {
+          const longObj = { row: 0, file: 2 };
+          console.log(longObj);
+        } else {
+          const longObjectBlack = { row: 7, file: 2 };
+          console.log(longObjectBlack);
+        }
+      } else if (!token.notation.col || !token.notation.row) {
+        debugger;
+      } else {
+        consumeToken(token, game);
+      }
+    });
+    console.log(game.board.debug())
+    return game;
+  }
+
   get isGameOver() {
     return this.result !== null;
   }
 }
+
+const consumeToken = (token, game) => {
+  const row = parseInt(token.notation.row) - 1;
+  const stringFile = token.notation.col;
+  const file = fileToInt(stringFile);
+  const player = token.turn === "w" ? game.whitePlayer : game.blackPlayer;
+
+  const figMapping = Object.entries(player.livePieceMap).reduce(
+    (acc, tuple) => {
+      const [pieceName, pieces] = tuple;
+      const pieceNotation = PIECE_NAME_MAPPING[pieceName].notation;
+      acc[pieceNotation] = pieces;
+      return acc;
+    },
+    {}
+  );
+
+  const movingPiece = getPieceToMove(
+    figMapping[token.notation.fig],
+    row,
+    file,
+    token.notation.disc
+  );
+  movePiece(movingPiece, game, row, file);
+};
+
+const getPieceToMove = (piecesOfType, row, file, discriminator) => {
+  let discriminate = () => true;
+  if (discriminator) {
+    if (parseInt(discriminator)) {
+      const discRow = parseInt(discriminator) - 1;
+      discriminate = (move) => move.sourceRow === discRow;
+    } else {
+      const discFile = fileToInt(discriminator);
+      discriminate = (move) => move.sourceFile === discFile;
+    }
+  }
+  return piecesOfType.find((p) => {
+    return p.moves.some(
+      (m) => m.row === row && m.file === file && discriminate(m)
+    );
+  });
+};
+
+const movePiece = (piece, game, row, file) => {
+  if (piece) {
+    const pieceMove = game
+      .getMoves(piece)
+      .find((m) => m.row === row && m.file === file);
+
+    game.doMove(pieceMove);
+  }
+};
+

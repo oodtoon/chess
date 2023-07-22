@@ -3,7 +3,7 @@ export function intToFile(value) {
 }
 
 export function fileToInt(value) {
-  return value.charCodeAt(0) - "a".charCodeAt("0");
+  return value.charCodeAt(0) - "a".charCodeAt(0);
 }
 
 export function coordToAlgebraic(coord) {

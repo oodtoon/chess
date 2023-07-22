@@ -5,6 +5,7 @@ import { intToFile } from "../../util.js";
 class Pawn extends Piece {
   static startingRows = [1, 6];
   static startingFiles = [0, 1, 2, 3, 4, 5, 6, 7];
+  static notation = null
 
   name = "Pawn";
 

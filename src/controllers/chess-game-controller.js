@@ -8,7 +8,7 @@ import {
   closePromotionSelect,
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
-import { copyPgn, exportToPgn } from "../io.js";
+import { copyPgn, exportToPgn, parsePgn } from "../io.js";
 import { promote } from "../models/pieces/index.mjs";
 
 const whitePieces = document.getElementById("white-pieces");
@@ -43,12 +43,17 @@ export default class ChessGameController {
   }
 
   initialize() {
-    this.mountPieces();
+    this.initializeGame()
     this.attachSquareListeners();
     this.activateGameButtons();
     this.activateMoveListBtns();
     this.activateDialongBtns();
 
+    
+  }
+
+  initializeGame() {
+    this.mountPieces()
     this.eventBus.addEventListener("move", this.handlePieceMove);
   }
 
@@ -239,11 +244,26 @@ export default class ChessGameController {
       copyPgn(this.game);
     });
 
-    this.movesList.importButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      console.log("import");
+    this.movesList.importButton.addEventListener("click", () => {
+      this.movesList.fileInput.click()
     });
+
+    this.movesList.fileInput.addEventListener("change", (event) => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const pgn = event.target.result
+        this.game = parsePgn(pgn)
+        this.eventBus = this.game.eventBus
+        this.dismountPieces()
+        this.initializeGame()
+      } 
+      reader.readAsText(event.target.files[0])
+      
+      
+    })
   }
+
+
 
   activateDialongBtns() {
     this.reviewDialog.acceptButton.addEventListener("click", (event) => {
@@ -291,7 +311,6 @@ export default class ChessGameController {
       const endDialog =
         this.endGameDialog.shadowRoot.getElementById("end-dialog");
       endDialog.close();
-      console.log("play again");
     });
 
     this.endGameDialog.exportButton.addEventListener("click", (event) => {
@@ -355,6 +374,10 @@ export default class ChessGameController {
     this.mountPlayerPieces(this.game.blackPlayer);
   }
 
+  dismountPieces() {
+    this.board.chessPieces.forEach(p => p.remove())
+  }
+
   mountPlayerPieces(player) {
     for (let piece of player.livePieces) {
       this.mountSinglePiece(piece);
@@ -368,6 +391,8 @@ export default class ChessGameController {
     chessPieceElement.addEventListener("click", this.handlePieceClick);
     squareElement.appendChild(chessPieceElement);
   }
+
+
 
   placeGhostMoves(pieceElement) {
     pieceElement.classList.add("active");
