@@ -6,7 +6,7 @@ function generateTemplete() {
   <style>
 
     .square {
-      width: var(--v-w);
+      width: var(--responsive-size);
       min-width: calc(var(--small-size));
       aspect-ratio: 1;
       font-size: calc(var(--square-size) * .75);

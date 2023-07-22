@@ -98,8 +98,8 @@ endGameTemplate.innerHTML = String.raw`
 }
 
 .icon {
-      height: var(--font-size);
-      width: var(--font-size);
+      height: var(--element-size);
+      width: var(--element-size);
     }
 </style>
 `;

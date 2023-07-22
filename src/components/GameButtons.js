@@ -39,7 +39,7 @@ gameButtonsTemplate.innerHTML = String.raw`
     .undo {
         border: 3px solid black;
         color: black;
-        max-height: 42px;
+        max-height: 3em;
     }
 
     .btns-container > button:hover {
@@ -60,7 +60,7 @@ gameButtonsTemplate.innerHTML = String.raw`
     }
 
     .icon {
-        height: var(--font-size);
+        height: var(--element-size);
         weight: var(--font-weight);
     }
 

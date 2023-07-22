@@ -37,7 +37,7 @@ listTemplate.innerHTML = String.raw`
    
 
     .btns-container > button {
-      font-size: var(--font-size);
+      font-size: var(--element-size);
       font-weight: 800;
       padding: .5em 1em;
       margin: auto .5em 1em .5em;
@@ -78,8 +78,8 @@ listTemplate.innerHTML = String.raw`
     }
 
     .icon {
-      height: var(--font-size);
-      width: var(--font-size);
+      height: var(--element-size);
+      width: var(--element-size);
     }
   </style>
 `

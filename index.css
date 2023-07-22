@@ -4,12 +4,12 @@ html {
 
 :root {
   --square-size: 6vw;
-  --v-w: 11vw;
+  --responsive-size: 11vw;
   --full-size: 8vw;
   --medium-size: 4rem;
   --small-size: 3rem;
   --captured-piece-size: 3vw;
-  --font-size: 1rem;
+  --element-size: 1rem;
 }
 
 * {
@@ -17,8 +17,10 @@ html {
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  grid-template-areas: "turn" "board" "btns" "moves-list";
   margin: auto;
   max-width: 1400px;
   justify-items: center;
@@ -32,8 +34,8 @@ html {
 }
 
 chess-board {
-  width: calc(var(--v-w) * 8);
-  height: calc(var(--v-w) * 8);
+  width: calc(var(--responsive-size) * 8);
+  height: calc(var(--responsive-size) * 8);
   min-width: calc(var(--small-size) * 8);
   min-height: calc(var(--small-size) * 8);
   border: solid rgb(23, 23, 23) 5px;
@@ -91,8 +93,6 @@ chess-board {
 chess-piece {
   width: var(--captured-piece-size);
   height: var(--captured-piece-size);
-  min-width: calc(var(--min-size) / 2);
-  min-height: calc(var(--min-size) / 2);
 }
 
 #black-pieces {
