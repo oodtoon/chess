@@ -1,5 +1,5 @@
-const { parse } = window.PgnParser;
 import Game from "./models/game.js";
+const { parse } = window.PgnParser;
 
 export function derivePgn(game) {
   let movesPgn = game.moves.reduce((acc, move, index) => {

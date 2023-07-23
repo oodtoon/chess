@@ -12,8 +12,8 @@ class BaseMove {
 
   #doesMoveExposeCheck(targetPlayer) {
     const { livePieces } = targetPlayer;
-    for (let targetPlayerPiece of livePieces) {
-      for (let move of targetPlayerPiece.moves) {
+    for (const targetPlayerPiece of livePieces) {
+      for (const move of targetPlayerPiece.moves) {
         if (move.capturedPiece?.name === "King") {
           return true;
         }
@@ -60,6 +60,7 @@ export default class Move extends BaseMove {
       Math.abs(this.sourceRow - this.row) === 2
     );
   }
+
   get player() {
     return this.initiatingPiece.player;
   }
@@ -88,15 +89,17 @@ export default class Move extends BaseMove {
       ? ""
       : this.initiatingPiece.notation;
     const capture = this.isCapture ? "x" : "";
-    //TODO add promotion into notation similar to capture e8=Q
+    // TODO add promotion into notation similar to capture e8=Q
+
+    // eslint-disable-next-line no-unused-vars
     const promotedPawn = this.checkPawnPromotion() ? letter : "";
 
     // const promotedPiece = this.game.board.getSquareContent(this.row, this.file).notation
     // console.log(promotedPiece)
     // also add caslte o-o or o-o-o
-    //check +
-    //checkmate #
-    //stalemate no notation but we can make it and it can be :(
+    // check +
+    // checkmate #
+    // stalemate no notation but we can make it and it can be :(
     const square = coordToAlgebraic([this.row, this.file]);
 
     if (this.specialMove === "castle") {

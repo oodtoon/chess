@@ -6,7 +6,7 @@ import { PIECE_NAME_MAPPING } from "./pieces/index.mjs";
 
 export default class Game {
   #initialMoveId = Symbol(crypto.randomUUID);
-  
+
   constructor(eventBus) {
     this.board = new Board(this);
     this.eventBus = eventBus;
@@ -45,7 +45,7 @@ export default class Game {
       moves = [move];
     }
 
-    for (let move of moves) {
+    for (const move of moves) {
       const { row, file, initiatingPiece, capturedPiece } = move;
 
       if (initiatingPiece.name === "Pawn" && (row === 7 || row === 0)) {
@@ -133,7 +133,6 @@ export default class Game {
         if (token.turn === "w") {
           const shortObj = { row: 0, file: 6 };
           console.log(shortObj);
-          return;
         } else {
           const blackKing = game.blackPlayer.livePieceMap.King[0];
           const castleMove = game
@@ -149,8 +148,6 @@ export default class Game {
           const longObjectBlack = { row: 7, file: 2 };
           console.log(longObjectBlack);
         }
-      } else if (!token.notation.col || !token.notation.row) {
-        debugger;
       } else {
         consumeToken(token, game);
       }

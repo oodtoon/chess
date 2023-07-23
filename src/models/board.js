@@ -17,9 +17,9 @@ export default class Board {
   }
 
   initializePiece(PieceConstructor) {
-    for (let row of PieceConstructor.startingRows) {
+    for (const row of PieceConstructor.startingRows) {
       const player = row <= 2 ? this.game.whitePlayer : this.game.blackPlayer;
-      for (let file of PieceConstructor.startingFiles) {
+      for (const file of PieceConstructor.startingFiles) {
         const p = new PieceConstructor(this.game, this, player, row, file);
         this.#board[row][file] = p;
         player.addLivePiece(p);
@@ -47,7 +47,7 @@ export default class Board {
   }
 
   isSquareOccupied(row, file) {
-    let squareContent = this.getSquareContent(row, file);
+    const squareContent = this.getSquareContent(row, file);
     return squareContent !== null;
   }
 

@@ -65,7 +65,7 @@ export default class Player {
   }
 
   get king() {
-    return this.livePieceMap["King"];
+    return this.livePieceMap.King;
   }
 
   get moves() {
