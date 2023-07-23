@@ -130,6 +130,10 @@ class MoveList extends HTMLElement {
     this.currentListItem = document.createElement("li");
     this.listRoot?.appendChild(this.currentListItem);
   }
+
+  setResult(result) {
+    this.currentListItem.append(result)
+  }
 }
 
 window.customElements.define("moves-list", MoveList);

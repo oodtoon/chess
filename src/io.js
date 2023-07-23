@@ -1,4 +1,3 @@
-import Game from "./models/game.js";
 const { parse } = window.PgnParser;
 
 export function derivePgn(game) {
@@ -32,6 +31,5 @@ export function copyPgn(game) {
 }
 
 export function parsePgn(pgn) {
-  const parsedPgn = parse(pgn);
-  return Game.fromParsedToken(parsedPgn);
+  return parse(pgn)
 }

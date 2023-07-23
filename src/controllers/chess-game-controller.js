@@ -40,6 +40,7 @@ export default class ChessGameController {
 
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.handlePieceCapture = this.handlePieceCapture.bind(this);
+    this.loading = false;
   }
 
   initialize() {
@@ -53,6 +54,11 @@ export default class ChessGameController {
   initializeGame() {
     this.mountPieces();
     this.eventBus.addEventListener("move", this.handlePieceMove);
+  }
+
+  cleanup() {
+    this.eventBus.removeEventListener("move", this.handlePieceMove);
+    this.dismountPieces();
   }
 
   handlePieceMove(event) {
@@ -76,10 +82,7 @@ export default class ChessGameController {
     const activePlayer = this.game.getActivePlayer();
 
     this.checkForTerminalState(activePlayer);
-
-    if (this.game.board.willRotate) {
-      this.updatePlayerTurnAndText(activePlayer);
-    }
+    this.updatePlayerTurnAndText(activePlayer);
   }
 
   handleUndoMove() {
@@ -133,6 +136,9 @@ export default class ChessGameController {
     const chessPieceElement = this.board.chessPieces.find(
       (element) => element.piece.id === initiatingPiece.id
     );
+    // if (!chessPieceElement) {
+    //   debugger;
+    // }
 
     const destinationSquare = undo ? [sourceRow, sourceFile] : [row, file];
     const destinationSquareRank = destinationSquare[0];
@@ -143,9 +149,9 @@ export default class ChessGameController {
 
     if (
       chessPieceElement.piece.name === "Pawn" &&
-      (destinationSquareRank === 7 || destinationSquareRank === 0)
+      (destinationSquareRank === 7 || destinationSquareRank === 0) &&
+      !this.loading
     ) {
-      this.game.board.willRotate = false;
       displayPromotionDialog(this.promotionDialog);
     }
   }
@@ -167,8 +173,8 @@ export default class ChessGameController {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
         }
+        this.movesList.setResult(this.game.result);
       }, 500);
-      this.game.board.willRotate = false;
     }
   }
 
@@ -249,11 +255,16 @@ export default class ChessGameController {
     this.movesList.fileInput.addEventListener("change", (event) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const pgn = event.target.result;
-        this.game = parsePgn(pgn);
-        this.eventBus = this.game.eventBus;
-        this.dismountPieces();
+        this.loading = true;
+        this.cleanup();
+
+        this.game = new Game(this.eventBus);
         this.initializeGame();
+
+        const pgn = event.target.result;
+        const parsedPgn = parsePgn(pgn);
+        this.game.fromParsedToken(parsedPgn);
+        this.loading = false;
       };
       reader.readAsText(event.target.files[0]);
     });
@@ -329,7 +340,6 @@ export default class ChessGameController {
       event.preventDefault();
 
       const pawnToPromote = this.game.lastMove.initiatingPiece;
-      const activePlayer = pawnToPromote.player;
       const chessPieceElement = this.board.chessPieces.find(
         (element) => element.piece.id === pawnToPromote.id
       );
@@ -347,11 +357,6 @@ export default class ChessGameController {
       );
 
       this.mountSinglePiece(promatedPiece);
-
-      setTimeout(() => {
-        this.rotateBoard(activePlayer);
-        this.game.board.willRotate = true;
-      }, 700);
     });
   }
 
@@ -369,7 +374,9 @@ export default class ChessGameController {
   }
 
   dismountPieces() {
-    this.board.chessPieces.forEach((p) => p.remove());
+    this.board.chessPieces.forEach((chessPieceElement) => {
+      chessPieceElement.remove();
+    });
   }
 
   mountPlayerPieces(player) {
@@ -382,7 +389,6 @@ export default class ChessGameController {
     const squareElement = this.board.getSquare(piece.row, piece.file);
     const chessPieceElement = document.createElement("chess-piece");
     chessPieceElement.piece = piece;
-    chessPieceElement.addEventListener("click", this.handlePieceClick);
     squareElement.appendChild(chessPieceElement);
   }
 
