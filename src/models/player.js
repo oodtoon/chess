@@ -8,10 +8,10 @@ export default class Player {
     this.livePieceMap = {};
     this.capturedPieceMap = {};
     this.opponent = null;
-    this.showMoves = false
-    this.selectedPiece = null
-    this.game = game
-    this.promotedPawns = []
+    this.showMoves = false;
+    this.selectedPiece = null;
+    this.game = game;
+    this.promotedPawns = [];
   }
 
   addLivePiece(piece) {
@@ -70,7 +70,7 @@ export default class Player {
 
   get moves() {
     return this.livePieces.flatMap((piece) => {
-      return this.game.getMoves(piece)
-    })
+      return this.game.getMoves(piece);
+    });
   }
 }

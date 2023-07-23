@@ -3,13 +3,9 @@ import Piece from "./piece.mjs";
 class Bishop extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [2, 5];
-  static notation = "B"
+  static notation = "B";
 
   name = "Bishop";
-
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-  }
 
   computeMoves() {
     const directions = [
@@ -23,7 +19,6 @@ class Bishop extends Piece {
     );
 
     return available;
-;
   }
 
   onMove(move) {
@@ -35,11 +30,13 @@ class Bishop extends Piece {
   }
 
   get img() {
-    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wb.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bb.png"
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wb.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bb.png";
   }
 
   get notation() {
-    return Bishop.notation
+    return Bishop.notation;
   }
 }
 

@@ -4,17 +4,15 @@ import Move, { CompoundMove } from "../move.js";
 class King extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [4];
-  static notation = "K"
+  static notation = "K";
 
   name = "King";
-  
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
     this.hasMoved = false;
     this.isChecked = false;
   }
-
 
   setChecked() {
     this.isChecked = true;
@@ -109,11 +107,13 @@ class King extends Piece {
   }
 
   get img() {
-    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wk.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bk.png"
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wk.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bk.png";
   }
 
   get notation() {
-    return King.notation
+    return King.notation;
   }
 }
 

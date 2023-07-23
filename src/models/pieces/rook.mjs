@@ -6,7 +6,6 @@ class Rook extends Piece {
   static notation = "R";
 
   name = "Rook";
-  
 
   constructor(game, board, player, row, file) {
     super(game, board, player, row, file);
@@ -28,7 +27,6 @@ class Rook extends Piece {
       this.getLegalDirectionalMoves(dir)
     );
     return available;
-;
   }
 
   onMove(move) {
@@ -37,11 +35,13 @@ class Rook extends Piece {
   }
 
   get img() {
-    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wr.png" : "https://www.chess.com/chess-themes/pieces/neo/150/br.png"
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wr.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/br.png";
   }
 
   get notation() {
-    return Rook.notation
+    return Rook.notation;
   }
 }
 

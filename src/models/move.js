@@ -3,9 +3,9 @@ import { coordToAlgebraic } from "../util.js";
 class BaseMove {
   constructor() {
     // used to cache move computations
-    this.id = Symbol(crypto.randomUUID())
+    this.id = Symbol(crypto.randomUUID());
   }
-  
+
   get isCompoundMove() {
     return false;
   }
@@ -113,8 +113,6 @@ export default class Move extends BaseMove {
     return letter + capture + square;
   }
 
- 
-
   get isCheck() {
     return this.doesMoveExposeOpponentToCheck();
   }
@@ -123,16 +121,16 @@ export default class Move extends BaseMove {
 export class CompoundMove extends BaseMove {
   constructor(kingMove, rookMove, isShort) {
     super();
-    this.kingMove = kingMove
-    this.rookMove = rookMove
-    this.isShort = isShort
+    this.kingMove = kingMove;
+    this.rookMove = rookMove;
+    this.isShort = isShort;
   }
 
   toString() {
     if (this.isShort) {
-      return "o-o"
+      return "o-o";
     } else {
-      return "o-o-o"
+      return "o-o-o";
     }
   }
 
@@ -157,6 +155,6 @@ export class CompoundMove extends BaseMove {
   }
 
   get moves() {
-    return [this.kingMove, this.rookMove]
+    return [this.kingMove, this.rookMove];
   }
 }

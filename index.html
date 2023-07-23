@@ -1,45 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <Link rel="stylesheet" href="index.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
     <title>Chess</title>
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <div class="container">
-        <h2 class="turn" id="turn">White's Turn</h2>
+      <h2 class="turn" id="turn">White's Turn</h2>
 
-        <chess-board id="main-game" />
-        <game-buttons class="game-btns" />
-        <moves-list class="moves-list" />
+      <chess-board id="main-game" />
+      <game-buttons class="game-btns" />
+      <moves-list class="moves-list" />
 
-        <section class="capture-container">
-            <div id="captured-black">
-                <h2>Whites's Pieces Taken</h2>
-                <div id="black-pieces"></div>
-            </div>
-            <div id="captured-white">
-                <h2>Black's Pieces Taken</h2>
-                <div id="white-pieces"></div>
-            </div>
+      <section class="capture-container">
+        <div id="captured-black">
+          <h2>Whites's Pieces Taken</h2>
+          <div id="black-pieces"></div>
+        </div>
+        <div id="captured-white">
+          <h2>Black's Pieces Taken</h2>
+          <div id="white-pieces"></div>
+        </div>
+      </section>
 
-        </section>
-
-        <end-game-dialog class="end-game-dialog" />
-        <undo-dialog class="undo-dialog" />
-        <review-dialog class="review-dialog" />
-        <promotion-dialog class="promotion-dialog" />
+      <end-game-dialog class="end-game-dialog" />
+      <undo-dialog class="undo-dialog" />
+      <review-dialog class="review-dialog" />
+      <promotion-dialog class="promotion-dialog" />
     </div>
 
-
-    <script src="node_modules/@mliebelt/pgn-parser/lib/index.umd.js" type="module" crossorigin></script>
+    <script
+      src="node_modules/@mliebelt/pgn-parser/lib/index.umd.js"
+      type="module"
+      crossorigin
+    ></script>
     <script src="src/index.js" type="module" crossorigin></script>
-</body>
-
+  </body>
 </html>

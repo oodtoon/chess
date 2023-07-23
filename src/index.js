@@ -3,5 +3,5 @@ import "./components/index.js";
 
 // TESTING AREA
 
-const controller = new ChessGameController("#main-game")
-controller.initialize()
+const controller = new ChessGameController("#main-game");
+controller.initialize();
