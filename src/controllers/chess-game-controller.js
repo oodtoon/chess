@@ -135,24 +135,12 @@ export default class ChessGameController {
     const chessPieceElement = this.board.chessPieces.find(
       (element) => element.piece.id === initiatingPiece.id
     );
-    // if (!chessPieceElement) {
-    //   debugger;
-    // }
 
     const destinationSquare = undo ? [sourceRow, sourceFile] : [row, file];
-    // const destinationSquareRank = destinationSquare[0];
 
     chessPieceElement.remove();
     const destination = this.board.getSquare(...destinationSquare);
     destination.appendChild(chessPieceElement);
-
-    // if (
-    //   chessPieceElement.piece.name === "Pawn" &&
-    //   (destinationSquareRank === 7 || destinationSquareRank === 0) &&
-    //   !this.loading
-    // ) {
-    //   displayPromotionDialog(this.promotionDialog);
-    // }
   }
 
   checkForTerminalState(activePlayer) {
@@ -311,6 +299,11 @@ export default class ChessGameController {
 
     this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
       event.preventDefault();
+
+      this.cleanup();
+
+      this.game = new Game(this.eventBus);
+      this.initializeGame();
 
       const endDialog =
         this.endGameDialog.shadowRoot.getElementById("end-dialog");
