@@ -19,9 +19,32 @@ listTemplate.innerHTML = String.raw`
     }
 
     ol {
-      display: flex;
+      display: block;
       flex-flow: row wrap;
-      column-gap: 2rem;      
+      column-gap: 2rem; 
+      padding: 0;
+      height: 15em;
+      overflow-y: auto;
+      overflow-x: hidden; 
+    }
+
+    li {
+      display: flex;
+      padding: .25em 1em;
+      width: 100%;
+    }
+
+    li:nth-child(even) {
+      background-color: white;
+    }
+
+    li:nth-child(even)::marker {
+      background-color: white;
+    }
+
+    span {
+      display: inline-block;
+      width: 20%;
     }
 
     .btns-container{
@@ -128,6 +151,7 @@ class MoveList extends HTMLElement {
 
   nextListItem() {
     this.currentListItem = document.createElement("li");
+    this.currentListItem.append(`${this.listRoot.children.length + 1}. `)
     this.listRoot?.appendChild(this.currentListItem);
   }
 
