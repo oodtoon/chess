@@ -9,7 +9,6 @@ class BaseMove {
     this.player = player;
   }
 
-
   get isCompoundMove() {
     return false;
   }
@@ -101,6 +100,7 @@ export default class Move extends BaseMove {
     const checkMate = this.isCheckmate ? "#" : "";
     const check = this.isCheck && !this.isCheckmate ? "+" : "";
 
+    // eslint-disable-next-line no-unused-vars
     const promotedPawn = this.checkPawnPromotion() ? letter : "";
 
     // const promotedPiece = this.game.board.getSquareContent(this.row, this.file).notation

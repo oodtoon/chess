@@ -132,7 +132,7 @@ class MoveList extends HTMLElement {
   }
 
   setResult(result) {
-    this.currentListItem.append(result)
+    this.currentListItem.append(result);
   }
 }
 

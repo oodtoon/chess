@@ -31,5 +31,5 @@ export function copyPgn(game) {
 }
 
 export function parsePgn(pgn) {
-  return parse(pgn)
+  return parse(pgn);
 }

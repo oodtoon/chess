@@ -8,10 +8,10 @@ export default class Player {
     this.livePieceMap = {};
     this.capturedPieceMap = {};
     this.opponent = null;
-    this.showMoves = false
-    this.selectedPiece = null
-    this.game = game
-    this.isCheckMate = false
+    this.showMoves = false;
+    this.selectedPiece = null;
+    this.game = game;
+    this.isCheckMate = false;
   }
 
   addLivePiece(piece) {
