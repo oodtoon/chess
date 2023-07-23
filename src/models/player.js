@@ -11,7 +11,7 @@ export default class Player {
     this.showMoves = false;
     this.selectedPiece = null;
     this.game = game;
-    this.promotedPawns = [];
+    this.isCheckMate = false;
   }
 
   addLivePiece(piece) {
@@ -31,10 +31,6 @@ export default class Player {
     if (indexToRemove >= 0) {
       this.livePieceMap[pieceType].splice(indexToRemove, 1);
     }
-  }
-
-  addPromotedPawn(piece) {
-    this.promotedPawns.push(piece);
   }
 
   get livePieces() {

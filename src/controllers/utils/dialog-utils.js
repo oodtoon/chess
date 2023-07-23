@@ -55,9 +55,23 @@ export function displayUndoMoveDialog(modal) {
   dialog.showModal();
 }
 
-export function displayPromotionDialog(modal) {
+export async function displayPromotionDialog(modal) {
   const dialog = modal.shadowRoot.getElementById("promotion-dialog");
   dialog.showModal();
+
+  const promise = new Promise((resolve, reject) => {
+    const handleAccept = (event) => {
+      event.preventDefault();
+
+      resolve(modal.pieceSelect.value);
+      closePromotionSelect(modal);
+      modal.acceptButton.removeEventListener("click", handleAccept);
+    };
+
+    modal.acceptButton.addEventListener("click", handleAccept);
+  });
+
+  return promise;
 }
 
 export function closePromotionSelect(modal) {

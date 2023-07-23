@@ -20,7 +20,7 @@ export const PIECE_NAME_MAPPING = {
 export function promote(move, type) {
   const pawn = move.initiatingPiece;
   move.player.removeLivePiece(pawn);
-  move.player.addPromotedPawn(pawn);
+  move.player.addCapturedPiece(pawn);
 
   const PieceClass = PIECE_NAME_MAPPING[type];
   const promotedPiece = new PieceClass(

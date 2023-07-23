@@ -1,6 +1,5 @@
 import Board from "./board.js";
 import Player from "./player.js";
-import EventBus from "../event-bus.js";
 import { fileToInt } from "../util.js";
 import { PIECE_NAME_MAPPING } from "./pieces/index.mjs";
 
@@ -98,11 +97,7 @@ export default class Game {
   }
 
   getActivePlayer() {
-    if (this.board.willRotate) {
-      return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
-    } else {
-      return this.moves.length % 2 === 0 ? this.blackPlayer : this.whitePlayer;
-    }
+    return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
   }
 
   doMove(move) {
@@ -123,10 +118,7 @@ export default class Game {
     return this.lastMove.isCheck;
   }
 
-  static fromParsedToken(pgn) {
-    const eventBus = new EventBus();
-    const game = new Game(eventBus);
-
+  fromParsedToken(pgn) {
     console.log("these are all the moves", pgn[0].moves);
     pgn[0].moves.forEach((token) => {
       if (token.notation.notation === "O-O") {
@@ -134,11 +126,11 @@ export default class Game {
           const shortObj = { row: 0, file: 6 };
           console.log(shortObj);
         } else {
-          const blackKing = game.blackPlayer.livePieceMap.King[0];
-          const castleMove = game
-            .getMoves(blackKing)
-            .find((m) => m.isCompoundMove);
-          game.doMove(castleMove);
+          const blackKing = this.blackPlayer.livePieceMap.King[0];
+          const castleMove = this.getMoves(blackKing).find(
+            (m) => m.isCompoundMove
+          );
+          this.doMove(castleMove);
         }
       } else if (token.notation.notation === "O-O-O") {
         if (token.turn === "b") {
@@ -149,11 +141,10 @@ export default class Game {
           console.log(longObjectBlack);
         }
       } else {
-        consumeToken(token, game);
+        consumeToken(token, this);
       }
     });
-    console.log(game.board.debug());
-    return game;
+    console.log(this.board.debug());
   }
 
   get moveId() {

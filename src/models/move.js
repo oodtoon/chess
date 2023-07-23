@@ -1,9 +1,12 @@
-import { coordToAlgebraic } from "../util.js";
+import { coordToAlgebraic, intToFile } from "../util.js";
 
 class BaseMove {
-  constructor() {
+  #isCheck = null;
+  #isCheckmate = null;
+  constructor(player) {
     // used to cache move computations
     this.id = Symbol(crypto.randomUUID());
+    this.player = player;
   }
 
   get isCompoundMove() {
@@ -22,6 +25,14 @@ class BaseMove {
     return false;
   }
 
+  doesMoveExposeCheckmate() {
+    if (this.isCheck && this.opponent.moves.length === 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   doesMoveExposePlayerToCheck() {
     return this.#doesMoveExposeCheck(this.opponent);
   }
@@ -37,6 +48,20 @@ class BaseMove {
       return false;
     }
   }
+
+  get opponent() {
+    return this.player.opponent;
+  }
+
+  get isCheck() {
+    this.#isCheck = this.#isCheck ?? this.doesMoveExposeOpponentToCheck();
+    return this.#isCheck;
+  }
+
+  get isCheckmate() {
+    this.#isCheckmate = this.#isCheckmate ?? this.doesMoveExposeCheckmate();
+    return this.#isCheckmate;
+  }
 }
 
 export default class Move extends BaseMove {
@@ -45,13 +70,14 @@ export default class Move extends BaseMove {
   }
 
   constructor(row, file, initiatingPiece, capturedPiece) {
-    super();
+    super(initiatingPiece.player);
     this.row = row;
     this.file = file;
     this.initiatingPiece = initiatingPiece;
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
     this.capturedPiece = capturedPiece;
+    this.pieceToPromoteTo = null;
   }
 
   get isPawnDoubleMove() {
@@ -61,66 +87,33 @@ export default class Move extends BaseMove {
     );
   }
 
-  get player() {
-    return this.initiatingPiece.player;
-  }
-
-  get opponent() {
-    return this.initiatingPiece.opponent;
-  }
-
   get isCapture() {
     return this.capturedPiece !== null;
   }
 
-  isShortCastle() {
-    if (this.initiatingPiece.name !== "King") {
-      return;
-    }
-    if (this.file === 6) {
-      return true;
-    } else if (this.file === 2) {
-      return false;
-    }
-  }
-
   toString() {
     const letter = this.initiatingPiece.isPawn()
-      ? ""
+      ? this.isCapture
+        ? intToFile(this.sourceFile)
+        : ""
       : this.initiatingPiece.notation;
+
     const capture = this.isCapture ? "x" : "";
-    // TODO add promotion into notation similar to capture e8=Q
+    const checkMate = this.isCheckmate ? "#" : "";
+    const check = this.isCheck && !this.isCheckmate ? "+" : "";
+    const promotion = this.pieceToPromoteTo
+      ? "=" + this.pieceToPromoteTo.notation
+      : "";
 
-    // eslint-disable-next-line no-unused-vars
-    const promotedPawn = this.checkPawnPromotion() ? letter : "";
-
-    // const promotedPiece = this.game.board.getSquareContent(this.row, this.file).notation
-    // console.log(promotedPiece)
-    // also add caslte o-o or o-o-o
-    // check +
-    // checkmate #
     // stalemate no notation but we can make it and it can be :(
     const square = coordToAlgebraic([this.row, this.file]);
-
-    if (this.specialMove === "castle") {
-      if (this.initiatingPiece.name === "King") {
-        const castle = this.isShortCastle() ? "o-o" : "o-o-o";
-        return castle;
-      } else {
-        return;
-      }
-    }
-    return letter + capture + square;
-  }
-
-  get isCheck() {
-    return this.doesMoveExposeOpponentToCheck();
+    return letter + capture + square + promotion + check + checkMate;
   }
 }
 
 export class CompoundMove extends BaseMove {
   constructor(kingMove, rookMove, isShort) {
-    super();
+    super(kingMove.player);
     this.kingMove = kingMove;
     this.rookMove = rookMove;
     this.isShort = isShort;
@@ -144,10 +137,6 @@ export class CompoundMove extends BaseMove {
 
   get isCompoundMove() {
     return true;
-  }
-
-  get player() {
-    return this.kingMove.player;
   }
 
   get opponent() {
