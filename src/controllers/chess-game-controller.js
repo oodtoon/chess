@@ -5,7 +5,6 @@ import {
   displayReviewDialog,
   displayUndoMoveDialog,
   displayPromotionDialog,
-  closePromotionSelect,
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
 import { copyPgn, exportToPgn, parsePgn } from "../io.js";
@@ -141,19 +140,19 @@ export default class ChessGameController {
     // }
 
     const destinationSquare = undo ? [sourceRow, sourceFile] : [row, file];
-    const destinationSquareRank = destinationSquare[0];
+    // const destinationSquareRank = destinationSquare[0];
 
     chessPieceElement.remove();
     const destination = this.board.getSquare(...destinationSquare);
     destination.appendChild(chessPieceElement);
 
-    if (
-      chessPieceElement.piece.name === "Pawn" &&
-      (destinationSquareRank === 7 || destinationSquareRank === 0) &&
-      !this.loading
-    ) {
-      displayPromotionDialog(this.promotionDialog);
-    }
+    // if (
+    //   chessPieceElement.piece.name === "Pawn" &&
+    //   (destinationSquareRank === 7 || destinationSquareRank === 0) &&
+    //   !this.loading
+    // ) {
+    //   displayPromotionDialog(this.promotionDialog);
+    // }
   }
 
   checkForTerminalState(activePlayer) {
@@ -335,29 +334,6 @@ export default class ChessGameController {
       this.promotionDialog.acceptButton.value =
         this.promotionDialog.pieceSelect.value;
     });
-
-    this.promotionDialog.acceptButton.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      const pawnToPromote = this.game.lastMove.initiatingPiece;
-      const chessPieceElement = this.board.chessPieces.find(
-        (element) => element.piece.id === pawnToPromote.id
-      );
-
-      closePromotionSelect(
-        this.promotionDialog,
-        this.promotionDialog.pieceSelect.value,
-        pawnToPromote
-      );
-      chessPieceElement.remove();
-
-      const promatedPiece = promote(
-        this.game.lastMove,
-        this.promotionDialog.pieceSelect.value
-      );
-
-      this.mountSinglePiece(promatedPiece);
-    });
   }
 
   rotateBoard(activePlayer) {
@@ -416,9 +392,28 @@ export default class ChessGameController {
     }
   }
 
-  moveHelper(move) {
+  async moveHelper(move) {
     this.removeGhostMoves();
-    this.game.doMove(move);
+
+    if (
+      move.initiatingPiece.isPawn() &&
+      (move.row === 0 || move.row === 7) &&
+      !this.loading
+    ) {
+      const selectedPiece = await displayPromotionDialog(this.promotionDialog);
+      const pawnToPromote = move.initiatingPiece;
+      const chessPieceElement = this.board.chessPieces.find(
+        (element) => element.piece.id === pawnToPromote.id
+      );
+      const promatedPiece = promote(move, selectedPiece);
+      move.pieceToPromoteTo = promatedPiece;
+      this.game.doMove(move);
+      chessPieceElement.remove();
+
+      this.mountSinglePiece(promatedPiece);
+    } else {
+      this.game.doMove(move);
+    }
   }
 
   handleSquareClick(event) {

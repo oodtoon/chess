@@ -1,4 +1,4 @@
-import { coordToAlgebraic } from "../util.js";
+import { coordToAlgebraic, intToFile } from "../util.js";
 
 class BaseMove {
   #isCheck = null;
@@ -77,7 +77,7 @@ export default class Move extends BaseMove {
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
     this.capturedPiece = capturedPiece;
-    this.isPromotion = false;
+    this.pieceToPromoteTo = null;
   }
 
   get isPawnDoubleMove() {
@@ -93,23 +93,21 @@ export default class Move extends BaseMove {
 
   toString() {
     const letter = this.initiatingPiece.isPawn()
-      ? ""
+      ? this.isCapture
+        ? intToFile(this.sourceFile)
+        : ""
       : this.initiatingPiece.notation;
+
     const capture = this.isCapture ? "x" : "";
-    // TODO add promotion into notation similar to capture e8=Q
     const checkMate = this.isCheckmate ? "#" : "";
     const check = this.isCheck && !this.isCheckmate ? "+" : "";
+    const promotion = this.pieceToPromoteTo
+      ? "=" + this.pieceToPromoteTo.notation
+      : "";
 
-    // eslint-disable-next-line no-unused-vars
-    const promotedPawn = this.checkPawnPromotion() ? letter : "";
-
-    // const promotedPiece = this.game.board.getSquareContent(this.row, this.file).notation
-    // console.log(promotedPiece)
-    // check +
-    // checkmate #
     // stalemate no notation but we can make it and it can be :(
     const square = coordToAlgebraic([this.row, this.file]);
-    return letter + capture + square + check + checkMate;
+    return letter + capture + square + promotion + check + checkMate;
   }
 }
 
