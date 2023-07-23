@@ -6,11 +6,6 @@ class Queen extends Piece {
   static notation = "Q";
 
   name = "Queen";
- 
-
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-  }
 
   computeMoves() {
     const directions = [
@@ -38,11 +33,13 @@ class Queen extends Piece {
   }
 
   get img() {
-    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wq.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bq.png"
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wq.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bq.png";
   }
 
   get notation() {
-    return Queen.notation
+    return Queen.notation;
   }
 }
 

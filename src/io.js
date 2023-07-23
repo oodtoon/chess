@@ -1,5 +1,5 @@
-const { parse } = window.PgnParser;
 import Game from "./models/game.js";
+const { parse } = window.PgnParser;
 
 export function derivePgn(game) {
   let movesPgn = game.moves.reduce((acc, move, index) => {
@@ -13,7 +13,7 @@ export function derivePgn(game) {
   if (game.isGameOver) {
     movesPgn = movesPgn + game.result;
   }
-  
+
   return movesPgn;
 }
 
@@ -32,6 +32,6 @@ export function copyPgn(game) {
 }
 
 export function parsePgn(pgn) {
-  const parsedPgn = parse(pgn)
-  return Game.fromParsedToken(parsedPgn)
+  const parsedPgn = parse(pgn);
+  return Game.fromParsedToken(parsedPgn);
 }

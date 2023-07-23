@@ -7,10 +7,6 @@ class Knight extends Piece {
 
   name = "Knight";
 
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-  }
-
   computeMoves() {
     const directions = [
       [2, 1],
@@ -26,7 +22,6 @@ class Knight extends Piece {
       this.getLegalDirectionalMoves(dir, 1)
     );
     return available;
-;
   }
 
   onMove(move) {
@@ -38,11 +33,13 @@ class Knight extends Piece {
   }
 
   get img() {
-    return this.isWhite() ? "https://www.chess.com/chess-themes/pieces/neo/150/wn.png" : "https://www.chess.com/chess-themes/pieces/neo/150/bn.png"
+    return this.isWhite()
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wn.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bn.png";
   }
 
   get notation() {
-    return Knight.notation
+    return Knight.notation;
   }
 }
 

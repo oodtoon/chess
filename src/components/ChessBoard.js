@@ -97,7 +97,7 @@ const template = generateTemplete();
 
 class ChessBoard extends HTMLElement {
   static get observedAttributes() {
-    return ["rotate"]
+    return ["rotate"];
   }
 
   constructor() {
@@ -107,13 +107,9 @@ class ChessBoard extends HTMLElement {
     this.squares = this.shadowRoot.querySelectorAll(".square");
   }
 
-  connectedCallback() {
-    
-  }
+  connectedCallback() {}
 
   attributeChangedCallback(name, oldValue, newValue) {
-
-    
     if (newValue === "true") {
       this.style.transform = "rotate(180deg)";
       this.squares.forEach(
@@ -132,11 +128,11 @@ class ChessBoard extends HTMLElement {
   }
 
   get chessPieces() {
-    return [...this.shadowRoot.querySelectorAll("chess-piece")]
+    return [...this.shadowRoot.querySelectorAll("chess-piece")];
   }
 
   get activeSquare() {
-    return this.shadowRoot.querySelector(".active")
+    return this.shadowRoot.querySelector(".active");
   }
 
   get ghostMoves() {

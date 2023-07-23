@@ -1,7 +1,7 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
-Object.defineProperty(globalThis, 'crypto', {
+Object.defineProperty(globalThis, "crypto", {
   value: {
-    randomUUID: () => crypto.randomUUID()
-  }
+    randomUUID: () => crypto.randomUUID(),
+  },
 });

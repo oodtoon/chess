@@ -73,13 +73,12 @@ export default class promotionDialog extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.shadowRoot.append(promotionModalTemplate.content.cloneNode(true));
-    this.pieceSelect = this.shadowRoot.querySelector(".piece-select")
+    this.pieceSelect = this.shadowRoot.querySelector(".piece-select");
     this.acceptButton = this.shadowRoot.querySelector(".accept");
     this.promotionDialog = this.shadowRoot.getElementById("promotion-dialog");
   }
 
-  connectedCallback() {
-  }
+  connectedCallback() {}
 }
 
 window.customElements.define("promotion-dialog", promotionDialog);

@@ -126,13 +126,6 @@ class MoveList extends HTMLElement {
     lastListElement.removeChild(lastSpan);
   }
 
-  removeMove() {
-    const orderedListElement = this.shadowRoot.querySelector("ol")
-    const lastListElement = orderedListElement.lastChild
-    const lastSpan = lastListElement.lastChild
-    lastListElement.removeChild(lastSpan)  
-  }
-
   nextListItem() {
     this.currentListItem = document.createElement("li");
     this.listRoot?.appendChild(this.currentListItem);
