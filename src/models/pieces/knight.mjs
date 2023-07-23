@@ -11,7 +11,7 @@ class Knight extends Piece {
     super(game, board, player, row, file);
   }
 
-  get moves() {
+  computeMoves() {
     const directions = [
       [2, 1],
       [1, 2],

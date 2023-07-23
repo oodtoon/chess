@@ -17,7 +17,7 @@ class Rook extends Piece {
     return this.isWhite() ? "♖" : "♜";
   }
 
-  get moves() {
+  computeMoves() {
     const directions = [
       [-1, 0],
       [1, 0],

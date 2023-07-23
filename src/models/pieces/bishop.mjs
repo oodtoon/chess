@@ -11,7 +11,7 @@ class Bishop extends Piece {
     super(game, board, player, row, file);
   }
 
-  get moves() {
+  computeMoves() {
     const directions = [
       [-1, -1],
       [-1, 1],

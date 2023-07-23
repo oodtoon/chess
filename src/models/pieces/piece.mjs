@@ -3,6 +3,7 @@ import Board from "../board.js";
 
 class Piece {
   name = null;
+  #moveCache = new WeakMap();
 
   constructor(game, board, player, row, file) {
     this.game = game;
@@ -67,7 +68,12 @@ class Piece {
   }
 
   get moves() {
-    throw new Error("moves getter is not yet implementeed");
+    if (this.#moveCache.has(this.game.moveId)) {
+      return this.#moveCache.get(this.game.moveId);
+    }
+    const computed = this.computeMoves();
+    this.#moveCache.set(this.game.moveId, computed);
+    return computed;
   }
 
   get opponent() {

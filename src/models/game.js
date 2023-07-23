@@ -5,6 +5,8 @@ import { fileToInt } from "../util.js";
 import { PIECE_NAME_MAPPING } from "./pieces/index.mjs";
 
 export default class Game {
+  #initialMoveId = Symbol(crypto.randomUUID);
+  
   constructor(eventBus) {
     this.board = new Board(this);
     this.eventBus = eventBus;
@@ -153,8 +155,12 @@ export default class Game {
         consumeToken(token, game);
       }
     });
-    console.log(game.board.debug())
+    console.log(game.board.debug());
     return game;
+  }
+
+  get moveId() {
+    return this.lastMove?.id ?? this.#initialMoveId;
   }
 
   get isGameOver() {
@@ -214,4 +220,3 @@ const movePiece = (piece, game, row, file) => {
     game.doMove(pieceMove);
   }
 };
-

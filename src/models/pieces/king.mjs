@@ -79,7 +79,7 @@ class King extends Piece {
       );
   }
 
-  get moves() {
+  computeMoves() {
     const directions = [
       [-1, -1],
       [-1, 1],
