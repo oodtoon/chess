@@ -1,6 +1,11 @@
 import { coordToAlgebraic } from "../util.js";
 
 class BaseMove {
+  constructor() {
+    // used to cache move computations
+    this.id = Symbol(crypto.randomUUID())
+  }
+  
   get isCompoundMove() {
     return false;
   }

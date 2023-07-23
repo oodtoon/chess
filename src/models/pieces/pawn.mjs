@@ -5,7 +5,7 @@ import { intToFile } from "../../util.js";
 class Pawn extends Piece {
   static startingRows = [1, 6];
   static startingFiles = [0, 1, 2, 3, 4, 5, 6, 7];
-  static notation = null
+  static notation = null;
 
   name = "Pawn";
 
@@ -28,7 +28,7 @@ class Pawn extends Piece {
     );
   }
 
-  get moves() {
+  computeMoves() {
     const available = [];
     const direction = this.isWhite() ? 1 : -1;
 
@@ -91,9 +91,6 @@ class Pawn extends Piece {
 
     return available;
   }
-
-
-
 
   get icon() {
     return this.isWhite() ? "♙" : "♟";
