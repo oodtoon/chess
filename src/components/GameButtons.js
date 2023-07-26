@@ -3,11 +3,11 @@ const undo = String.raw`<svg xmlns="http://www.w3.org/2000/svg" class="icon" vie
 const gameButtonsTemplate = document.createElement("template");
 gameButtonsTemplate.innerHTML = String.raw`
 <section class="btns-container dual">
-<button class="draw">Draw</button>
-<button class="resign">Resign</button>
+<button class="draw" type="buttn">Draw</button>
+<button class="resign" type="button">Resign</button>
 </section>
 <section class="btns-container">
-<button class="undo">Undo Move <span>${undo}</span></button>
+<button class="undo" type="button">Undo Move <span>${undo}</span></button>
 </section>
 
 <style>
@@ -39,7 +39,6 @@ gameButtonsTemplate.innerHTML = String.raw`
     .undo {
         border: 3px solid black;
         color: black;
-        max-height: 3em;
     }
 
     .btns-container > button:hover {

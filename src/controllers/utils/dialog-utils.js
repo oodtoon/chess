@@ -19,6 +19,7 @@ export function displayReviewDialog(
   type,
   msg = false,
   requestDialog
+
 ) {
   const reviewTitle = dialog.shadowRoot.getElementById("review-title");
   const reviewDialog = dialog.shadowRoot.getElementById("review-dialog");
@@ -36,9 +37,15 @@ export function displayReviewDialog(
   reviewDialog.showModal();
   dialog.type = type;
   reviewTitle.textContent = title;
+  
 }
 
-export function declareDraw(game, dialog, msg = "Draw", currentDialog) {
+export function closeDialog(dialog) {
+  const dialogToClose = dialog.shadowRoot.getElementById("review-dialog")
+  dialogToClose.close()
+}
+
+export function declareDraw(game, dialog, msg = "Draw", currentDialog, movesList) {
   if (currentDialog) {
     const current = currentDialog.shadowRoot.getElementById("review-dialog");
     current.close();
@@ -48,6 +55,7 @@ export function declareDraw(game, dialog, msg = "Draw", currentDialog) {
   endDialog.showModal();
   title.textContent = msg;
   game.result = "1/2-1/2";
+  movesList.setResult(game.result)
 }
 
 export function displayUndoMoveDialog(modal) {

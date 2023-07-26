@@ -10,8 +10,8 @@ undoDialogTemplate.innerHTML = String.raw`
        </section>
        
        <span class="btn-container">
-           <button class="request">Send Undo Request</button>
-           <button class="cancel" formmethod="dialog">Cancel</button>
+           <button class="request" type="button">Send Undo Request</button>
+           <button class="cancel" formmethod="dialog" type="button">Cancel</button>
        </span>
     </form>
 </dialog>

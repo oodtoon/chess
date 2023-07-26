@@ -5,6 +5,7 @@ import {
   displayReviewDialog,
   displayUndoMoveDialog,
   displayPromotionDialog,
+  closeDialog
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
 import { copyPgn, exportToPgn, parsePgn } from "../io.js";
@@ -156,6 +157,7 @@ export default class ChessGameController {
             this.endGameDialog,
             checkmate
           );
+          this.movesList.setResult(this.game.result)
         } else {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
@@ -195,8 +197,7 @@ export default class ChessGameController {
   }
 
   activateGameButtons() {
-    this.gameButtons.drawButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.gameButtons.drawButton.addEventListener("click", () => {
 
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
@@ -207,31 +208,30 @@ export default class ChessGameController {
       displayReviewDialog(this.reviewDialog, drawMsg, "Draw");
     });
 
-    this.gameButtons.resignButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.gameButtons.resignButton.addEventListener("click", () => {
 
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
       const resignMsg = `${color} resigns. ${opponentColor} wins!`;
       declareWinner(color, this.game, this.turn, this.endGameDialog, resignMsg);
+      this.movesList.setResult(this.game.result)
     });
 
     this.gameButtons.undoButton.addEventListener("click", (event) => {
-      event.preventDefault();
 
       displayUndoMoveDialog(this.undoDialog);
     });
   }
 
   activateMoveListBtns() {
-    this.movesList.exportButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.movesList.exportButton.addEventListener("click", () => {
+
       exportToPgn(this.game);
     });
 
-    this.movesList.copyButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.movesList.copyButton.addEventListener("click", () => {
+   
       copyPgn(this.game);
     });
 
@@ -258,13 +258,12 @@ export default class ChessGameController {
   }
 
   activateDialongBtns() {
-    this.reviewDialog.acceptButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.reviewDialog.acceptButton.addEventListener("click", () => {
 
       if (this.reviewDialog.type === "Draw") {
         this.game.result = "1/2-1/2";
         this.turn.textContent = "Draw";
-        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog);
+        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog, this.movesList);
       } else {
         this.handleUndoMove();
         const dialog =
@@ -273,12 +272,11 @@ export default class ChessGameController {
       }
     });
 
-    this.reviewDialog.declineButton.addEventListener("close", (event) => {
-      event.preventDefault();
+    this.reviewDialog.declineButton.addEventListener("click", () => {
+      closeDialog(this.reviewDialog)
     });
 
-    this.undoDialog.requestButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.undoDialog.requestButton.addEventListener("click", () => {
 
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.opponent.color;
@@ -293,12 +291,10 @@ export default class ChessGameController {
     });
 
     this.undoDialog.cancelButton.addEventListener("click", () => {
-      const diag = this.undoDialog.shadowRoot.getElementById("undo-dialog");
-      diag.close();
+      closeDialog(this.undoDialog)
     });
 
     this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
-      event.preventDefault();
 
       this.cleanup();
 
@@ -310,14 +306,12 @@ export default class ChessGameController {
       endDialog.close();
     });
 
-    this.endGameDialog.exportButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.endGameDialog.exportButton.addEventListener("click", () => {
 
       exportToPgn(this.game);
     });
 
-    this.endGameDialog.copyButton.addEventListener("click", (event) => {
-      event.preventDefault();
+    this.endGameDialog.copyButton.addEventListener("click", () => {
 
       copyPgn(this.game);
     });

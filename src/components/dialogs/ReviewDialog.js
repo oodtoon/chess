@@ -5,8 +5,8 @@ reviewDialogTemplate.innerHTML = String.raw`
 <h2 class="title" id="review-title">Want to review?</h2>
 <div id="undo-review-msg" class="msg"></div>
     <span class="btn-container">
-        <button class="accept" value="accpet">Accept</button>
-        <button class="decline" formmethod="dialog">Decline</button>
+        <button class="accept" value="accpet" type="button">Accept</button>
+        <button class="decline" formmethod="dialog" type="button">Decline</button>
     </span>
 </form>
 </dialog>

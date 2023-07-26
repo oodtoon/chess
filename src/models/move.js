@@ -92,6 +92,7 @@ export default class Move extends BaseMove {
   }
 
   toString() {
+
     const letter = this.initiatingPiece.isPawn()
       ? this.isCapture
         ? intToFile(this.sourceFile)
@@ -105,7 +106,6 @@ export default class Move extends BaseMove {
       ? "=" + this.pieceToPromoteTo.notation
       : "";
 
-    // stalemate no notation but we can make it and it can be :(
     const square = coordToAlgebraic([this.row, this.file]);
     return letter + capture + square + promotion + check + checkMate;
   }

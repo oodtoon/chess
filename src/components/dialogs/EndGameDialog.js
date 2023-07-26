@@ -10,9 +10,9 @@ endGameTemplate.innerHTML = String.raw`
     <button class="exit" formmethod="dialog">${exit}</button>
        <h2 class="title" id="end-title">white wins!</h2> 
        <span class="btn-container">
-           <button class="play-again-btn">play again!</button>
-           <button class="export-btn">export pgn</button>
-           <button class="copy-btn">copy pgn <span class="copy-icon">${copySvg}</span></button>
+           <button class="play-again-btn" type="button">play again!</button>
+           <button class="export-btn" type="button">export pgn</button>
+           <button class="copy-btn" type="button">copy pgn <span class="copy-icon">${copySvg}</span></button>
        </span>
     </form>
 </dialog>

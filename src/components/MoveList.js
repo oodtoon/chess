@@ -6,15 +6,16 @@ listTemplate.innerHTML = String.raw`
   <h3>moves list</h3>
   <ol>
   </ol>
+  
   <section class="btns-container">
-    <button class="export">export pgn</button>
-    <button class="copy">copy pgn <span class="copy-icon">${copySvg}</span></button>
+    <button class="export" type="button">export pgn</button>
+    <button class="copy" type="button">copy pgn <span class="copy-icon">${copySvg}</span></button>
     <input type="file" id="file-input" style="display: none"/>
-    <button class="import">import pgn</button>
+    <button class="import" type="button">import pgn</button>
   </section>
   <style>
 
-    h3 {
+    h3, div {
       text-align: center
     }
 
@@ -43,8 +44,9 @@ listTemplate.innerHTML = String.raw`
     }
 
     span {
+      margin-left: 1em;
       display: inline-block;
-      width: 20%;
+      width: 10%;
     }
 
     .btns-container{
@@ -151,12 +153,14 @@ class MoveList extends HTMLElement {
 
   nextListItem() {
     this.currentListItem = document.createElement("li");
-    this.currentListItem.append(`${this.listRoot.children.length + 1}. `)
+    this.currentListItem.append(`${this.listRoot.children.length + 1}.`)
     this.listRoot?.appendChild(this.currentListItem);
   }
 
   setResult(result) {
-    this.currentListItem.append(result);
+    this.gameResult = document.createElement("div")
+    this.gameResult.textContent = result
+    this.listRoot?.append(this.gameResult)
   }
 }
 
