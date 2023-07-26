@@ -92,7 +92,6 @@ export default class Move extends BaseMove {
   }
 
   toString() {
-
     const letter = this.initiatingPiece.isPawn()
       ? this.isCapture
         ? intToFile(this.sourceFile)

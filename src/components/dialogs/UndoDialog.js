@@ -41,6 +41,7 @@ undoDialogTemplate.innerHTML = String.raw`
 
  .input {
     grid-area: input;
+    place-self: start;
  }
 
  .btn-container {

@@ -153,14 +153,14 @@ class MoveList extends HTMLElement {
 
   nextListItem() {
     this.currentListItem = document.createElement("li");
-    this.currentListItem.append(`${this.listRoot.children.length + 1}.`)
+    this.currentListItem.append(`${this.listRoot.children.length + 1}.`);
     this.listRoot?.appendChild(this.currentListItem);
   }
 
   setResult(result) {
-    this.gameResult = document.createElement("div")
-    this.gameResult.textContent = result
-    this.listRoot?.append(this.gameResult)
+    this.gameResult = document.createElement("div");
+    this.gameResult.textContent = result;
+    this.listRoot?.append(this.gameResult);
   }
 }
 

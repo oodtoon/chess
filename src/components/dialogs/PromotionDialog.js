@@ -2,18 +2,14 @@ const promotionModalTemplate = document.createElement("template");
 promotionModalTemplate.innerHTML = String.raw`
 <dialog id="promotion-dialog" class="promotion-dialog">
    <form class="promotion-form">
-        <label>
-        Promote to:
-        <select class="piece-select">
-          <option>Queen</option>
-          <option>Knight</option>
-          <option>Bishop</option>
-          <option>Rook</option>
-        </select>
-      </label>
-    <span class="btn-container">
-        <button class="accept" value="accpet">Accept</button>
-    </span>
+ 
+      <span>
+         <button class="promote-btn" id="Queen" value="q" type="button">q</button>
+         <button class="promote-btn" id="Rook" value="r" type="button">r</button>
+         <button class="promote-btn" id="Bishop" value="b" type="button">b</button>
+         <button class="promote-btn" id="Knight" value="n" type="button">n</button>
+      </span>
+
 </form>
 </dialog>
 
@@ -65,6 +61,27 @@ promotionModalTemplate.innerHTML = String.raw`
     color: white;
     background-color: #49a6e9;
  }
+
+ .promote-btn {
+   border: transparent;
+   background-color: transparent;
+   color: transparent;
+   background-size: cover;
+   cursor: pointer;
+   width: var(--responsive-size);
+   height: var(--responsive-size);
+   padding: 0;
+   transition: transform 200ms;
+   transform-origin: center;
+ }
+
+ .promote-btn:hover {
+   transform: scale(1.1);
+ }
+
+ .promote-btn:active {
+   transform: scale(1.05);
+ }
 </style>
 `;
 
@@ -73,9 +90,9 @@ export default class promotionDialog extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.shadowRoot.append(promotionModalTemplate.content.cloneNode(true));
-    this.pieceSelect = this.shadowRoot.querySelector(".piece-select");
-    this.acceptButton = this.shadowRoot.querySelector(".accept");
+    this.color = null;
     this.promotionDialog = this.shadowRoot.getElementById("promotion-dialog");
+    this.promoteBtns = this.shadowRoot.querySelectorAll(".promote-btn");
   }
 
   connectedCallback() {}

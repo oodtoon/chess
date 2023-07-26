@@ -19,7 +19,6 @@ export function displayReviewDialog(
   type,
   msg = false,
   requestDialog
-
 ) {
   const reviewTitle = dialog.shadowRoot.getElementById("review-title");
   const reviewDialog = dialog.shadowRoot.getElementById("review-dialog");
@@ -37,15 +36,21 @@ export function displayReviewDialog(
   reviewDialog.showModal();
   dialog.type = type;
   reviewTitle.textContent = title;
-  
 }
 
-export function closeDialog(dialog) {
-  const dialogToClose = dialog.shadowRoot.getElementById("review-dialog")
-  dialogToClose.close()
+export function closeDialog(dialog, type) {
+  const id = type === "undo" ? "undo-dialog" : "review-dialog"
+  const dialogToClose = dialog.shadowRoot.getElementById(id);
+  dialogToClose.close();
 }
 
-export function declareDraw(game, dialog, msg = "Draw", currentDialog, movesList) {
+export function declareDraw(
+  game,
+  dialog,
+  msg = "Draw",
+  currentDialog,
+  movesList
+) {
   if (currentDialog) {
     const current = currentDialog.shadowRoot.getElementById("review-dialog");
     current.close();
@@ -55,7 +60,7 @@ export function declareDraw(game, dialog, msg = "Draw", currentDialog, movesList
   endDialog.showModal();
   title.textContent = msg;
   game.result = "1/2-1/2";
-  movesList.setResult(game.result)
+  movesList.setResult(game.result);
 }
 
 export function displayUndoMoveDialog(modal) {
@@ -63,20 +68,29 @@ export function displayUndoMoveDialog(modal) {
   dialog.showModal();
 }
 
-export async function displayPromotionDialog(modal) {
+export async function displayPromotionDialog(modal, playerColor) {
   const dialog = modal.shadowRoot.getElementById("promotion-dialog");
+  modal.promoteBtns.forEach(
+    (btn) =>
+      (btn.style.backgroundImage = `url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/${
+        playerColor + btn.value
+      }.png)`)
+  );
   dialog.showModal();
 
   const promise = new Promise((resolve, reject) => {
-    const handleAccept = (event) => {
-      event.preventDefault();
 
-      resolve(modal.pieceSelect.value);
+    const handlePromotionBtn = (event) => {
+      resolve(event.target.id)
       closePromotionSelect(modal);
-      modal.acceptButton.removeEventListener("click", handleAccept);
+      modal.promoteBtns.forEach((btn) =>
+        btn.removeEventListener("click", handlePromotionBtn)
+      );
     };
 
-    modal.acceptButton.addEventListener("click", handleAccept);
+    modal.promoteBtns.forEach((btn) =>
+      btn.addEventListener("click", handlePromotionBtn)
+    );
   });
 
   return promise;

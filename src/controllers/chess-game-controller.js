@@ -5,7 +5,7 @@ import {
   displayReviewDialog,
   displayUndoMoveDialog,
   displayPromotionDialog,
-  closeDialog
+  closeDialog,
 } from "./utils/dialog-utils.js";
 import Game from "../models/game.js";
 import { copyPgn, exportToPgn, parsePgn } from "../io.js";
@@ -157,7 +157,7 @@ export default class ChessGameController {
             this.endGameDialog,
             checkmate
           );
-          this.movesList.setResult(this.game.result)
+          this.movesList.setResult(this.game.result);
         } else {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
@@ -198,7 +198,6 @@ export default class ChessGameController {
 
   activateGameButtons() {
     this.gameButtons.drawButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
@@ -209,29 +208,26 @@ export default class ChessGameController {
     });
 
     this.gameButtons.resignButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
       const resignMsg = `${color} resigns. ${opponentColor} wins!`;
       declareWinner(color, this.game, this.turn, this.endGameDialog, resignMsg);
-      this.movesList.setResult(this.game.result)
+      this.movesList.setResult(this.game.result);
     });
 
-    this.gameButtons.undoButton.addEventListener("click", (event) => {
-
+    this.gameButtons.undoButton.addEventListener("click", () => {
       displayUndoMoveDialog(this.undoDialog);
     });
+
   }
 
   activateMoveListBtns() {
     this.movesList.exportButton.addEventListener("click", () => {
-
       exportToPgn(this.game);
     });
 
     this.movesList.copyButton.addEventListener("click", () => {
-   
       copyPgn(this.game);
     });
 
@@ -259,11 +255,16 @@ export default class ChessGameController {
 
   activateDialongBtns() {
     this.reviewDialog.acceptButton.addEventListener("click", () => {
-
       if (this.reviewDialog.type === "Draw") {
         this.game.result = "1/2-1/2";
         this.turn.textContent = "Draw";
-        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog, this.movesList);
+        declareDraw(
+          this.game,
+          this.endGameDialog,
+          "Draw",
+          this.reviewDialog,
+          this.movesList
+        );
       } else {
         this.handleUndoMove();
         const dialog =
@@ -273,11 +274,10 @@ export default class ChessGameController {
     });
 
     this.reviewDialog.declineButton.addEventListener("click", () => {
-      closeDialog(this.reviewDialog)
+      closeDialog(this.reviewDialog);
     });
 
     this.undoDialog.requestButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.opponent.color;
       const title = `${color} player wants to undo most recent move. Do you accept?`;
@@ -291,11 +291,10 @@ export default class ChessGameController {
     });
 
     this.undoDialog.cancelButton.addEventListener("click", () => {
-      closeDialog(this.undoDialog)
+      closeDialog(this.undoDialog, "undo");
     });
 
     this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
-
       this.cleanup();
 
       this.game = new Game(this.eventBus);
@@ -307,19 +306,11 @@ export default class ChessGameController {
     });
 
     this.endGameDialog.exportButton.addEventListener("click", () => {
-
       exportToPgn(this.game);
     });
 
     this.endGameDialog.copyButton.addEventListener("click", () => {
-
       copyPgn(this.game);
-    });
-
-    this.promotionDialog.pieceSelect.addEventListener("change", (event) => {
-      event.preventDefault();
-      this.promotionDialog.acceptButton.value =
-        this.promotionDialog.pieceSelect.value;
     });
   }
 
@@ -387,7 +378,11 @@ export default class ChessGameController {
       (move.row === 0 || move.row === 7) &&
       !this.loading
     ) {
-      const selectedPiece = await displayPromotionDialog(this.promotionDialog);
+      const playerColor = this.game.getActivePlayer().color === "White" ? "w" : "b";
+      const selectedPiece = await displayPromotionDialog(
+        this.promotionDialog,
+        playerColor
+      );
       const pawnToPromote = move.initiatingPiece;
       const chessPieceElement = this.board.chessPieces.find(
         (element) => element.piece.id === pawnToPromote.id
