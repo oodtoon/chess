@@ -159,6 +159,7 @@ class MoveList extends HTMLElement {
 
   setResult(result) {
     this.gameResult = document.createElement("div")
+    this.gameResult.classList.add("result")
     this.gameResult.textContent = result
     this.listRoot?.append(this.gameResult)
   }

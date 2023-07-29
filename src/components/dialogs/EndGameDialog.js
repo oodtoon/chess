@@ -109,8 +109,6 @@ export default class EndGameDialog extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.shadowRoot.append(endGameTemplate.content.cloneNode(true));
-
-    this.title = this.shadowRoot.querySelector(".title");
     this.exitButton = this.shadowRoot.querySelector(".exit");
 
     this.exportButton = this.shadowRoot.querySelector(".export-btn");

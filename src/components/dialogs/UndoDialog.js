@@ -91,7 +91,6 @@ export default class UndoDialog extends HTMLElement {
     this.shadowRoot.append(undoDialogTemplate.content.cloneNode(true));
     this.requestButton = this.shadowRoot.querySelector(".request");
     this.cancelButton = this.shadowRoot.querySelector(".cancel");
-    this.title = this.shadowRoot.querySelector(".title");
     this.textarea = this.shadowRoot.getElementById("undo-msg");
     this.msg = null;
   }

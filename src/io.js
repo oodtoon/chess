@@ -1,4 +1,4 @@
-const { parse } = window.PgnParser;
+import { parse } from "@mliebelt/pgn-parser"
 
 export function derivePgn(game) {
   let movesPgn = game.moves.reduce((acc, move, index) => {
