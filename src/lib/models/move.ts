@@ -1,19 +1,18 @@
 import { coordToAlgebraic, intToFile } from "../util.js";
+import type Piece from "./pieces/piece.js";
+import type Player from "./player.js";
 
 class BaseMove {
-  #isCheck = null;
-  #isCheckmate = null;
-  constructor(player) {
-    // used to cache move computations
-    this.id = Symbol(crypto.randomUUID());
-    this.player = player;
-  }
+  #isCheck: null | boolean = null;
+  #isCheckmate: null | boolean = null;
+  id = Symbol(crypto.randomUUID());
+  constructor(readonly player: Player) {}
 
   get isCompoundMove() {
     return false;
   }
 
-  #doesMoveExposeCheck(targetPlayer) {
+  #doesMoveExposeCheck(targetPlayer: Player) {
     const { livePieces } = targetPlayer;
     for (const targetPlayerPiece of livePieces) {
       for (const move of targetPlayerPiece.moves) {
@@ -41,16 +40,8 @@ class BaseMove {
     return this.#doesMoveExposeCheck(this.player);
   }
 
-  checkPawnPromotion() {
-    if (this.initiatingPiece.isPawn() && (this.row === 0 || this.row === 7)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   get opponent() {
-    return this.player.opponent;
+    return this.player.opponent!;
   }
 
   get isCheck() {
@@ -65,18 +56,28 @@ class BaseMove {
 }
 
 export default class Move extends BaseMove {
-  static fromSquare(square, initiatingPiece, capturedPiece = null) {
+  static fromSquare(
+    square: [number, number],
+    initiatingPiece: Piece,
+    capturedPiece: Piece | null = null
+  ) {
     return new Move(...square, initiatingPiece, capturedPiece);
   }
 
-  constructor(row, file, initiatingPiece, capturedPiece) {
+  sourceRow: number;
+  sourceFile: number;
+  pieceToPromoteTo: Piece | null;
+
+  constructor(
+    readonly row: number,
+    readonly file: number,
+    private readonly initiatingPiece: Piece,
+    private readonly capturedPiece: Piece | null
+  ) {
     super(initiatingPiece.player);
-    this.row = row;
-    this.file = file;
-    this.initiatingPiece = initiatingPiece;
+
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
-    this.capturedPiece = capturedPiece;
     this.pieceToPromoteTo = null;
   }
 
@@ -92,7 +93,6 @@ export default class Move extends BaseMove {
   }
 
   toString() {
-
     const letter = this.initiatingPiece.isPawn()
       ? this.isCapture
         ? intToFile(this.sourceFile)
@@ -112,11 +112,12 @@ export default class Move extends BaseMove {
 }
 
 export class CompoundMove extends BaseMove {
-  constructor(kingMove, rookMove, isShort) {
+  constructor(
+    readonly kingMove: Move,
+    readonly rookMove: Move,
+    private readonly isShort: boolean
+  ) {
     super(kingMove.player);
-    this.kingMove = kingMove;
-    this.rookMove = rookMove;
-    this.isShort = isShort;
   }
 
   toString() {

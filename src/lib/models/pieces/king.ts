@@ -1,5 +1,8 @@
-import Piece from "./piece.mjs";
-import Move, { CompoundMove } from "../move.js";
+import Piece from "./piece";
+import Move, { CompoundMove } from "../move";
+import type Game from "../game";
+import type Board from "../board";
+import type Player from "../player";
 
 class King extends Piece {
   static startingRows = [0, 7];
@@ -7,12 +10,8 @@ class King extends Piece {
   static notation = "K";
 
   name = "King";
-
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-    this.hasMoved = false;
-    this.isChecked = false;
-  }
+  hasMoved = false;
+  isChecked = false;
 
   setChecked() {
     this.isChecked = true;

@@ -1,4 +1,4 @@
-import Piece from "./piece.mjs";
+import Piece from "./piece.js";
 
 class Knight extends Piece {
   static startingRows = [0, 7];

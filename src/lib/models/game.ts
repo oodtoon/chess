@@ -1,20 +1,23 @@
 import Board from "./board.js";
 import Player from "./player.js";
 import { fileToInt } from "../util.js";
-import { PIECE_NAME_MAPPING } from "./pieces/index.mjs";
+import { PIECE_NAME_MAPPING, Piece } from "./pieces/index.js";
+import type Move from "./move.js";
+import type EventBus from "$lib/event-bus.js";
 
 export default class Game {
-  #initialMoveId = Symbol(crypto.randomUUID);
+  #initialMoveId = Symbol(crypto.randomUUID());
 
-  constructor(eventBus) {
-    this.board = new Board(this);
-    this.eventBus = eventBus;
-    this.whitePlayer = new Player("White", this);
-    this.blackPlayer = new Player("Black", this);
+  board = new Board(this);
+  whitePlayer = new Player("White", this);
+  blackPlayer = new Player("Black", this);
+
+  moves = [];
+  result: string | null = null;
+
+  constructor(readonly eventBus: EventBus) {
     this.wireUpOpposition();
     this.board.initialize();
-    this.moves = [];
-    this.result = null;
   }
 
   wireUpOpposition() {
@@ -22,9 +25,9 @@ export default class Game {
     this.blackPlayer.opponent = this.whitePlayer;
   }
 
-  getMoves(piece) {
-    const moves = piece.moves;
-    return moves.filter((move) => {
+  getMoves(piece: Piece) {
+    const moves = piece?.moves;
+    return moves.filter((move: Move) => {
       this.stageMove(move, false);
       if (move.doesMoveExposePlayerToCheck()) {
         this.unstageMove(move);
@@ -36,7 +39,7 @@ export default class Game {
     });
   }
 
-  stageMove(move, shouldCommitMove = true) {
+  stageMove(move: Move, shouldCommitMove = true) {
     let moves;
     if (move.isCompoundMove) {
       moves = [move.kingMove, move.rookMove];
@@ -46,10 +49,6 @@ export default class Game {
 
     for (const move of moves) {
       const { row, file, initiatingPiece, capturedPiece } = move;
-
-      if (initiatingPiece.name === "Pawn" && (row === 7 || row === 0)) {
-        this.board.willRotate = false;
-      }
 
       if (capturedPiece) {
         const { row: capturedRow, file: capturedFile } = capturedPiece;
@@ -73,7 +72,7 @@ export default class Game {
     }
   }
 
-  unstageMove(move) {
+  unstageMove(move: Move) {
     if (move.isCompoundMove) {
       move.moves.forEach((move) => this.unstageMove(move));
     } else {
@@ -100,9 +99,16 @@ export default class Game {
     return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
   }
 
-  doMove(move) {
+  doMove(move: Move, isCompound: boolean = false) {
     this.stageMove(move);
-    this.moves.push(move);
+
+    if (isCompound) {
+      if (move.initiatingPiece.name === "King") {
+        this.moves.push(move);
+      }
+    } else {
+      this.moves.push(move);
+    }
   }
 
   undoMove() {
@@ -156,7 +162,7 @@ export default class Game {
   }
 }
 
-const consumeToken = (token, game) => {
+const consumeToken = (token, game: Game) => {
   const row = parseInt(token.notation.row) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);
@@ -181,29 +187,34 @@ const consumeToken = (token, game) => {
   movePiece(movingPiece, game, row, file);
 };
 
-const getPieceToMove = (piecesOfType, row, file, discriminator) => {
-  let discriminate = () => true;
+const getPieceToMove = (
+  piecesOfType: Piece[],
+  row: number,
+  file: number,
+  discriminator: string
+) => {
+  let discriminate = (move: Move) => true;
   if (discriminator) {
     if (parseInt(discriminator)) {
       const discRow = parseInt(discriminator) - 1;
-      discriminate = (move) => move.sourceRow === discRow;
+      discriminate = (move: Move) => move.sourceRow === discRow;
     } else {
       const discFile = fileToInt(discriminator);
-      discriminate = (move) => move.sourceFile === discFile;
+      discriminate = (move: Move) => move.sourceFile === discFile;
     }
   }
-  return piecesOfType.find((p) => {
+  return piecesOfType.find((p: Piece) => {
     return p.moves.some(
-      (m) => m.row === row && m.file === file && discriminate(m)
+      (m: Move) => m.row === row && m.file === file && discriminate(m)
     );
   });
 };
 
-const movePiece = (piece, game, row, file) => {
+const movePiece = (piece: Piece, game: Game, row: number, file: number) => {
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
-      .find((m) => m.row === row && m.file === file);
+      .find((m: Move) => m.row === row && m.file === file);
 
     game.doMove(pieceMove);
   }

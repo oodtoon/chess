@@ -1,18 +1,29 @@
-import Move from "../move.js";
-import Board from "../board.js";
+import Move from "../move";
+import Board from "../board";
+import type Game from "../game";
+import type Player from "../player";
 
-class Piece {
-  name = null;
+type Square = [number, number];
+
+abstract class Piece {
+  static startingRows: number[] = [];
+  static startingFiles: number[] = [];
+  name: string = "";
+  notation: string = "";
   #moveCache = new WeakMap();
+  id = crypto.randomUUID();
 
-  constructor(game, board, player, row, file) {
-    this.game = game;
-    this.board = board;
-    this.player = player;
-    this.row = row;
-    this.file = file;
-    this.id = crypto.randomUUID();
-  }
+  abstract computeMoves: () => Move[];
+  abstract get icon(): string;
+  abstract get img(): string;
+
+  constructor(
+    private readonly game: Game,
+    private readonly board: Board,
+    readonly player: Player,
+    public row: number,
+    public file: number
+  ) {}
 
   get color() {
     return this.player.color;
@@ -30,19 +41,19 @@ class Piece {
     return this.color === "White";
   }
 
-  getSquareContent(row, file) {
+  getSquareContent(row: number, file: number) {
     return this.board.getSquareContent(row, file);
   }
 
-  isValidSquare(row, file) {
+  isValidSquare(row: number, file: number) {
     return this.board.isValidSquare(row, file);
   }
 
-  isSquareOccupied(row, file) {
+  isSquareOccupied(row: number, file: number) {
     return this.board.isSquareOccupied(row, file);
   }
 
-  getLegalDirectionalMoves(directions, magnitude) {
+  getLegalDirectionalMoves(directions: number[], magnitude?: number) {
     const vertical = directions[0];
     const horizontal = directions[1];
 
@@ -51,7 +62,10 @@ class Piece {
     const legalMoves = [];
 
     for (let i = 1; i < reach; i++) {
-      const square = [this.row + i * vertical, this.file + i * horizontal];
+      const square: Square = [
+        this.row + i * vertical,
+        this.file + i * horizontal,
+      ];
       if (this.isValidSquare(...square)) {
         if (!this.isSquareOccupied(...square)) {
           legalMoves.push(Move.fromSquare(square, this));
@@ -68,19 +82,20 @@ class Piece {
   }
 
   get moves() {
-    if (this.#moveCache.has(this.game.moveId)) {
-      return this.#moveCache.get(this.game.moveId);
-    }
-    const computed = this.computeMoves();
-    this.#moveCache.set(this.game.moveId, computed);
-    return computed;
+    // FIXME: caching moves has many unintended consequences
+    // if (this.#moveCache.has(this.game.moveId)) {
+    //   return this.#moveCache.get(this.game.moveId);
+    // }
+    // const computed = this.computeMoves();
+    // this.#moveCache.set(this.game.moveId, computed);
+    return this.computeMoves();
   }
 
   get opponent() {
     return this.player.opponent;
   }
 
-  onMove(move) {
+  onMove(move: Move) {
     this.game.eventBus.dispatchEvent("move", {
       move,
     });

@@ -1,4 +1,4 @@
-import Piece from "./piece.mjs";
+import Piece from "./piece";
 
 class Rook extends Piece {
   static startingRows = [0, 7];
@@ -6,11 +6,7 @@ class Rook extends Piece {
   static notation = "R";
 
   name = "Rook";
-
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-    this.hasMoved = false;
-  }
+  hasMoved = false;
 
   get icon() {
     return this.isWhite() ? "♖" : "♜";
