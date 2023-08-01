@@ -43,16 +43,4 @@ chess-piece {
   }
 }
 
-li {
-  display: flex;
-  padding: 0.25em 1em;
-  width: 100%;
-}
 
-li:nth-child(even) {
-  background-color: white;
-}
-
-li:nth-child(even)::marker {
-  background-color: white;
-}

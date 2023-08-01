@@ -10,7 +10,6 @@ class King extends Piece {
   static notation = "K";
 
   name = "King";
-  hasMoved = false;
   isChecked = false;
 
   setChecked() {
@@ -102,7 +101,6 @@ class King extends Piece {
 
   onMove(move) {
     super.onMove(move);
-    this.hasMoved = true;
   }
 
   get img() {

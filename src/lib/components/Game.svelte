@@ -15,9 +15,11 @@
     capturedPiece,
     capturedBlackPieces,
     capturedWhitePieces,
-    promotedPieceType
+    promotedPieceType,
+    moveList,
   } from "$lib/store";
   import { promote } from "$lib/models/pieces";
+  import type { BaseMove } from "$lib/models/move";
 
   const ctx = getGameContext();
   let { game } = $ctx;
@@ -40,8 +42,8 @@
     eventBus.addEventListener("move", handlePieceMove);
     turn = document.getElementById("turn") as HTMLElement;
 
-    whitePieces = document.getElementById("White-pieces") as HTMLElement;
-    blackPieces = document.getElementById("Black-pieces") as HTMLElement;
+    whitePieces = document.getElementById("White-pieces")!;
+    blackPieces = document.getElementById("Black-pieces")!;
 
     endGameDialog = document.querySelector(
       "end-game-dialog"
@@ -71,6 +73,8 @@
     }
   }
 
+  let movesList: Move[] = [];
+
   let selectedPiece: Piece | null;
   let ghostMove: Move[];
 
@@ -81,8 +85,8 @@
 
   function handlePieceMove(event: CustomEvent) {
     handleMove();
-    // updateMovesList(event);
-   
+    updateMovesList(event);
+
     if (event.detail.move.capturedPiece) {
       handlePieceCapture(event);
     }
@@ -132,11 +136,8 @@
     updatePlayerTurnAndText(prevPlayer);
   }
 
-  function updateMovesList(event) {
-    if (movesList.currentListItem.children.length === 2) {
-      movesList.nextListItem();
-    }
-    movesList.addMove(event.detail.move.toString());
+  function updateMovesList(event: MouseEvent) {
+    $moveList = [...$moveList, event.detail.move];
   }
 
   function checkForTerminalState(activePlayer: Player) {
@@ -159,7 +160,6 @@
     rotateBoard(activePlayer);
     turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
-
 
   function handlePieceCapture(event) {
     const capturedPiece = event.detail.move.capturedPiece;
@@ -302,30 +302,25 @@
     }
   }
 
-  async function handleGhostMove(event: CustomEvent<Move>) {
+  async function handleGhostMove(event: CustomEvent<BaseMove>) {
     if ($promotedPieceType) {
-      $promotedPieceType = null
+      $promotedPieceType = null;
     }
 
     const move = event.detail;
 
-    if (move.isCompoundMove) {
-      for (const m of move.moves) {
-        game.doMove(m, true)
-      }
-    } else {
-      if (move.initiatingPiece.isPawn() && (move.row === 0 || move.row === 7)) {
+
+    if (move.isPromotion) {
       const chosenPromotionPiece = await displayPromotionDialog(
         promotionDialog
       );
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
-      $promotedPieceType = promotedPiece
+      $promotedPieceType = promotedPiece;
       game.doMove(move);
-      game=game
+      game = game;
     } else {
       game.doMove(move);
-    }
     }
 
     const activePlayer = game.getActivePlayer();

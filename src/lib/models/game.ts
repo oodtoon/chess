@@ -1,9 +1,11 @@
 import Board from "./board.js";
 import Player from "./player.js";
 import { fileToInt } from "../util.js";
-import { PIECE_NAME_MAPPING, Piece } from "./pieces/index.js";
+import { PIECE_NAME_MAPPING, Piece, type PieceName } from "./pieces/index.js";
 import type Move from "./move.js";
 import type EventBus from "$lib/event-bus.js";
+import { CompoundMove, type BaseMove } from "./move.js";
+import type { PgnGame, PgnReaderMove } from "@mliebelt/pgn-types";
 
 export default class Game {
   #initialMoveId = Symbol(crypto.randomUUID());
@@ -12,7 +14,7 @@ export default class Game {
   whitePlayer = new Player("White", this);
   blackPlayer = new Player("Black", this);
 
-  moves = [];
+  moves: BaseMove[] = [];
   result: string | null = null;
 
   constructor(readonly eventBus: EventBus) {
@@ -27,7 +29,7 @@ export default class Game {
 
   getMoves(piece: Piece) {
     const moves = piece?.moves;
-    return moves.filter((move: Move) => {
+    return moves.filter((move) => {
       this.stageMove(move, false);
       if (move.doesMoveExposePlayerToCheck()) {
         this.unstageMove(move);
@@ -39,12 +41,12 @@ export default class Game {
     });
   }
 
-  stageMove(move: Move, shouldCommitMove = true) {
-    let moves;
-    if (move.isCompoundMove) {
+  stageMove(move: BaseMove, shouldCommitMove = true) {
+    let moves: Move[];
+    if (move instanceof CompoundMove) {
       moves = [move.kingMove, move.rookMove];
     } else {
-      moves = [move];
+      moves = [move as Move];
     }
 
     for (const move of moves) {
@@ -56,24 +58,24 @@ export default class Game {
         capturedPiece.player.addCapturedPiece(capturedPiece);
         capturedPiece.player.removeLivePiece(capturedPiece);
       }
-      const { row: initiatingRow, file: initiatingFile } = initiatingPiece;
+      const { row: initiatingRow, file: initiatingFile } = initiatingPiece!;
       this.board.set(initiatingRow, initiatingFile, null);
       this.board.set(row, file, initiatingPiece);
     }
 
     if (shouldCommitMove) {
-      if (move.isCompoundMove) {
+      if (move instanceof CompoundMove) {
         move.kingMove.initiatingPiece.hasMoved = true;
         move.rookMove.initiatingPiece.hasMoved = true;
         move.kingMove.initiatingPiece.onMove(move);
       } else {
-        move.initiatingPiece.onMove(move);
+        move.initiatingPiece!.onMove(move);
       }
     }
   }
 
-  unstageMove(move: Move) {
-    if (move.isCompoundMove) {
+  unstageMove(move: BaseMove) {
+    if (move instanceof CompoundMove) {
       move.moves.forEach((move) => this.unstageMove(move));
     } else {
       const {
@@ -83,8 +85,9 @@ export default class Game {
         sourceFile,
         initiatingPiece,
         capturedPiece,
-      } = move;
+      } = move as Move;
       if (capturedPiece) {
+        //FIX EN PASSANT ISSUE!
         this.board.set(row, file, capturedPiece);
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
@@ -99,21 +102,19 @@ export default class Game {
     return this.moves.length % 2 === 0 ? this.whitePlayer : this.blackPlayer;
   }
 
-  doMove(move: Move, isCompound: boolean = false) {
+  doMove(move: BaseMove) {
     this.stageMove(move);
-
-    if (isCompound) {
-      if (move.initiatingPiece.name === "King") {
-        this.moves.push(move);
-      }
-    } else {
-      this.moves.push(move);
-    }
+    this.moves.push(move);
   }
 
   undoMove() {
-    this.unstageMove(this.moves.at(-1));
+    if (!this.hasMoves) return;
+    this.unstageMove(this.moves.at(-1)!);
     this.moves.pop();
+  }
+
+  get hasMoves() {
+    return this.moves.length !== 0;
   }
 
   get lastMove() {
@@ -121,30 +122,27 @@ export default class Game {
   }
 
   isPlayerInCheck() {
-    return this.lastMove.isCheck;
+    return this.hasMoves && this.lastMove!.isCheck;
   }
 
-  fromParsedToken(pgn) {
-    console.log("these are all the moves", pgn[0].moves);
+  fromParsedToken(pgn: PgnGame[]) {
     pgn[0].moves.forEach((token) => {
       if (token.notation.notation === "O-O") {
         if (token.turn === "w") {
           const shortObj = { row: 0, file: 6 };
-          console.log(shortObj);
         } else {
           const blackKing = this.blackPlayer.livePieceMap.King[0];
           const castleMove = this.getMoves(blackKing).find(
             (m) => m.isCompoundMove
-          );
+          ) as CompoundMove;
           this.doMove(castleMove);
         }
       } else if (token.notation.notation === "O-O-O") {
         if (token.turn === "b") {
           const longObj = { row: 0, file: 2 };
-          console.log(longObj);
         } else {
           const longObjectBlack = { row: 7, file: 2 };
-          console.log(longObjectBlack);
+
         }
       } else {
         consumeToken(token, this);
@@ -162,8 +160,8 @@ export default class Game {
   }
 }
 
-const consumeToken = (token, game: Game) => {
-  const row = parseInt(token.notation.row) - 1;
+const consumeToken = (token: PgnReaderMove, game: Game) => {
+  const row = parseInt(token.notation.row!) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);
   const player = token.turn === "w" ? game.whitePlayer : game.blackPlayer;
@@ -171,15 +169,15 @@ const consumeToken = (token, game: Game) => {
   const figMapping = Object.entries(player.livePieceMap).reduce(
     (acc, tuple) => {
       const [pieceName, pieces] = tuple;
-      const pieceNotation = PIECE_NAME_MAPPING[pieceName].notation;
-      acc[pieceNotation] = pieces;
+      const pieceNotation = PIECE_NAME_MAPPING[pieceName as PieceName].notation;
+      acc[pieceNotation!] = pieces;
       return acc;
     },
-    {}
+    {} as Record<string, Piece[]>
   );
 
   const movingPiece = getPieceToMove(
-    figMapping[token.notation.fig],
+    figMapping[token.notation.fig!],
     row,
     file,
     token.notation.disc
@@ -187,35 +185,37 @@ const consumeToken = (token, game: Game) => {
   movePiece(movingPiece, game, row, file);
 };
 
+type Discriminate = (move: BaseMove) => boolean;
+
 const getPieceToMove = (
   piecesOfType: Piece[],
   row: number,
   file: number,
-  discriminator: string
-) => {
-  let discriminate = (move: Move) => true;
+  discriminator?: string | null
+): Piece => {
+  let discriminate: Discriminate = () => true;
   if (discriminator) {
     if (parseInt(discriminator)) {
       const discRow = parseInt(discriminator) - 1;
-      discriminate = (move: Move) => move.sourceRow === discRow;
+      discriminate = (move: BaseMove) => move.sourceRow === discRow;
     } else {
       const discFile = fileToInt(discriminator);
-      discriminate = (move: Move) => move.sourceFile === discFile;
+      discriminate = (move: BaseMove) => move.sourceFile === discFile;
     }
   }
   return piecesOfType.find((p: Piece) => {
     return p.moves.some(
-      (m: Move) => m.row === row && m.file === file && discriminate(m)
+      (m) => m.row === row && m.file === file && discriminate(m)
     );
-  });
+  })!;
 };
 
 const movePiece = (piece: Piece, game: Game, row: number, file: number) => {
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
-      .find((m: Move) => m.row === row && m.file === file);
+      .find((m) => m.row === row && m.file === file);
 
-    game.doMove(pieceMove);
+    game.doMove(pieceMove!);
   }
 };

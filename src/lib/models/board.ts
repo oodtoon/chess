@@ -15,7 +15,7 @@ type PieceConstructor = {
 
 export default class Board {
   static LANE_SIZE = 8;
-  #board: Piece[][] = [];
+  #board: (Piece | null)[][] = [];
 
   constructor(private readonly game: Game) {
     for (let i = 0; i < Board.LANE_SIZE; i++) {
@@ -59,7 +59,7 @@ export default class Board {
     return squareContent !== null;
   }
 
-  set(row: number, file: number, value: Piece) {
+  set(row: number, file: number, value: Piece | null) {
     this.#board[row][file] = value;
     if (value) {
       value.row = row;

@@ -1,59 +1,61 @@
-<script>
-  class MoveList extends HTMLElement {
-    style = {
-      padding: "1em",
-    };
+<script lang="ts">
+ import { moveList } from "$lib/store"
+  // class MoveList extends HTMLElement {
+  //   style = {
+  //     padding: "1em",
+  //   };
 
-    constructor() {
-      super();
-      this.attachShadow({ mode: "open" });
-      this.exportButton = document.querySelector(".export");
-      this.copyButton = document.querySelector(".copy");
-      this.importButton = document.querySelector(".import");
-      this.copyIcon = document.querySelector(".copy-icon");
-      this.fileInput = document.getElementById("file-input");
-    }
+  //   constructor() {
+  //     super();
+  //     this.attachShadow({ mode: "open" });
+  //     this.exportButton = document.querySelector(".export");
+  //     this.copyButton = document.querySelector(".copy");
+  //     this.importButton = document.querySelector(".import");
+  //     this.copyIcon = document.querySelector(".copy-icon");
+  //     this.fileInput = document.getElementById("file-input");
+  //   }
 
-    connectedCallback() {
-      this.listRoot = document.querySelector("ol");
-      this.nextListItem();
-      this.copyButton.addEventListener("click", () => {
-        this.copyIcon.innerHTML = checkMarkSvg;
-        setTimeout(() => {
-          this.copyIcon.innerHTML = copySvg;
-        }, 4000);
-      });
-    }
+  //   connectedCallback() {
+  //     this.listRoot = document.querySelector("ol");
+  //     this.nextListItem();
+  //     this.copyButton.addEventListener("click", () => {
+  //       this.copyIcon.innerHTML = checkMarkSvg;
+  //       setTimeout(() => {
+  //         this.copyIcon.innerHTML = copySvg;
+  //       }, 4000);
+  //     });
+  //   }
 
-    addMove(move) {
-      const moveSpan = document.createElement("span");
-      moveSpan.style.flex = "1 0 auto";
-      moveSpan.textContent = move + " ";
-      this.currentListItem.appendChild(moveSpan);
-    }
+  //   addMove(move) {
+  //     const moveSpan = document.createElement("span");
+  //     moveSpan.style.flex = "1 0 auto";
+  //     moveSpan.textContent = move + " ";
+  //     this.currentListItem.appendChild(moveSpan);
+  //   }
 
-    removeMove() {
-      const orderedListElement = this.shadowRoot.querySelector("ol");
-      const lastListElement = orderedListElement.lastChild;
-      const lastSpan = lastListElement.lastChild;
-      lastListElement.removeChild(lastSpan);
-    }
+  //   removeMove() {
+  //     const orderedListElement = this.shadowRoot.querySelector("ol");
+  //     const lastListElement = orderedListElement.lastChild;
+  //     const lastSpan = lastListElement.lastChild;
+  //     lastListElement.removeChild(lastSpan);
+  //   }
 
-    nextListItem() {
-      this.currentListItem = document.createElement("li");
-      this.currentListItem.append(`${this.listRoot.children.length + 1}.`);
-      this.listRoot?.appendChild(this.currentListItem);
-    }
+  //   nextListItem() {
+  //     this.currentListItem = document.createElement("li");
+  //     this.currentListItem.append(`${this.listRoot.children.length + 1}.`);
+  //     this.listRoot?.appendChild(this.currentListItem);
+  //   }
 
-    setResult(result) {
-      this.gameResult = document.createElement("div");
-      this.gameResult.classList.add("result");
-      this.gameResult.textContent = result;
-      this.listRoot?.append(this.gameResult);
-    }
-  }
+  //   setResult(result) {
+  //     this.gameResult = document.createElement("div");
+  //     this.gameResult.classList.add("result");
+  //     this.gameResult.textContent = result;
+  //     this.listRoot?.append(this.gameResult);
+  //   }
+  // }
 
   let copied = false;
+ 
 
   const handleCopyBtnClick = () => {
     copied = true;
@@ -61,11 +63,29 @@
       copied = false;
     }, 4000);
   };
+
 </script>
 
 <div class="moves-list">
     <h3>moves list</h3>
-    <ol />
+    <ol>
+      {#each $moveList as move, i }
+      {@debug move}
+      {#if (i % 2 === 0)}
+      <li>
+        {#if i === 0}
+          <span class="number">1.</span>
+          {:else}
+          <span class="number">{(i / 2) + 1}.</span>
+        {/if}
+        <span class="move">{move}</span>
+        {#if $moveList[i +1]}
+        <span class="move">{$moveList[i + 1]}</span>
+        {/if}
+      </li>
+      {/if}
+      {/each}
+    </ol>
     
     <section class="btns-container">
       <button class="export" type="button">export pgn</button>
@@ -105,7 +125,6 @@
 
   ol {
     display: block;
-    flex-flow: row wrap;
     column-gap: 2rem;
     padding: 0;
     height: 15em;
@@ -113,11 +132,35 @@
     overflow-x: hidden;
   }
 
-  span {
+  li {
+  display: flex;
+  padding: 0.25em 1em;
+  width: 100%;
+}
+
+span {
     margin-left: 1em;
     display: inline-block;
-    width: 10%;
   }
+
+.number {
+ width: 10%
+}
+
+
+.move {
+  width: 30%
+}
+
+li:nth-child(even) {
+  background-color: white;
+}
+
+li:nth-child(even)::marker {
+  background-color: white;
+}
+
+
 
   .moves-list {
     grid-area: moves-list;
