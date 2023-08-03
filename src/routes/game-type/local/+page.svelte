@@ -9,11 +9,16 @@
   import { setGameContext } from "$lib/context";
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
+  import End from "$lib/components/dialogs/End.svelte";
+  import Promotion from "$lib/components/dialogs/Promotion.svelte";
+  import Undo from "$lib/components/dialogs/Undo.svelte";
+  import Review from "$lib/components/dialogs/Review.svelte";
 
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
 
-  setGameContext(game);
+  const ctx = setGameContext(game);
+  
 </script>
 
 <svelte:head>
@@ -29,8 +34,13 @@
   </section>
 
   <Game />
-  <MoveList />
-  <GameButtons />
+  <MoveList {game}/>
+  <GameButtons {game}/>
+
+  <End {game}/>
+  <Promotion />
+  <Undo {game}/>
+  <Review {game}/>
 
   <end-game-dialog class="end-game-dialog" />
   <undo-dialog class="undo-dialog" />

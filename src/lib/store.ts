@@ -10,6 +10,8 @@ export const capturedWhitePieces = writable<Piece[] | null[]>([]);
 
 export const promotedPieceType = writable<Piece | null>();
 
+export const isUndoMove = writable<boolean>(false)
+
 export const moveList = writable<Move[]>([]);
 
 export const ghostMoves = derived(selectedPiece, ($selectedPiece) => {

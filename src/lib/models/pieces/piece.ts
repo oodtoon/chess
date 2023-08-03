@@ -20,7 +20,7 @@ abstract class Piece {
   abstract get notation(): string;
 
   constructor(
-    private readonly game: Game,
+    readonly game: Game,
     private readonly board: Board,
     readonly player: Player,
     public row: number,

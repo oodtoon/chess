@@ -1,24 +1,38 @@
-<script>
-  class GameButtons extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({ mode: "open" });
-      this.drawButton = document.querySelector(".draw");
-      this.resignButton = document.querySelector(".resign");
-      this.undoButton = document.querySelector(".undo");
-    }
+<script lang="ts">
+  import { declareWinner, displayReviewDialog, displayUndoMoveDialog } from "$lib/controllers/utils/dialog-utils";
+  import type Game from "./Game.svelte";
+  import type GameModel from "$lib/models/game";
 
-    connectedCallback() {}
+  export let game: GameModel
+
+  function handleDraw() {
+    const activePlayer = game.getActivePlayer()
+    const activeColor = activePlayer.color
+    const opponentColor = activePlayer.opponent.color
+      const drawMsg = `${activeColor} wishes to draw. ${opponentColor}, do you accept?`;
+      displayReviewDialog(drawMsg, false);
+  }
+
+  function handleResign() {
+    const activePlayer = game.getActivePlayer()
+    const activeColor = activePlayer.color
+    const opponentColor = activePlayer.opponent.color
+    const resignMsg = `${activeColor} resigns. ${opponentColor} wins!`
+    declareWinner(opponentColor, game, resignMsg)
+  }
+
+  function handleUndo() {
+    displayUndoMoveDialog()
   }
 </script>
 
 <div>
   <section class="btns-container dual">
-    <button class="draw" type="button">Draw</button>
-    <button class="resign" type="button">Resign</button>
+    <button class="draw" type="button" on:click={handleDraw}>Draw</button>
+    <button class="resign" type="button" on:click={handleResign}>Resign</button>
   </section>
   <section class="btns-container">
-    <button class="undo" type="button"
+    <button class="undo" type="button" on:click={handleUndo}
       >Undo Move <span>
         <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 20 20"
           ><path

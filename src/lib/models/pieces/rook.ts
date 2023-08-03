@@ -1,3 +1,4 @@
+import type { BaseMove } from "../move";
 import Piece from "./piece";
 
 class Rook extends Piece {
@@ -25,7 +26,7 @@ class Rook extends Piece {
     return available;
   }
 
-  onMove(move) {
+  onMove(move: BaseMove) {
     super.onMove(move);
     this.hasMoved = true;
   }

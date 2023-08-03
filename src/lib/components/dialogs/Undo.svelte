@@ -1,17 +1,42 @@
-const undoDialogTemplate = document.createElement("template");
-undoDialogTemplate.innerHTML = String.raw`
+<script lang="ts">
+      import {
+    closeDialog,
+    displayReviewDialog,
+  } from "$lib/controllers/utils/dialog-utils";
+  import type GameModel from "$lib/models/game";
+
+  export let game: GameModel
+
+  function handleUndoRequest() {
+        const activePlayer = game.getActivePlayer()
+        const reviewColor = activePlayer.color
+        const requestingColor = activePlayer.opponent.color
+        const msg = `${requestingColor} is requesting to undo the last move. ${reviewColor} do you accept their plea?`
+        let id = "undo-dialog"
+        closeDialog(id)
+        displayReviewDialog(msg, true)
+    
+  }
+
+  function handleDecline() {
+    let id = "undo-dialog"
+    closeDialog(id);
+  }
+
+</script>
+
 <dialog class="undo-dialog" id="undo-dialog">
     <form class="undo-form">
        <h2 class="title" id="undo-title">Send undo move request to opponent for approval.</h2>
        <section class="input">
            <label>Message to opponent:
-           <textarea type="text" id="undo-msg"></textarea>
-           <label>
+           <textarea id="undo-msg"></textarea>
+           </label>
        </section>
        
        <span class="btn-container">
-           <button class="request" type="button">Send Undo Request</button>
-           <button class="cancel" formmethod="dialog" type="button">Cancel</button>
+           <button class="request" type="button" on:click={handleUndoRequest}>Send Undo Request</button>
+           <button class="cancel" formmethod="dialog" type="button" on:click={handleDecline}>Cancel</button>
        </span>
     </form>
 </dialog>
@@ -82,24 +107,3 @@ undoDialogTemplate.innerHTML = String.raw`
     background-color: brown;
 }
 </style>
-`;
-
-export default class UndoDialog extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-    this.shadowRoot.append(undoDialogTemplate.content.cloneNode(true));
-    this.requestButton = this.shadowRoot.querySelector(".request");
-    this.cancelButton = this.shadowRoot.querySelector(".cancel");
-    this.textarea = this.shadowRoot.getElementById("undo-msg");
-    this.msg = null;
-  }
-
-  connectedCallback() {
-    this.requestButton.addEventListener("click", () => {
-      this.msg = this.textarea.value;
-    });
-  }
-}
-
-window.customElements.define("undo-dialog", UndoDialog);

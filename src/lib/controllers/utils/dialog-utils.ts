@@ -1,89 +1,88 @@
 import type Game from "$lib/models/game";
 import type { Color } from "$lib/type";
 
-export function declareWinner(
-  color: Color,
-  game: Game,
-  turn: HTMLElement,
-  modal: HTMLDialogElement,
-  msg: string
-) {
-  const title = modal.shadowRoot!.getElementById("end-title") as HTMLElement;
+export function declareWinner(color: Color, game: Game, msg: string) {
+  const title = document.getElementById("end-title") as HTMLElement;
+  const turn = document.getElementById("turn");
+  const gameResult = document.querySelector(".game-result")
   if (color === "White") {
     game.result = "1-0";
-    turn.textContent = "White wins!";
+    turn!.textContent = "White wins!";
     title.textContent = msg;
   } else {
     game.result = "0-1";
-    turn.textContent = "Black wins!";
+    turn!.textContent = "Black wins!";
     title.textContent = msg;
   }
-  const endDialog = modal.shadowRoot!.getElementById(
-    "end-dialog"
-  ) as HTMLDialogElement;
+  gameResult!.textContent = game.result
+  gameResult!.classList.remove("hidden")
+  const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
   endDialog.showModal();
 }
 
-export function displayReviewDialog(
-  dialog,
-  title,
-  type,
-  msg = false,
-  requestDialog
-) {
-  const reviewTitle = dialog.shadowRoot.getElementById("review-title");
-  const reviewDialog = dialog.shadowRoot.getElementById("review-dialog");
+export function displayReviewDialog(title: string, isMsg: boolean) {
+  const reviewTitle = document.getElementById("review-title");
+  const reviewDialog = document.getElementById(
+    "review-dialog"
+  ) as HTMLDialogElement;
 
-  if (msg) {
-    const msg = dialog.shadowRoot.getElementById("undo-review-msg");
-    msg.textContent = requestDialog.msg;
-    const dialogToClose =
-      requestDialog.shadowRoot.getElementById("undo-dialog");
-    dialogToClose.close();
-    const textArea = requestDialog.shadowRoot.getElementById("undo-msg");
-    textArea.value = null;
+  if (isMsg) {
+    const msg = document.getElementById("undo-review-msg");
+    const dialogToClose = document.getElementById(
+      "undo-dialog"
+    ) as HTMLDialogElement;
+    const undoMsg = document.getElementById("undo-msg") as HTMLTextAreaElement;
+    if (undoMsg.value === "") {
+      msg!.textContent = `"I made an oopsie"`;
+    } else {
+      msg!.textContent = `"${undoMsg!.value}"`;
+    }
+    dialogToClose?.close();
+    undoMsg.value = "";
   }
 
-  reviewDialog.showModal();
-  dialog.type = type;
-  reviewTitle.textContent = title;
+  reviewTitle!.textContent = title;
+  reviewDialog!.showModal();
 }
 
-export function closeDialog(dialog) {
-  const dialogToClose = dialog.shadowRoot.getElementById("review-dialog");
-  dialogToClose.close();
+export function closeDialog(id: string) {
+  const dialogToClose = document.getElementById(id) as HTMLDialogElement;
+  dialogToClose!.close();
 }
 
 export function declareDraw(
-  game,
-  dialog,
+  game: Game,
   msg = "Draw",
-  currentDialog,
-  movesList
+  hasRequestDialog: boolean
 ) {
-  if (currentDialog) {
-    const current = currentDialog.shadowRoot.getElementById("review-dialog");
+  if (hasRequestDialog) {
+    const current = document.getElementById(
+      "review-dialog"
+    ) as HTMLDialogElement;
     current.close();
   }
-  const title = dialog.shadowRoot.getElementById("end-title");
-  const endDialog = dialog.shadowRoot.getElementById("end-dialog");
+  const title = document.getElementById("end-title");
+  const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
+  const gameResult = document.querySelector(".game-result");
   endDialog.showModal();
-  title.textContent = msg;
+  title!.textContent = msg;
   game.result = "1/2-1/2";
-  movesList.setResult(game.result);
+  // I want to do this differently...
+  gameResult!.textContent = game.result;
+  gameResult!.classList.remove("hidden");
 }
 
-export function displayUndoMoveDialog(modal) {
-  const dialog = modal.shadowRoot.getElementById("undo-dialog");
+export function displayUndoMoveDialog() {
+  const dialog = document.getElementById("undo-dialog") as HTMLDialogElement;
   dialog.showModal();
 }
 
-export async function displayPromotionDialog(modal) {
+export async function displayPromotionDialog(modal: unknown) {
   const dialog = modal.shadowRoot.getElementById("promotion-dialog");
   dialog.showModal();
 
   const promise = new Promise((resolve, reject) => {
-    const handleAccept = (event) => {
+    const handleAccept = (event: MouseEvent) => {
       event.preventDefault();
 
       resolve(modal.pieceSelect.value);

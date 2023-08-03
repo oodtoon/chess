@@ -2,6 +2,7 @@
   import type { Piece } from "$lib/models/pieces";
   import { promotedPieceType } from "$lib/store";
 
+
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;
@@ -21,10 +22,10 @@
   class="piece"
   class:active
   class:captured
-  style:background-image="url({pieceType.img})"
+  style:background-image="url({pieceType?.img})"
   on:click
 >
-  {pieceType.icon}
+  {pieceType?.icon}
 </div>
 
 <style>

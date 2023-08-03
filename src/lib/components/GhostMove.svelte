@@ -1,22 +1,22 @@
 <script lang="ts">
-  import type Move from "$lib/models/move";
+  import type BaseMove from "$lib/models/move";
   import { createEventDispatcher } from "svelte";
 
   import { selectedPiece } from "../store"; 
   export let isCapturedPiece: boolean = false;
-  export let move: Move
+  export let move: BaseMove
 
   const dispatch = createEventDispatcher()
 
   
   function handleGhostMoveClick(event: MouseEvent) {
-    selectedPiece.set({})
+    selectedPiece.set(null)
     dispatch("click", move)
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div on:click={handleGhostMoveClick}>
+<div class="ghost-move-container" on:click={handleGhostMoveClick}>
   {#if !isCapturedPiece}
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -51,4 +51,12 @@
 </div>
 
 <style>
+  .ghost-move-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .ghost-move-container:hover > .ghost-move {
+  animation: pulse-circle 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
 </style>

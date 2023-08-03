@@ -86,14 +86,12 @@ export default class Game {
         initiatingPiece,
         capturedPiece,
       } = move as Move;
+      this.board.set(row, file, null);
       if (capturedPiece) {
-        //FIX EN PASSANT ISSUE!
-        this.board.set(row, file, capturedPiece);
+        this.board.set(capturedPiece.row, capturedPiece.file, capturedPiece);
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
-      } else {
-        this.board.set(row, file, null);
-      }
+      } 
       this.board.set(sourceRow, sourceFile, initiatingPiece);
     }
   }
