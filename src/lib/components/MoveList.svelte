@@ -32,9 +32,9 @@
       
         $ctx.game = new GameModel($ctx.game.eventBus);
   
+        console.log(event.target.result)
         const pgn = event.target?.result;
         const parsedPgn = parsePgn(pgn);
-        console.log(parsedPgn)
         $ctx.game.fromParsedToken(parsedPgn);
         
       };

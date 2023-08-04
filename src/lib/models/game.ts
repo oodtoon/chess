@@ -123,8 +123,11 @@ export default class Game {
     return this.hasMoves && this.lastMove!.isCheck;
   }
 
+
+  //THIS HAS CHANGED. THERE ARE UNUSED LINES MAKE UPDATES BASED ON GIT TO HAVE CORRECT INFO 
   fromParsedToken(pgn: PgnGame[]) {
     pgn[0].moves.forEach((token) => {
+      console.log(token.notation.notation)
       if (token.notation.notation === "O-O") {
         if (token.turn === "w") {
           const shortObj = { row: 0, file: 6 };
@@ -174,8 +177,10 @@ const consumeToken = (token: PgnReaderMove, game: Game) => {
     {} as Record<string, Piece[]>
   );
 
+  const pieceShortHand = !token.notation.fig ? "" : token.notation.fig
+
   const movingPiece = getPieceToMove(
-    figMapping[token.notation.fig!],
+    figMapping[pieceShortHand],
     row,
     file,
     token.notation.disc
@@ -201,6 +206,7 @@ const getPieceToMove = (
       discriminate = (move: BaseMove) => move.sourceFile === discFile;
     }
   }
+ 
   return piecesOfType.find((p: Piece) => {
     return p.moves.some(
       (m) => m.row === row && m.file === file && discriminate(m)
@@ -210,6 +216,7 @@ const getPieceToMove = (
 
 const movePiece = (piece: Piece, game: Game, row: number, file: number) => {
   if (piece) {
+    
     const pieceMove = game
       .getMoves(piece)
       .find((m) => m.row === row && m.file === file);
