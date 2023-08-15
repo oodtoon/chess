@@ -13,9 +13,12 @@ type PieceConstructor = {
   file: number
 ) => Piece);
 
+type BoardEntry = Piece | null
+type BoardGrid = BoardEntry[][]
+
 export default class Board {
   static LANE_SIZE = 8;
-  #board: (Piece | null)[][] = [];
+  #board: BoardGrid = [];
 
   constructor(private readonly game: Game) {
     for (let i = 0; i < Board.LANE_SIZE; i++) {
