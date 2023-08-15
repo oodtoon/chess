@@ -2,8 +2,7 @@ import Move from "../move";
 import Board from "../board";
 import type Game from "../game";
 import type Player from "../player";
-
-type Square = [number, number];
+import type { Square } from "$lib/type";
 
 abstract class Piece {
   static startingRows: number[] = [];
