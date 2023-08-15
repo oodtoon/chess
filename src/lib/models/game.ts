@@ -41,6 +41,7 @@ export default class Game {
     });
   }
 
+
   stageMove(move: BaseMove, shouldCommitMove = true) {
     let moves: Move[];
     if (move instanceof CompoundMove) {
@@ -94,6 +95,10 @@ export default class Game {
       } 
       this.board.set(sourceRow, sourceFile, initiatingPiece);
     }
+  }
+
+  isMoveEnPassant(piece: Piece, move: Move) {
+    return piece.isPawn() && piece.row !== move.row
   }
 
   getActivePlayer() {

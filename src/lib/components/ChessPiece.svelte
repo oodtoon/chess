@@ -1,8 +1,7 @@
 <script lang="ts">
   import type { Piece } from "$lib/models/pieces";
   import { promotedPieceType } from "$lib/store";
-
-
+  
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;

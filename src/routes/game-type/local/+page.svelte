@@ -38,7 +38,7 @@
   <GameButtons {game}/>
 
   <End {game}/>
-  <Promotion />
+  <Promotion {game}/>
   <Undo {game}/>
   <Review {game}/>
 

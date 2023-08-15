@@ -4,6 +4,7 @@
   import { getGameContext } from "$lib/context";
   import GameModel from "$lib/models/game";
 
+
   export let game: GameModel
   let copied = false;
 
@@ -44,25 +45,25 @@
 </script>
 
 <div class="moves-list">
-  <h3>moves list</h3>
-  <ol>
-    {#each $moveList as move, i}
-      {#if i % 2 === 0}
-        <li>
-          {#if i === 0}
-            <span class="number">1.</span>
+    <h3>moves list</h3>
+    <ol>
+      {#each $moveList as move, i }
+      {#if (i % 2 === 0)}
+      <li>
+        {#if i === 0}
+          <span class="number">1.</span>
           {:else}
-            <span class="number">{i / 2 + 1}.</span>
-          {/if}
-          <span class="move">{move}</span>
-          {#if $moveList[i + 1]}
-            <span class="move">{$moveList[i + 1]}</span>
-          {/if}
-        </li>
+          <span class="number">{(i / 2) + 1}.</span>
+        {/if}
+        <span class="move">{move}</span>
+        {#if $moveList[i +1]}
+        <span class="move">{$moveList[i + 1]}</span>
+        {/if}
+      </li>
       {/if}
-    {/each}
-    <li class="li-result"><span class="hidden game-result" /></li>
-  </ol>
+      {/each}
+    </ol>
+
 
   <section class="btns-container">
     <button class="export" type="button" on:click={handleExport}>export pgn</button>

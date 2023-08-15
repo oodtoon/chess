@@ -52,7 +52,6 @@
           piece?.name === "Rook" ||
           piece?.name === "King"
         ) {
-          console.log(piece)
           if (
             !$ctx.game.moves.find((move: BaseMove) => {
               return move.initiatingPiece === piece;

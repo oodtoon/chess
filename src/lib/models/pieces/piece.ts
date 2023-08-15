@@ -73,7 +73,7 @@ abstract class Piece {
           legalMoves.push(Move.fromSquare(square, this));
         } else {
           const otherPiece = this.getSquareContent(...square);
-          if (otherPiece.color !== this.color) {
+          if (otherPiece?.color !== this.color) {
             legalMoves.push(Move.fromSquare(square, this, otherPiece));
           }
           break;

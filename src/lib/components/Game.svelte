@@ -128,7 +128,6 @@
   }
 
   function updatePlayerTurnAndText(activePlayer: Player) {
-    console.log("this be move undo");
     rotateBoard(activePlayer);
     turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
@@ -185,15 +184,14 @@
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
     if ($promotedPieceType) {
+      game = game
       $promotedPieceType = null;
     }
 
     const move = event.detail;
 
     if (move.isPromotion) {
-      const chosenPromotionPiece = await displayPromotionDialog(
-        promotionDialog
-      );
+      const chosenPromotionPiece = await displayPromotionDialog();
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
       $promotedPieceType = promotedPiece;

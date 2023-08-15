@@ -4,7 +4,7 @@ import type { Color } from "$lib/type";
 export function declareWinner(color: Color, game: Game, msg: string) {
   const title = document.getElementById("end-title") as HTMLElement;
   const turn = document.getElementById("turn");
-  const gameResult = document.querySelector(".game-result")
+  const gameResult = document.querySelector(".game-result");
   if (color === "White") {
     game.result = "1-0";
     turn!.textContent = "White wins!";
@@ -14,8 +14,8 @@ export function declareWinner(color: Color, game: Game, msg: string) {
     turn!.textContent = "Black wins!";
     title.textContent = msg;
   }
-  gameResult!.textContent = game.result
-  gameResult!.classList.remove("hidden")
+  gameResult!.textContent = game.result;
+  gameResult!.classList.remove("hidden");
   const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
   endDialog.showModal();
 }
@@ -77,26 +77,40 @@ export function displayUndoMoveDialog() {
   dialog.showModal();
 }
 
-export async function displayPromotionDialog(modal: unknown) {
-  const dialog = modal.shadowRoot.getElementById("promotion-dialog");
-  dialog.showModal();
+
+export async function displayPromotionDialog() {
+  const promotionDialog = document.getElementById(
+    "promotion-dialog"
+  ) as HTMLDialogElement;
+  promotionDialog.showModal();
+
+  const promotionBtns = document.querySelectorAll(".promote-btn");
 
   const promise = new Promise((resolve, reject) => {
-    const handleAccept = (event: MouseEvent) => {
+    const handlePromotionBtn = (event: Event) => {
       event.preventDefault();
 
-      resolve(modal.pieceSelect.value);
-      closePromotionSelect(modal);
-      modal.acceptButton.removeEventListener("click", handleAccept);
+      const target = event.target as HTMLButtonElement;
+      if (target) {
+        resolve(target.value);
+
+        promotionBtns.forEach((btn) =>
+          btn.removeEventListener("click", handlePromotionBtn)
+        );
+      }
     };
 
-    modal.acceptButton.addEventListener("click", handleAccept);
+    promotionBtns.forEach((btn) =>
+      btn.addEventListener("click", handlePromotionBtn)
+    );
   });
 
   return promise;
 }
 
-export function closePromotionSelect(modal) {
-  const dialog = modal.shadowRoot.getElementById("promotion-dialog");
-  dialog.close();
+export function closePromotionSelect() {
+  const dialog = document.getElementById(
+    "promotion-dialog"
+  ) as HTMLDialogElement;
+  dialog!.close();
 }

@@ -1,70 +1,74 @@
 <script lang="ts">
+  import type GameModel from "$lib/models/game";
+  import { closePromotionSelect } from "$lib/controllers/utils/dialog-utils";
+  export let game: GameModel;
 
+  let color = game.getActivePlayer().color === "White" ? "w" : "b";
+
+  let pieces: string[] = ["q", "n", "b", "r"];
+
+  type piecesObj = {
+    [key: string]: string;
+  };
+
+  let pieceSelector: piecesObj = {
+    q: "Queen",
+    n: "Knight",
+    b: "Bishop",
+    r: "Rook",
+  };
+
+  function handlePieceSelect() {
+    closePromotionSelect();
+  }
 </script>
 
 <dialog id="promotion-dialog" class="promotion-dialog">
-    <form class="promotion-form">
-         <label>
-         Promote to:
-         <select class="piece-select">
-           <option>Queen</option>
-           <option>Knight</option>
-           <option>Bishop</option>
-           <option>Rook</option>
-         </select>
-       </label>
-     <span class="btn-container">
-         <button class="accept" value="accpet">Accept</button>
-     </span>
- </form>
- </dialog>
- 
- <style>
-    .promotion-dialog {
-     background-color: white;
-     border-radius: 8px;
-     border: 3px solid black;
-    }
- 
+  <form class="promotion-form">
+    <span>
+      {#each pieces as piece}
+        <button
+          on:click={handlePieceSelect}
+          class="promote-btn"
+          value={pieceSelector[piece]}
+          style="background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/{color +
+            piece}.png)">{piece}</button
+        >
+      {/each}
+    </span>
+  </form>
+</dialog>
+
+<style>
+  .promotion-dialog {
+    background-color: white;
+    border-radius: 8px;
+    border: 3px solid black;
+  }
+
   .promotion-form {
-     display: grid;
-     grid-template-areas: 
-     "title"
-     "btn";
+    display: grid;
+    grid-template-areas:
+      "title"
+      "btn";
   }
- 
-  .title {
-     grid-area: title;
-     justify-self: center;
+
+  .promote-btn {
+    border: transparent;
+    background-color: transparent;
+    color: transparent;
+    background-size: cover;
+    cursor: pointer;
+    width: var(--responsive-size);
+    height: var(--responsive-size);
+    padding: 0;
+    transition: transform 200ms;
+    transform-origin: center;
   }
- 
- 
-  .btn-container {
-     grid-area: btn;
-     justify-self: center;
-     margin: 0em 1em 1em 1em;
+  .promote-btn:hover {
+    transform: scale(1.1);
   }
- 
-  .btn-container > button {
-     font-size: 1rem;
-     font-weight: 800;
-     margin: .25em;
-     padding: .5em 1em;
-     cursor: pointer;
-     background-color: white;
+  .promote-btn:active {
+    transform: scale(1.05);
   }
- 
-  .btn-container > button:hover {
-     box-shadow: .2em .2em .2em black;
-  }
- 
-  .accept {
-     border: 3px solid #49a6e9;
-     color: #49a6e9;
-  }
- 
-  .accept:hover {
-     color: white;
-     background-color: #49a6e9;
-  }
- </style>
+</style>
