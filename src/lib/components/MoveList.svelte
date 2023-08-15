@@ -1,58 +1,5 @@
 <script lang="ts">
  import { moveList } from "$lib/store"
-  // class MoveList extends HTMLElement {
-  //   style = {
-  //     padding: "1em",
-  //   };
-
-  //   constructor() {
-  //     super();
-  //     this.attachShadow({ mode: "open" });
-  //     this.exportButton = document.querySelector(".export");
-  //     this.copyButton = document.querySelector(".copy");
-  //     this.importButton = document.querySelector(".import");
-  //     this.copyIcon = document.querySelector(".copy-icon");
-  //     this.fileInput = document.getElementById("file-input");
-  //   }
-
-  //   connectedCallback() {
-  //     this.listRoot = document.querySelector("ol");
-  //     this.nextListItem();
-  //     this.copyButton.addEventListener("click", () => {
-  //       this.copyIcon.innerHTML = checkMarkSvg;
-  //       setTimeout(() => {
-  //         this.copyIcon.innerHTML = copySvg;
-  //       }, 4000);
-  //     });
-  //   }
-
-  //   addMove(move) {
-  //     const moveSpan = document.createElement("span");
-  //     moveSpan.style.flex = "1 0 auto";
-  //     moveSpan.textContent = move + " ";
-  //     this.currentListItem.appendChild(moveSpan);
-  //   }
-
-  //   removeMove() {
-  //     const orderedListElement = this.shadowRoot.querySelector("ol");
-  //     const lastListElement = orderedListElement.lastChild;
-  //     const lastSpan = lastListElement.lastChild;
-  //     lastListElement.removeChild(lastSpan);
-  //   }
-
-  //   nextListItem() {
-  //     this.currentListItem = document.createElement("li");
-  //     this.currentListItem.append(`${this.listRoot.children.length + 1}.`);
-  //     this.listRoot?.appendChild(this.currentListItem);
-  //   }
-
-  //   setResult(result) {
-  //     this.gameResult = document.createElement("div");
-  //     this.gameResult.classList.add("result");
-  //     this.gameResult.textContent = result;
-  //     this.listRoot?.append(this.gameResult);
-  //   }
-  // }
 
   let copied = false;
  
@@ -70,7 +17,6 @@
     <h3>moves list</h3>
     <ol>
       {#each $moveList as move, i }
-      {@debug move}
       {#if (i % 2 === 0)}
       <li>
         {#if i === 0}
