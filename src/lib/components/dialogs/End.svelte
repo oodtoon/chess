@@ -5,6 +5,7 @@
   import GameModel from "$lib/models/game";
   import { getGameContext } from "$lib/context";
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
+  import Dialog from "./Dialog.svelte";
  
 
   let ctx = getGameContext();
@@ -39,7 +40,7 @@
   };
 </script>
 
-<dialog class="end-dialog" id="end-dialog">
+<Dialog open>
   <form class="end-form">
     <button class="exit" formmethod="dialog"
       ><svg
@@ -53,6 +54,7 @@
         /></svg
       ></button
     >
+
     <h2 class="title" id="end-title">white wins!</h2>
     <span class="btn-container">
       <button class="play-again-btn" type="button" on:click={handlePlayAgain}
@@ -92,14 +94,9 @@
       >
     </span>
   </form>
-</dialog>
+</Dialog>
 
 <style>
-  .end-dialog {
-    border-radius: 8px;
-    border: 3px solid black;
-  }
-
   .end-form {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

@@ -37,7 +37,6 @@
   <MoveList {game}/>
   <GameButtons {game}/>
 
-  <End {game}/>
   <Promotion {game}/>
   <Undo {game}/>
   <Review {game}/>
@@ -47,6 +46,8 @@
   <review-dialog class="review-dialog" />
   <promotion-dialog class="promotion-dialog" />
 </div>
+<End {game}/>
+
 
 <style>
   :root {
