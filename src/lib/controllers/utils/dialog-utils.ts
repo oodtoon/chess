@@ -1,10 +1,14 @@
+import openDialog from "$lib/components/dialogs";
+import Promotion from "$lib/components/dialogs/Promotion.svelte";
+import Review from "$lib/components/dialogs/Review.svelte";
+
 import type Game from "$lib/models/game";
 import type { Color } from "$lib/type";
+import type { SvelteComponent } from "svelte";
 
 export function declareWinner(color: Color, game: Game, msg: string) {
   const title = document.getElementById("end-title") as HTMLElement;
   const turn = document.getElementById("turn");
-  const gameResult = document.querySelector(".game-result");
   if (color === "White") {
     game.result = "1-0";
     turn!.textContent = "White wins!";
@@ -14,19 +18,17 @@ export function declareWinner(color: Color, game: Game, msg: string) {
     turn!.textContent = "Black wins!";
     title.textContent = msg;
   }
-  gameResult!.textContent = game.result;
-  gameResult!.classList.remove("hidden");
   const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
   endDialog.showModal();
 }
 
-export function displayReviewDialog(title: string, isMsg: boolean) {
+export function displayReviewDialog(title: string, hasMsg: boolean) {
   const reviewTitle = document.getElementById("review-title");
   const reviewDialog = document.getElementById(
     "review-dialog"
   ) as HTMLDialogElement;
 
-  if (isMsg) {
+  if (hasMsg) {
     const msg = document.getElementById("undo-review-msg");
     const dialogToClose = document.getElementById(
       "undo-dialog"
@@ -43,6 +45,7 @@ export function displayReviewDialog(title: string, isMsg: boolean) {
 
   reviewTitle!.textContent = title;
   reviewDialog!.showModal();
+  // declareDraw(game, msg, true);
 }
 
 export function closeDialog(id: string) {
@@ -72,40 +75,16 @@ export function declareDraw(
   gameResult!.classList.remove("hidden");
 }
 
-export function displayUndoMoveDialog() {
-  const dialog = document.getElementById("undo-dialog") as HTMLDialogElement;
-  dialog.showModal();
+export async function displayUndoMoveDialog(game: Game) {
+  const {accepted} = await openDialog<Review>(Review, { game });
+  if (accepted) {
+    game.undoMove();
+  }
+
 }
 
-
-export async function displayPromotionDialog() {
-  const promotionDialog = document.getElementById(
-    "promotion-dialog"
-  ) as HTMLDialogElement;
-  promotionDialog.showModal();
-
-  const promotionBtns = document.querySelectorAll(".promote-btn");
-
-  const promise = new Promise((resolve, reject) => {
-    const handlePromotionBtn = (event: Event) => {
-      event.preventDefault();
-
-      const target = event.target as HTMLButtonElement;
-      if (target) {
-        resolve(target.value);
-
-        promotionBtns.forEach((btn) =>
-          btn.removeEventListener("click", handlePromotionBtn)
-        );
-      }
-    };
-
-    promotionBtns.forEach((btn) =>
-      btn.addEventListener("click", handlePromotionBtn)
-    );
-  });
-
-  return promise;
+export async function displayPromotionDialog(game: Game) {
+  return openDialog(Promotion, { game });
 }
 
 export function closePromotionSelect() {

@@ -6,17 +6,18 @@
   import { getGameContext } from "$lib/context";
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
   import Dialog from "./Dialog.svelte";
- 
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher()
 
   let ctx = getGameContext();
+  let dialogRef
 
   export let game: GameModel;
   let copied: boolean = false;
 
+
+
   const handlePlayAgain = () => {
-    const gameResult = document.querySelector(".game-result");
-    gameResult?.textContent === "";
-    gameResult?.classList.add("hidden");
     $moveList = [];
 
     $capturedBlackPieces = []
@@ -38,11 +39,14 @@
   const handleExport = () => {
     exportToPgn(game);
   };
+
+  function close() {
+    dispatch("close")
+  }
 </script>
 
-<Dialog open>
-  <form class="end-form">
-    <button class="exit" formmethod="dialog"
+<Dialog class="end-dialog" bind:this={dialogRef} on:submit={close}>
+    <button class="exit" 
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="32"
@@ -57,13 +61,13 @@
 
     <h2 class="title" id="end-title">white wins!</h2>
     <span class="btn-container">
-      <button class="play-again-btn" type="button" on:click={handlePlayAgain}
+      <button class="play-again-btn" on:click={handlePlayAgain}
         >play again!</button
       >
-      <button class="export-btn" type="button" on:click={handleExport}
+      <button class="export-btn" on:click={handleExport}
         >export pgn</button
       >
-      <button class="copy-btn" type="button" on:click={handleCopy}
+      <button class="copy-btn" on:click={handleCopy}
         >copy pgn <span class="copy-icon">
           {#if !copied}
             <svg
@@ -93,11 +97,10 @@
         </span></button
       >
     </span>
-  </form>
 </Dialog>
 
 <style>
-  .end-form {
+  :global(.end-dialog > form) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-areas:

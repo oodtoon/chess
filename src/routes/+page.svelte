@@ -1,5 +1,7 @@
 <script>
+  import openDialog from '$lib/components/dialogs';
     import boardImg from '$lib/images/board.png';
+    openDialog()
 </script>
 
 <main>

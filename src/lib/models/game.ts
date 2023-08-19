@@ -41,7 +41,6 @@ export default class Game {
     });
   }
 
-
   stageMove(move: BaseMove, shouldCommitMove = true) {
     let moves: Move[];
     if (move instanceof CompoundMove) {
@@ -75,9 +74,9 @@ export default class Game {
     }
   }
 
-  unstageMove(move: BaseMove) {
+  unstageMove(move: BaseMove, shouldCommit: boolean = false) {
     if (move instanceof CompoundMove) {
-      move.moves.forEach((move) => this.unstageMove(move));
+      move.moves.forEach((move) => this.unstageMove(move, shouldCommit));
     } else {
       const {
         row,
@@ -92,13 +91,29 @@ export default class Game {
         this.board.set(capturedPiece.row, capturedPiece.file, capturedPiece);
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
-      } 
+      }
       this.board.set(sourceRow, sourceFile, initiatingPiece);
+
+      if (shouldCommit) {
+        if (
+          initiatingPiece?.isPawn() ||
+          initiatingPiece?.isRook() ||
+          initiatingPiece?.isKing()
+        ) {
+          if (
+            !this.moves.find(
+              (move: BaseMove) => move.initiatingPiece === initiatingPiece
+            )
+          ) {
+            initiatingPiece.hasMoved = false;
+          }
+        }
+      }
     }
   }
 
   isMoveEnPassant(piece: Piece, move: Move) {
-    return piece.isPawn() && piece.row !== move.row
+    return piece.isPawn() && piece.row !== move.row;
   }
 
   getActivePlayer() {
@@ -112,7 +127,7 @@ export default class Game {
 
   undoMove() {
     if (!this.hasMoves) return;
-    this.unstageMove(this.moves.at(-1)!);
+    this.unstageMove(this.moves.at(-1)!, true);
     this.moves.pop();
   }
 
@@ -128,11 +143,10 @@ export default class Game {
     return this.hasMoves && this.lastMove!.isCheck;
   }
 
-
-  //THIS HAS CHANGED. THERE ARE UNUSED LINES MAKE UPDATES BASED ON GIT TO HAVE CORRECT INFO 
+  //THIS HAS CHANGED. THERE ARE UNUSED LINES MAKE UPDATES BASED ON GIT TO HAVE CORRECT INFO
   fromParsedToken(pgn: PgnGame[]) {
     pgn[0].moves.forEach((token) => {
-      console.log(token.notation.notation)
+      console.log(token.notation.notation);
       if (token.notation.notation === "O-O") {
         if (token.turn === "w") {
           const shortObj = { row: 0, file: 6 };
@@ -148,7 +162,6 @@ export default class Game {
           const longObj = { row: 0, file: 2 };
         } else {
           const longObjectBlack = { row: 7, file: 2 };
-
         }
       } else {
         consumeToken(token, this);
@@ -182,7 +195,7 @@ const consumeToken = (token: PgnReaderMove, game: Game) => {
     {} as Record<string, Piece[]>
   );
 
-  const pieceShortHand = !token.notation.fig ? "" : token.notation.fig
+  const pieceShortHand = !token.notation.fig ? "" : token.notation.fig;
 
   const movingPiece = getPieceToMove(
     figMapping[pieceShortHand],
@@ -211,7 +224,7 @@ const getPieceToMove = (
       discriminate = (move: BaseMove) => move.sourceFile === discFile;
     }
   }
- 
+
   return piecesOfType.find((p: Piece) => {
     return p.moves.some(
       (m) => m.row === row && m.file === file && discriminate(m)
@@ -221,7 +234,6 @@ const getPieceToMove = (
 
 const movePiece = (piece: Piece, game: Game, row: number, file: number) => {
   if (piece) {
-    
     const pieceMove = game
       .getMoves(piece)
       .find((m) => m.row === row && m.file === file);

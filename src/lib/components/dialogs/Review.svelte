@@ -1,16 +1,11 @@
 <script lang="ts">
-  import {
-    closeDialog,
-    declareDraw,
-  } from "$lib/controllers/utils/dialog-utils";
-
-  import { isUndoMove, capturedBlackPieces, capturedWhitePieces, moveList } from "$lib/store";
-
-  import { getGameContext } from "$lib/context";
-  import type { BaseMove } from "$lib/models/move";
   import type GameModel from "$lib/models/game";
+  import { createEventDispatcher } from "svelte";
+  import Dialog from "./Dialog.svelte";
 
-  let ctx = getGameContext();
+  type $$Events = {
+    close: CustomEvent<{accepted: boolean}>
+  }
 
   export let game: GameModel;
 
@@ -18,89 +13,37 @@
     const reviewTitle = document.getElementById("review-title")!.textContent;
     if (reviewTitle!.includes("draw")) {
       const msg = "Draw";
-      declareDraw(game, msg, true);
-    } else {
-      if ($ctx.game.moves.length > 1) {
-        $isUndoMove = true;
-        const prevMove = $ctx.game.lastMove;
-        const piece = prevMove?.initiatingPiece;
-
-        if (prevMove?.capturedPiece) {
-          const zombiePiece = prevMove.capturedPiece;
-          if (zombiePiece.color === "White") {
-            $ctx.game.whitePlayer.addLivePiece(zombiePiece)
-            $ctx.game.whitePlayer.removeCapturedPiece(zombiePiece)
-            $capturedWhitePieces.pop()
-            $capturedWhitePieces = $capturedWhitePieces
-          } else {
-            $ctx.game.blackPlayer.addLivePiece(zombiePiece)
-            $ctx.game.blackPlayer.removeCapturedPiece(zombiePiece)
-            $capturedBlackPieces.pop()
-            $capturedBlackPieces = $capturedBlackPieces
-            
-          }
-        }
-
-        $moveList.pop()
-        $moveList = $moveList
-
-        $ctx.game.undoMove();
-        $ctx = $ctx;
-
-        if (
-          piece?.name === "Pawn" ||
-          piece?.name === "Rook" ||
-          piece?.name === "King"
-        ) {
-          if (
-            !$ctx.game.moves.find((move: BaseMove) => {
-              return move.initiatingPiece === piece;
-            })
-          ) {
-            piece.hasMoved = false;
-          }
-        }
-      }
-    }
-    let id = "review-dialog";
-    closeDialog(id);
+      
+    } 
   }
 
-  function handleDecline() {
-    let id = "review-dialog";
-    closeDialog(id);
+  const dispatch = createEventDispatcher()
+
+  function close(accepted: boolean) {
+    dispatch("close", {accepted})
   }
 </script>
 
-<dialog id="review-dialog" class="review-dialog">
-  <form class="review-form">
+<Dialog id="review-dialog" class="review-dialog">
     <h2 class="title" id="review-title">Want to review?</h2>
     <div id="undo-review-msg" class="msg" />
     <span class="btn-container">
       <button
         class="accept"
-        value="accpet"
         type="button"
-        on:click={handleAccept}>Accept</button
+        on:click={() => close(true)}>Accept</button
       >
+      <!-- svelte-ignore missing-declaration -->
       <button
         class="decline"
-        formmethod="dialog"
         type="button"
-        on:click={handleDecline}>Decline</button
+        on:click={() => close(false)}>Decline</button
       >
     </span>
-  </form>
-</dialog>
+</Dialog>
 
 <style>
-  .review-dialog {
-    background-color: white;
-    border-radius: 8px;
-    border: 3px solid black;
-  }
-
-  .review-form {
+  :global(.review-dialog > form) {
     display: grid;
     grid-template-areas:
       "title"

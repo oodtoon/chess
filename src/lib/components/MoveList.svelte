@@ -62,6 +62,10 @@
       </li>
       {/if}
       {/each}
+      <!-- svelte-ignore empty-block -->
+      {#if game.result} 
+        <span class="game-result">{game.result}</span>
+        {/if}
     </ol>
 
 

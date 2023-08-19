@@ -1,6 +1,6 @@
 <script lang="ts">
   import type GameModel from "$lib/models/game";
-  import { closePromotionSelect } from "$lib/controllers/utils/dialog-utils";
+  import Dialog from "./Dialog.svelte";
   export let game: GameModel;
 
   let color = game.getActivePlayer().color === "White" ? "w" : "b";
@@ -17,40 +17,23 @@
     b: "Bishop",
     r: "Rook",
   };
-
-  function handlePieceSelect() {
-    closePromotionSelect();
-  }
 </script>
 
-<dialog id="promotion-dialog" class="promotion-dialog">
-  <form class="promotion-form">
-    <span>
-      {#each pieces as piece}
-        <button
-          on:click={handlePieceSelect}
-          class="promote-btn"
-          value={pieceSelector[piece]}
-          style="background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/{color +
-            piece}.png)">{piece}</button
-        >
-      {/each}
-    </span>
-  </form>
-</dialog>
+<Dialog id="promotion-dialog">
+    {#each pieces as piece}
+      <!-- svelte-ignore missing-declaration -->
+      <button
+        class="promote-btn"
+        value={pieceSelector[piece]}
+        style="background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/{color +
+          piece}.png)">{piece}</button
+      >
+    {/each}
+</Dialog>
 
 <style>
-  .promotion-dialog {
-    background-color: white;
-    border-radius: 8px;
-    border: 3px solid black;
-  }
-
-  .promotion-form {
-    display: grid;
-    grid-template-areas:
-      "title"
-      "btn";
+  :global(#promotion-dialog > form) {
+    display: flex;
   }
 
   .promote-btn {

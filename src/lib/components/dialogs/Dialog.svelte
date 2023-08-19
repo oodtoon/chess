@@ -1,6 +1,8 @@
 <script lang="ts">
-  export let open = false;
-  export let heading;
+  export let open = true;
+  let className = ""
+  export {className as class}
+  export let id = ""
   let dialogRef: HTMLDialogElement;
 
   $: if (open) {
@@ -8,16 +10,13 @@
   } else {
     dialogRef?.close();
   }
+
 </script>
 
-<dialog bind:this={dialogRef}>
-  <form action="">
-    <slot>
-      <slot name="heading">
-        {heading}
-      </slot>
-      <slot name="content" />
-    </slot>
+<dialog bind:this={dialogRef} class={className} {id}>
+  <!-- svelte-ignore missing-declaration -->
+  <form method="dialog" on:submit>
+    <slot/>
   </form>
 </dialog>
 
