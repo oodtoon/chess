@@ -84,7 +84,6 @@ export default class ReviewDialog extends HTMLElement {
     this.shadowRoot.append(reviewDialogTemplate.content.cloneNode(true));
     this.acceptButton = this.shadowRoot.querySelector(".accept");
     this.declineButton = this.shadowRoot.querySelector(".decline");
-    this.title = this.shadowRoot.querySelector(".title");
     this.reviewDialog = this.shadowRoot.getElementById("review-dialog");
     this.reviewMsg = this.shadowRoot.getElementById("undo-review-msg");
     this.type = null;

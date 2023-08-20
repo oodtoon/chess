@@ -21,7 +21,7 @@ function getPlayerCapturePool(player) {
 export default class ChessGameController {
   eventBus = new EventBus();
 
-  constructor(selector) {
+  constructor(selector = "") {
     this.board = document.querySelector("chess-board" + selector);
     this.game = window.game = new Game(this.eventBus);
     this.turn = document.getElementById("turn");
@@ -295,7 +295,8 @@ export default class ChessGameController {
     });
 
     this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
-
+      const result = this.movesList?.shadowRoot?.querySelector(".result")
+      result.remove()
       this.cleanup();
 
       this.game = new Game(this.eventBus);
