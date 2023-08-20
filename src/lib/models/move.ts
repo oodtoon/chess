@@ -2,15 +2,21 @@ import { coordToAlgebraic, intToFile } from "../util.js";
 import type Piece from "./pieces/piece.js";
 import type Player from "./player.js";
 
-class BaseMove {
+export abstract class BaseMove {
   #isCheck: null | boolean = null;
   #isCheckmate: null | boolean = null;
+  initiatingPiece: Piece | null = null;
+  capturedPiece: Piece | null = null;
+  pieceToPromoteTo: Piece | null = null;
+  sourceRow: number | null = null;
+  sourceFile: number | null = null;
+
+  abstract get row(): number;
+  abstract get file(): number;
+  abstract get isCompoundMove(): boolean;
+
   id = Symbol(crypto.randomUUID());
   constructor(readonly player: Player) {}
-
-  get isCompoundMove() {
-    return false;
-  }
 
   #doesMoveExposeCheck(targetPlayer: Player) {
     const { livePieces } = targetPlayer;
@@ -53,6 +59,17 @@ class BaseMove {
     this.#isCheckmate = this.#isCheckmate ?? this.doesMoveExposeCheckmate();
     return this.#isCheckmate;
   }
+
+  get isPromotion() {
+    if (!this.initiatingPiece || !this.initiatingPiece.isPawn()) {
+      return false;
+    }
+
+    if (this.player.color === "White") {
+      return this.row === 7;
+    }
+    return this.row === 0;
+  }
 }
 
 export default class Move extends BaseMove {
@@ -66,19 +83,17 @@ export default class Move extends BaseMove {
 
   sourceRow: number;
   sourceFile: number;
-  pieceToPromoteTo: Piece | null;
 
   constructor(
     readonly row: number,
     readonly file: number,
-    private readonly initiatingPiece: Piece,
-    private readonly capturedPiece: Piece | null
+    readonly initiatingPiece: Piece,
+    readonly capturedPiece: Piece | null
   ) {
     super(initiatingPiece.player);
 
     this.sourceRow = initiatingPiece.row;
     this.sourceFile = initiatingPiece.file;
-    this.pieceToPromoteTo = null;
   }
 
   get isPawnDoubleMove() {
@@ -90,6 +105,10 @@ export default class Move extends BaseMove {
 
   get isCapture() {
     return this.capturedPiece !== null;
+  }
+
+  get isCompoundMove() {
+    return false;
   }
 
   toString() {
@@ -144,7 +163,7 @@ export class CompoundMove extends BaseMove {
     return this.kingMove.opponent;
   }
 
-  get moves() {
+  get moves(): Move[] {
     return [this.kingMove, this.rookMove];
   }
 }

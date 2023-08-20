@@ -124,12 +124,6 @@ export default class ChessGameController {
     this.updatePlayerTurnAndText(prevPlayer);
   }
 
-  updateMovesList(event) {
-    if (this.movesList.currentListItem.children.length === 2) {
-      this.movesList.nextListItem();
-    }
-    this.movesList.addMove(event.detail.move.toString());
-  }
 
   movePiece(move, undo = false) {
     const { row, file, initiatingPiece, sourceRow, sourceFile } = move;

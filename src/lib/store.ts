@@ -1,5 +1,6 @@
 import type { Piece } from "$lib/models/pieces";
 import { writable, derived } from "svelte/store";
+import type Move from "./models/move";
 
 export const selectedPiece = writable<Piece | null>();
 
@@ -9,7 +10,7 @@ export const capturedWhitePieces = writable<Piece[]>([]);
 
 export const promotedPieceType = writable<Piece | null>();
 
-export const moveList = writable<string>();
+export const moveList = writable<Move[]>([]);
 
 export const ghostMoves = derived(selectedPiece, ($selectedPiece) => {
   if ($selectedPiece?.moves) {

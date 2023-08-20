@@ -1,4 +1,4 @@
-import Move from "../move";
+import Move, { BaseMove } from "../move";
 import Board from "../board";
 import type Game from "../game";
 import type Player from "../player";
@@ -7,14 +7,16 @@ import type { Square } from "$lib/type";
 abstract class Piece {
   static startingRows: number[] = [];
   static startingFiles: number[] = [];
+  static notation = "";
   name: string = "";
-  notation: string = "";
   #moveCache = new WeakMap();
   id = crypto.randomUUID();
+  hasMoved = false;
 
   abstract computeMoves: () => Move[];
   abstract get icon(): string;
   abstract get img(): string;
+  abstract get notation(): string;
 
   constructor(
     private readonly game: Game,
@@ -80,7 +82,7 @@ abstract class Piece {
     return legalMoves;
   }
 
-  get moves() {
+  get moves(): BaseMove[] {
     // FIXME: caching moves has many unintended consequences
     // if (this.#moveCache.has(this.game.moveId)) {
     //   return this.#moveCache.get(this.game.moveId);
@@ -94,13 +96,14 @@ abstract class Piece {
     return this.player.opponent;
   }
 
-  onMove(move: Move) {
+  onMove(move: BaseMove) {
+    this.hasMoved = true;
     this.game.eventBus.dispatchEvent("move", {
       move,
     });
   }
 
-  #isPiece(name) {
+  #isPiece(name: string) {
     return this.name === name;
   }
 
