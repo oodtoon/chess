@@ -1,3 +1,58 @@
 html {
-	background-color: rgb(32, 32, 32);
+  background-color: rgb(32, 32, 32);
+}
+
+:root {
+  --responsive-size: 5rem;
+  --min-size: 3rem;
+  --captured-piece-size: 3rem;
+  --element-size: 1rem;
+}
+
+.ghost-move {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  --translate: translate(-50%, -50%);
+  transform: var(--translate);
+  color: rgba(129, 133, 137, 0.6);
+}
+
+.ghost-move:hover {
+  animation: pulse-circle 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+chess-piece {
+  height: 100%;
+  width: 100%;
+}
+
+.active {
+  background-color: rgba(241, 213, 155, 255);
+}
+
+@keyframes pulse-circle {
+  0% {
+    transform: var(--translate) scale(1);
   }
+  50% {
+    transform: var(--translate) scale(0.9);
+  }
+  100% {
+    transform: var(--translate) scale(1);
+  }
+}
+
+li {
+  display: flex;
+  padding: 0.25em 1em;
+  width: 100%;
+}
+
+li:nth-child(even) {
+  background-color: white;
+}
+
+li:nth-child(even)::marker {
+  background-color: white;
+}

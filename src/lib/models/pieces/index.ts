@@ -1,10 +1,10 @@
-import Queen from "./queen.mjs";
-import Knight from "./knight.mjs";
-import Bishop from "./bishop.mjs";
-import Rook from "./rook.mjs";
-import King from "./king.mjs";
-import Pawn from "./pawn.mjs";
-export { default as Piece } from "./piece.mjs";
+import Queen from "./queen";
+import Knight from "./knight";
+import Bishop from "./bishop";
+import Rook from "./rook";
+import King from "./king";
+import Pawn from "./pawn";
+export { default as Piece } from "./piece";
 
 export { Queen, Knight, Bishop, Rook, King, Pawn };
 
@@ -31,6 +31,7 @@ export function promote(move, type) {
     move.file
   );
 
+  //need svelte for this part SVELTY IT UP
   move.player.addLivePiece(promotedPiece);
   return promotedPiece;
 }

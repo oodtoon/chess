@@ -1,20 +1,21 @@
-import EventBus from "../event-bus.js";
+import EventBus from "../event-bus";
 import {
   declareWinner,
   declareDraw,
   displayReviewDialog,
   displayUndoMoveDialog,
   displayPromotionDialog,
-  closeDialog
-} from "./utils/dialog-utils.js";
-import Game from "../models/game.js";
-import { copyPgn, exportToPgn, parsePgn } from "../io.js";
-import { promote } from "../models/pieces/index.mjs";
+  closeDialog,
+} from "./utils/dialog-utils";
+import Game from "$lib/models/game";
+import { copyPgn, exportToPgn, parsePgn } from "../io";
+import { promote } from "$lib/models/pieces";
+import type Player from "$lib/models/player";
 
 const whitePieces = document.getElementById("white-pieces");
 const blackPieces = document.getElementById("black-pieces");
 
-function getPlayerCapturePool(player) {
+function getPlayerCapturePool(player: Player) {
   return player.color === "White" ? whitePieces : blackPieces;
 }
 
@@ -157,7 +158,7 @@ export default class ChessGameController {
             this.endGameDialog,
             checkmate
           );
-          this.movesList.setResult(this.game.result)
+          this.movesList.setResult(this.game.result);
         } else {
           const stalemate = "Stalemate";
           declareDraw(this.game, this.endGameDialog, stalemate);
@@ -198,7 +199,6 @@ export default class ChessGameController {
 
   activateGameButtons() {
     this.gameButtons.drawButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
@@ -209,29 +209,25 @@ export default class ChessGameController {
     });
 
     this.gameButtons.resignButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.color;
       const opponentColor = activePlayer.opponent.color;
       const resignMsg = `${color} resigns. ${opponentColor} wins!`;
       declareWinner(color, this.game, this.turn, this.endGameDialog, resignMsg);
-      this.movesList.setResult(this.game.result)
+      this.movesList.setResult(this.game.result);
     });
 
     this.gameButtons.undoButton.addEventListener("click", (event) => {
-
       displayUndoMoveDialog(this.undoDialog);
     });
   }
 
   activateMoveListBtns() {
     this.movesList.exportButton.addEventListener("click", () => {
-
       exportToPgn(this.game);
     });
 
     this.movesList.copyButton.addEventListener("click", () => {
-   
       copyPgn(this.game);
     });
 
@@ -259,11 +255,16 @@ export default class ChessGameController {
 
   activateDialongBtns() {
     this.reviewDialog.acceptButton.addEventListener("click", () => {
-
       if (this.reviewDialog.type === "Draw") {
         this.game.result = "1/2-1/2";
         this.turn.textContent = "Draw";
-        declareDraw(this.game, this.endGameDialog, "Draw", this.reviewDialog, this.movesList);
+        declareDraw(
+          this.game,
+          this.endGameDialog,
+          "Draw",
+          this.reviewDialog,
+          this.movesList
+        );
       } else {
         this.handleUndoMove();
         const dialog =
@@ -273,11 +274,10 @@ export default class ChessGameController {
     });
 
     this.reviewDialog.declineButton.addEventListener("click", () => {
-      closeDialog(this.reviewDialog)
+      closeDialog(this.reviewDialog);
     });
 
     this.undoDialog.requestButton.addEventListener("click", () => {
-
       const activePlayer = this.game.getActivePlayer();
       const color = activePlayer.opponent.color;
       const title = `${color} player wants to undo most recent move. Do you accept?`;
@@ -291,12 +291,12 @@ export default class ChessGameController {
     });
 
     this.undoDialog.cancelButton.addEventListener("click", () => {
-      closeDialog(this.undoDialog)
+      closeDialog(this.undoDialog);
     });
 
     this.endGameDialog.playAgainButton.addEventListener("click", (event) => {
-      const result = this.movesList?.shadowRoot?.querySelector(".result")
-      result.remove()
+      const result = this.movesList?.shadowRoot?.querySelector(".result");
+      result.remove();
       this.cleanup();
 
       this.game = new Game(this.eventBus);
@@ -308,12 +308,10 @@ export default class ChessGameController {
     });
 
     this.endGameDialog.exportButton.addEventListener("click", () => {
-
       exportToPgn(this.game);
     });
 
     this.endGameDialog.copyButton.addEventListener("click", () => {
-
       copyPgn(this.game);
     });
 

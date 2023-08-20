@@ -1,6 +1,5 @@
 <script>
     import boardImg from '$lib/images/board.png';
-    import "../components/ChessBoard.js"        
 </script>
 
 <main>

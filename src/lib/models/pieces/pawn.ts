@@ -1,6 +1,6 @@
-import Piece from "./piece.mjs";
-import Move from "../move.js";
-import { intToFile } from "../../util.js";
+import Piece from "./piece";
+import Move from "../move";
+import { intToFile } from "../../util";
 
 class Pawn extends Piece {
   static startingRows = [1, 6];
@@ -8,12 +8,8 @@ class Pawn extends Piece {
   static notation = null;
 
   name = "Pawn";
-
-  constructor(game, board, player, row, file) {
-    super(game, board, player, row, file);
-    this.hasMoved = false;
-    this.hasDoubleMoved = false;
-  }
+  hasMoved = false;
+  hasDoubleMoved = false;
 
   canEnPassant(row, file) {
     const squareContent = this.getSquareContent(row, file);
