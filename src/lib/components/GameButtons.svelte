@@ -1,28 +1,43 @@
 <script lang="ts">
-  import { declareWinner, displayReviewDialog, displayUndoMoveDialog } from "$lib/controllers/utils/dialog-utils";
+  import {
+    displayEndGameDialog,
+    displayReviewDialog,
+    displayUndoMoveDialog,
+  } from "$lib/controllers/utils/dialog-utils";
   import type Game from "./Game.svelte";
   import type GameModel from "$lib/models/game";
+  import { getGameContext } from "$lib/context";
 
-  export let game: GameModel
+  const gameContext = getGameContext();
+  const { game } = gameContext;
 
-  function handleDraw() {
-    const activePlayer = game.getActivePlayer()
-    const activeColor = activePlayer.color
-    const opponentColor = activePlayer.opponent.color
-      const drawMsg = `${activeColor} wishes to draw. ${opponentColor}, do you accept?`;
-      displayReviewDialog(drawMsg, false);
+  async function handleDraw() {
+    const activePlayer = $game.getActivePlayer();
+    const activeColor = activePlayer.color;
+    const opponentColor = activePlayer.opponent.color;
+    const drawMsg = `${activeColor} wishes to draw. ${opponentColor}, do you accept?`;
+    const { accepted } = await displayReviewDialog(drawMsg);
+    if (accepted) {
+      $game.terminate({
+        result: "1/2-1/2",
+        reason: "draw agreed",
+      });
+      $game = $game;
+      displayEndGameDialog(gameContext);
+    }
   }
 
   function handleResign() {
-    const activePlayer = game.getActivePlayer()
-    const activeColor = activePlayer.color
-    const opponentColor = activePlayer.opponent.color
-    const resignMsg = `${activeColor} resigns. ${opponentColor} wins!`
-    declareWinner(opponentColor, game, resignMsg)
+    $game.terminate({
+      result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
+      reason: "resignation",
+    });
+    displayEndGameDialog(gameContext);
+    $game = $game
   }
 
   function handleUndo() {
-    displayUndoMoveDialog()
+    displayUndoMoveDialog(gameContext);
   }
 </script>
 

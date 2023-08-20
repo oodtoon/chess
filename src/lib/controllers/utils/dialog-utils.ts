@@ -1,51 +1,23 @@
 import openDialog from "$lib/components/dialogs";
+import End from "$lib/components/dialogs/End.svelte";
 import Promotion from "$lib/components/dialogs/Promotion.svelte";
 import Review from "$lib/components/dialogs/Review.svelte";
+import Undo from "$lib/components/dialogs/Undo.svelte";
+import type { GameContext } from "$lib/context";
 
 import type Game from "$lib/models/game";
-import type { Color } from "$lib/type";
-import type { SvelteComponent } from "svelte";
+import type { EndGameTitle } from "$lib/type";
+import { get } from "svelte/store";
 
-export function declareWinner(color: Color, game: Game, msg: string) {
-  const title = document.getElementById("end-title") as HTMLElement;
-  const turn = document.getElementById("turn");
-  if (color === "White") {
-    game.result = "1-0";
-    turn!.textContent = "White wins!";
-    title.textContent = msg;
-  } else {
-    game.result = "0-1";
-    turn!.textContent = "Black wins!";
-    title.textContent = msg;
-  }
-  const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
-  endDialog.showModal();
+export async function displayEndGameDialog(gameContext: GameContext) {
+  await openDialog(End, { gameContext });
 }
 
-export function displayReviewDialog(title: string, hasMsg: boolean) {
-  const reviewTitle = document.getElementById("review-title");
-  const reviewDialog = document.getElementById(
-    "review-dialog"
-  ) as HTMLDialogElement;
-
-  if (hasMsg) {
-    const msg = document.getElementById("undo-review-msg");
-    const dialogToClose = document.getElementById(
-      "undo-dialog"
-    ) as HTMLDialogElement;
-    const undoMsg = document.getElementById("undo-msg") as HTMLTextAreaElement;
-    if (undoMsg.value === "") {
-      msg!.textContent = `"I made an oopsie"`;
-    } else {
-      msg!.textContent = `"${undoMsg!.value}"`;
-    }
-    dialogToClose?.close();
-    undoMsg.value = "";
-  }
-
-  reviewTitle!.textContent = title;
-  reviewDialog!.showModal();
-  // declareDraw(game, msg, true);
+export async function displayReviewDialog(title: string, content?: string) {
+  return openDialog(Review, {
+    title,
+    content: content ?? "",
+  });
 }
 
 export function closeDialog(id: string) {
@@ -53,38 +25,32 @@ export function closeDialog(id: string) {
   dialogToClose!.close();
 }
 
-export function declareDraw(
-  game: Game,
-  msg = "Draw",
-  hasRequestDialog: boolean
-) {
-  if (hasRequestDialog) {
-    const current = document.getElementById(
-      "review-dialog"
-    ) as HTMLDialogElement;
-    current.close();
-  }
-  const title = document.getElementById("end-title");
-  const endDialog = document.getElementById("end-dialog") as HTMLDialogElement;
-  const gameResult = document.querySelector(".game-result");
-  endDialog.showModal();
-  title!.textContent = msg;
-  game.result = "1/2-1/2";
-  // I want to do this differently...
-  gameResult!.textContent = game.result;
-  gameResult!.classList.remove("hidden");
+function getUndoTitle(game: Game) {
+  const activePlayer = game.getActivePlayer();
+  const reviewColor = activePlayer.color;
+  const requestingColor = activePlayer.opponent.color;
+  return `${requestingColor} is requesting to undo the last move. ${reviewColor} do you accept their plea?`;
 }
 
-export async function displayUndoMoveDialog(game: Game) {
-  const {accepted} = await openDialog<Review>(Review, { game });
+export async function displayUndoMoveDialog(gameContext: GameContext) {
+  const { accepted, message } = await openDialog(Undo);
   if (accepted) {
-    game.undoMove();
-  }
+    const { game } = gameContext;
 
+    await openDialog(Review, {
+      title: getUndoTitle(get(game)),
+      content: message || "I made an oopsie",
+    });
+
+    game.update(($game) => {
+      $game.undoMove();
+      return $game;
+    });
+  }
 }
 
-export async function displayPromotionDialog(game: Game) {
-  return openDialog(Promotion, { game });
+export async function displayPromotionDialog(gameContext: GameContext) {
+  return openDialog(Promotion, { gameContext });
 }
 
 export function closePromotionSelect() {

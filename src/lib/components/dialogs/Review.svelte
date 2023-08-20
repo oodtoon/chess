@@ -1,45 +1,30 @@
 <script lang="ts">
-  import type GameModel from "$lib/models/game";
   import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
 
   type $$Events = {
-    close: CustomEvent<{accepted: boolean}>
-  }
+    close: CustomEvent<{ accepted: boolean }>;
+  };
 
-  export let game: GameModel;
+  export let title: string;
+  export let content: string;
 
-  function handleAccept() {
-    const reviewTitle = document.getElementById("review-title")!.textContent;
-    if (reviewTitle!.includes("draw")) {
-      const msg = "Draw";
-      
-    } 
-  }
-
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher();
 
   function close(accepted: boolean) {
-    dispatch("close", {accepted})
+    dispatch("close", { accepted });
   }
 </script>
 
 <Dialog id="review-dialog" class="review-dialog">
-    <h2 class="title" id="review-title">Want to review?</h2>
-    <div id="undo-review-msg" class="msg" />
-    <span class="btn-container">
-      <button
-        class="accept"
-        type="button"
-        on:click={() => close(true)}>Accept</button
-      >
-      <!-- svelte-ignore missing-declaration -->
-      <button
-        class="decline"
-        type="button"
-        on:click={() => close(false)}>Decline</button
-      >
-    </span>
+  <h2 class="title" id="review-title">{title}</h2>
+  <div id="undo-review-msg" class="msg">
+    {content}
+  </div>
+  <span class="btn-container">
+    <button class="accept" on:click={() => close(true)}>Accept</button>
+    <button class="decline" on:click={() => close(false)}>Decline</button>
+  </span>
 </Dialog>
 
 <style>

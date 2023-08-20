@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { moveList } from "$lib/store";
   import { exportToPgn, copyPgn, parsePgn } from "$lib/io";
   import { getGameContext } from "$lib/context";
   import GameModel from "$lib/models/game";
 
-
-  export let game: GameModel
   let copied = false;
 
   let ctx = getGameContext();
+  const { game, moveList } = ctx
 
   const handleExport = () => {
-    exportToPgn(game)
+    exportToPgn($game)
   }
 
   const handleCopy = () => {
-    copyPgn(game)
+    copyPgn($game)
     copied = true;
     setTimeout(() => {
       copied = false;
@@ -31,17 +29,18 @@
       const reader = new FileReader();
       reader.onload = (event) => {
       
-        $ctx.game = new GameModel($ctx.game.eventBus);
+        $game = new GameModel($game.eventBus);
   
         console.log(event.target.result)
         const pgn = event.target?.result;
         const parsedPgn = parsePgn(pgn);
-        $ctx.game.fromParsedToken(parsedPgn);
+        $game.fromParsedToken(parsedPgn);
         
       };
       reader.readAsText(event.target?.files[0]);
     });
   }
+  $: console.log({$moveList})
 </script>
 
 <div class="moves-list">
@@ -63,8 +62,8 @@
       {/if}
       {/each}
       <!-- svelte-ignore empty-block -->
-      {#if game.result} 
-        <span class="game-result">{game.result}</span>
+      {#if $game.result} 
+        <span class="game-result">{$game.result}</span>
         {/if}
     </ol>
 

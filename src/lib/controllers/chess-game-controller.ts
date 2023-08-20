@@ -1,7 +1,7 @@
 import EventBus from "../event-bus";
 import {
   declareWinner,
-  declareDraw,
+  displayEndGameDialog,
   displayReviewDialog,
   displayUndoMoveDialog,
   displayPromotionDialog,
@@ -124,7 +124,6 @@ export default class ChessGameController {
     this.updatePlayerTurnAndText(prevPlayer);
   }
 
-
   movePiece(move, undo = false) {
     const { row, file, initiatingPiece, sourceRow, sourceFile } = move;
 
@@ -155,7 +154,7 @@ export default class ChessGameController {
           this.movesList.setResult(this.game.result);
         } else {
           const stalemate = "Stalemate";
-          declareDraw(this.game, this.endGameDialog, stalemate);
+          displayEndGameDialog(this.game, this.endGameDialog, stalemate);
         }
         this.movesList.setResult(this.game.result);
       }, 500);
@@ -252,7 +251,7 @@ export default class ChessGameController {
       if (this.reviewDialog.type === "Draw") {
         this.game.result = "1/2-1/2";
         this.turn.textContent = "Draw";
-        declareDraw(
+        displayEndGameDialog(
           this.game,
           this.endGameDialog,
           "Draw",

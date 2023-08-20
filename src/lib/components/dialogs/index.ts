@@ -1,17 +1,18 @@
-import type { ComponentEvents, ComponentProps, SvelteComponent } from "svelte";
-import Dialog from "./Dialog.svelte";
+import type { ComponentEventPayload, GetProps } from "$lib/type";
+import type { ComponentType } from "svelte";
 
-interface Closeable<T=any> {
-  close: CustomEvent<T>
-}
+type DialogPayload<CMP extends ComponentType> = ComponentEventPayload<
+  CMP,
+  "close"
+>;
 
-export default async function openDialog<
-  CMP extends SvelteComponent<{}, {}, Closeable>,
->(component: CMP, props: {}) {
+export default async function openDialog<CMP extends ComponentType>(
+  component: CMP,
+  props?: GetProps<CMP>
+): Promise<DialogPayload<CMP>> {
   return new Promise((resolve, reject) => {
-    const Component = component as unknown as typeof SvelteComponent
-    const dialog = new Component({ target: document.body });
-    dialog.$on("close", (event : ComponentEvents<CMP>) => {
+    const dialog = new component({ target: document.body, props });
+    dialog.$on("close", (event) => {
       resolve(event.detail);
       dialog.$destroy();
     });

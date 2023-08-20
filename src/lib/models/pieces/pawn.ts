@@ -8,10 +8,8 @@ class Pawn extends Piece {
 
   static notation = "";
 
-
   name = "Pawn";
   hasMoved = false;
-  hasDoubleMoved = false;
 
   canEnPassant(row: number, file: number) {
     const squareContent = this.getSquareContent(row, file);
@@ -30,7 +28,10 @@ class Pawn extends Piece {
     const available = [];
     const direction = this.isWhite() ? 1 : -1;
 
-    const leftDiag: [number, number] = [this.row + 1 * direction, this.file - 1];
+    const leftDiag: [number, number] = [
+      this.row + 1 * direction,
+      this.file - 1,
+    ];
 
     if (
       this.isValidSquare(...leftDiag) &&
@@ -42,7 +43,10 @@ class Pawn extends Piece {
       );
     }
 
-    const rightDiag: [number, number] = [this.row + 1 * direction, this.file + 1];
+    const rightDiag: [number, number] = [
+      this.row + 1 * direction,
+      this.file + 1,
+    ];
     if (
       this.isValidSquare(...rightDiag) &&
       this.isSquareOccupied(...rightDiag) &&
@@ -82,7 +86,10 @@ class Pawn extends Piece {
       available.push(Move.fromSquare(firstSquare, this));
     }
 
-    const secondSquare: [number, number] = [this.row + 2 * direction, this.file];
+    const secondSquare: [number, number] = [
+      this.row + 2 * direction,
+      this.file,
+    ];
     if (!this.hasMoved && !this.isSquareOccupied(...secondSquare)) {
       available.push(Move.fromSquare(secondSquare, this));
     }

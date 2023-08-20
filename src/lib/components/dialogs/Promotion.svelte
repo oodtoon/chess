@@ -1,34 +1,44 @@
 <script lang="ts">
-  import type GameModel from "$lib/models/game";
+  import type { GameContext } from "$lib/context";
+  import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
-  export let game: GameModel;
+  import type { Piece } from "$lib/models/pieces";
 
-  let color = game.getActivePlayer().color === "White" ? "w" : "b";
+  interface $$Events {
+    close: CustomEvent<string>;
+  }
 
-  let pieces: string[] = ["q", "n", "b", "r"];
+  export let gameContext: GameContext;
 
-  type piecesObj = {
-    [key: string]: string;
-  };
+  const dispatch = createEventDispatcher();
+  const { game } = gameContext;
 
-  let pieceSelector: piecesObj = {
+  let color = $game.getActivePlayer().color === "White" ? "w" : "b";
+
+  const pieces = ["q", "n", "b", "r"] as const;
+
+  const pieceSelector = {
     q: "Queen",
     n: "Knight",
     b: "Bishop",
     r: "Rook",
-  };
+  } as const;
+
+  function close(piece: string) {
+    dispatch("close", piece);
+  }
 </script>
 
 <Dialog id="promotion-dialog">
-    {#each pieces as piece}
-      <!-- svelte-ignore missing-declaration -->
-      <button
-        class="promote-btn"
-        value={pieceSelector[piece]}
-        style="background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/{color +
-          piece}.png)">{piece}</button
-      >
-    {/each}
+  {#each pieces as piece}
+    <!-- svelte-ignore missing-declaration -->
+    <button
+      class="promote-btn"
+      on:click={() => close(pieceSelector[piece])}
+      style="background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/{color +
+        piece}.png)"
+    />
+  {/each}
 </Dialog>
 
 <style>

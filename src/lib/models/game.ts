@@ -7,15 +7,30 @@ import type EventBus from "$lib/event-bus.js";
 import { CompoundMove, type BaseMove } from "./move.js";
 import type { PgnGame, PgnReaderMove } from "@mliebelt/pgn-types";
 
+type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
+type GameTerminationReason =
+  | "checkmate"
+  | "stalemate"
+  | "three-fold repitition"
+  | "resignation"
+  | "draw agreed"
+  | null;
+type GameTerminationOptions = {
+  result: GameResult;
+  reason: GameTerminationReason;
+};
+
 export default class Game {
   #initialMoveId = Symbol(crypto.randomUUID());
 
   board = new Board(this);
   whitePlayer = new Player("White", this);
   blackPlayer = new Player("Black", this);
+  winner: Player | null = null;
 
   moves: BaseMove[] = [];
-  result: string | null = null;
+  result: GameResult = null;
+  terminationReason: GameTerminationReason = null;
 
   constructor(readonly eventBus: EventBus) {
     this.wireUpOpposition();
@@ -100,11 +115,10 @@ export default class Game {
           initiatingPiece?.isRook() ||
           initiatingPiece?.isKing()
         ) {
-          if (
-            !this.moves.find(
-              (move: BaseMove) => move.initiatingPiece === initiatingPiece
-            )
-          ) {
+          const firstMove = this.moves.find(
+            (move: BaseMove) => move.initiatingPiece === initiatingPiece
+          );
+          if (!firstMove || firstMove === move) {
             initiatingPiece.hasMoved = false;
           }
         }
@@ -170,12 +184,30 @@ export default class Game {
     console.log(this.board.debug());
   }
 
+  terminate(options: GameTerminationOptions) {
+    this.result = options.result;
+    this.terminationReason = options.reason;
+  }
+
   get moveId() {
     return this.lastMove?.id ?? this.#initialMoveId;
   }
 
   get isGameOver() {
     return this.result !== null;
+  }
+
+  get resultText() {
+    switch (this.result) {
+      case null:
+        return null;
+      case "0-1":
+        return "Black wins!";
+      case "1-0":
+        return "White wins!";
+      case "1/2-1/2":
+        return "Draw!";
+    }
   }
 }
 
