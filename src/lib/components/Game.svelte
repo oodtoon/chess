@@ -118,6 +118,7 @@
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
     if ($promotedPieceType) {
+      game = game 
       $promotedPieceType = null;
     }
 

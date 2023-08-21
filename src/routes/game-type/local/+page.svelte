@@ -74,40 +74,6 @@
     width: 100%;
   }
 
-  chess-board {
-    width: calc(var(--responsive-size) * 8);
-    height: calc(var(--responsive-size) * 8);
-    min-width: calc(var(--min-size) * 8);
-    min-height: calc(var(--min-size) * 8);
-    border: solid rgb(23, 23, 23) 5px;
-    display: flex;
-    flex-wrap: wrap-reverse;
-    margin: 3em auto;
-    box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
-    grid-area: board;
-    place-self: start;
-  }
-
-  .game-btns {
-    grid-area: btns;
-    display: block;
-  }
-
-  .moves-list {
-    grid-area: moves-list;
-    display: block;
-    border: 3px solid black;
-    background-color: aliceblue;
-    border-radius: 1em;
-    margin-top: 3em;
-    margin-bottom: auto;
-    width: 100%;
-  }
-  chess-piece {
-    width: var(--captured-piece-size);
-    height: var(--captured-piece-size);
-  }
-
   .turn {
     color: #49a6e9;
     grid-area: turn;
@@ -147,33 +113,9 @@
       width: 100%;
     }
 
-    chess-board {
-      width: calc(var(--responsive-size) * 8);
-      height: calc(var(--responsive-size) * 8);
-      margin: auto;
-    }
-
-    #white-pieces {
-      min-height: 100px;
-    }
-
-    #black-pieces {
-      min-height: 100px;
-    }
-
-    .moves-list {
-      margin: auto;
-    }
-
     .turn {
       margin: auto;
       place-self: center;
-    }
-  }
-
-  @media (min-width: 775px) {
-    .moves-list {
-      margin-top: 2em;
     }
   }
 
@@ -192,24 +134,10 @@
         ". board  .";
     }
 
-    chess-board {
-      width: calc(var(--responsive-size) * 8);
-      height: calc(var(--responsive-size) * 8);
-      max-height: calc(88px * 8);
-      max-width: calc(88px * 8);
-      min-width: calc(75px * 8);
-      min-height: calc(75px * 8);
-      margin: 2em auto;
-    }
-
     .capture-container {
       display: block;
       margin: 0;
     }
 
-    .moves-list {
-      justify-self: start;
-      width: 100%;
-    }
   }
 </style>

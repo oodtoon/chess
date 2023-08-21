@@ -39,3 +39,4 @@ export type ComponentEventPayload<
   CMP,
   EventType extends keyof GetEvents<CMP>,
 > = CustomEventPayload<GetEvents<CMP>[EventType]>;
+export type Square = [number, number]
