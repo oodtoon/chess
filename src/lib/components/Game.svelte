@@ -6,29 +6,22 @@
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
   import {
-    declareDraw,
-    declareWinner,
+    displayEndGameDialog,
     displayPromotionDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
   import type Move from "$lib/models/move";
-  import {
-    capturedPiece,
-    capturedBlackPieces,
-    capturedWhitePieces,
-    promotedPieceType,
-    moveList,
-  } from "$lib/store";
+  import { capturedPiece, promotedPieceType, isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
 
-  const ctx = getGameContext();
-  $: game = $ctx.game;
-  $: eventBus = game.eventBus;
-  $: Object.assign(window, { game });
+  const gameContext = getGameContext();
+  const { game, moveList } = gameContext;
+
+  $: eventBus = $game.eventBus;
+  $: Object.assign(window, { game: $game });
 
   let rotate: boolean = false;
-  let activeColor: string = "White";
 
   let turn: HTMLElement;
   let endGameDialog: HTMLDialogElement;
@@ -40,7 +33,7 @@
   let blackPieces: HTMLElement;
 
   onMount(() => {
-    eventBus.addEventListener("move", handlePieceMove);
+    eventBus.addEventListener("move", handleMove);
     turn = document.getElementById("turn") as HTMLElement;
 
     whitePieces = document.getElementById("White-pieces")!;
@@ -59,12 +52,12 @@
     reviewDialog = document.querySelector("review-dialog") as HTMLDialogElement;
 
     return () => {
-      eventBus.removeEventListener("move", handlePieceMove);
+      eventBus.removeEventListener("move", handleMove);
     };
   });
 
   function handlePieceClick(piece: Piece) {
-    if (piece.color !== activeColor) {
+    if (piece.color !== $game.getActivePlayer().color) {
     } else {
       if (selectedPiece === piece) {
         selectedPiece = null;
@@ -74,108 +67,49 @@
     }
   }
 
-  let movesList: Move[] = [];
-
   let selectedPiece: Piece | null;
-  let ghostMove: Move[];
+  $: ghostMoves = selectedPiece ? $game.getMoves(selectedPiece) : [];
 
-  let blackCapturedPieces: Piece[] = [];
-  let whiteCapturedPieces: Piece[] = [];
+  $: if ($isUndoMove) {
+    const activePlayer = $game.getActivePlayer();
+    updatePlayerTurnAndText(activePlayer);
 
-  $: ghostMoves = selectedPiece ? game.getMoves(selectedPiece) : [];
-
-  // $: if ($isUndoMove) {
-  //   const activePlayer = game.getActivePlayer();
-  //   updatePlayerTurnAndText(activePlayer);
-  //   activeColor = activePlayer.color;
-
-  //   $isUndoMove = false;
-  // }
-
-  function handlePieceMove(event: CustomEvent) {
-    handleMove();
-    const updateMove = event.detail.move
-    updateMovesList(updateMove);
-
-    if (event.detail.move.capturedPiece) {
-      handlePieceCapture(event);
-    }
+    $isUndoMove = false;
   }
 
   function handleMove() {
-    const activePlayer = game.getActivePlayer();
+    const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
     updatePlayerTurnAndText(activePlayer);
   }
 
-  function updateMovesList(move: Move) {
-    $moveList = [...$moveList, move];
-  }
-
   function checkForTerminalState(activePlayer: Player) {
-    const color = activePlayer.color;
     if (activePlayer.opponent.moves.length === 0) {
       setTimeout(() => {
-        if (game.isPlayerInCheck()) {
-          const checkmate = `Checkmate! ${color} player wins!`;
-          declareWinner(color, game, checkmate);
+        if ($game.isPlayerInCheck()) {
+          $game.terminate({
+            result: activePlayer.isWhite ? "1-0" : "0-1",
+            reason: "checkmate",
+          });
         } else {
-          const stalemate = "Stalemate";
-          declareDraw(game, stalemate, false);
+          $game.terminate({
+            result: "1/2-1/2",
+            reason: "stalemate",
+          });
         }
+        $game = $game;
+        displayEndGameDialog(gameContext);
       }, 500);
     }
   }
 
   function updatePlayerTurnAndText(activePlayer: Player) {
-    rotateBoard(activePlayer);
     turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
-  function handlePieceCapture(event: CustomEvent) {
-    const capturedPiece = event.detail.move.capturedPiece;
-    $ctx = $ctx;
-    $capturedPiece = capturedPiece;
-    if (capturedPiece.player.color === "Black") {
-      blackCapturedPieces = [...blackCapturedPieces, capturedPiece];
-      $capturedBlackPieces = blackCapturedPieces;
-    } else {
-      whiteCapturedPieces = [...whiteCapturedPieces, capturedPiece];
-      $capturedWhitePieces = whiteCapturedPieces;
-    }
-
-    game = game;
-  }
-
-  function activateMoveListBtns() {
-    // movesList.importButton.addEventListener("click", () => {
-    //   movesList.fileInput.click();
-    // });
-    // movesList.fileInput.addEventListener("change", (event) => {
-    //   const reader = new FileReader();
-    //   reader.onload = (event) => {
-    //     loading = true;
-    //     cleanup();
-    //     // game = new Game(eventBus);
-    //     initializeGame();
-    //     const pgn = event.target.result;
-    //     const parsedPgn = parsePgn(pgn);
-    //     game.fromParsedToken(parsedPgn);
-    //     loading = false;
-    //   };
-    //   reader.readAsText(event.target.files[0]);
-    // });
-  }
-
-  // function activateDialongBtns() {
-  //   promotionDialog.pieceSelect.addEventListener("change", (event) => {
-  //     event.preventDefault();
-  //     promotionDialog.acceptButton.value = promotionDialog.pieceSelect.value;
-  //   });
-  // }
-
-  function rotateBoard(activePlayer: Player) {
-    if (activePlayer !== game.whitePlayer) {
+  function rotateBoard(_: BaseMove[]) {
+    console.log({ _ });
+    if ($game.getActivePlayer() !== $game.whitePlayer) {
       rotate = true;
     } else {
       rotate = false;
@@ -191,27 +125,24 @@
     const move = event.detail;
 
     if (move.isPromotion) {
-      const chosenPromotionPiece = await displayPromotionDialog(
-        promotionDialog
-      );
+      const chosenPromotionPiece = await displayPromotionDialog(gameContext);
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
       $promotedPieceType = promotedPiece;
-      game.doMove(move);
-      game = game;
+      $game.doMove(move);
     } else {
-      game.doMove(move);
+      $game.doMove(move);
     }
 
-    const activePlayer = game.getActivePlayer();
     selectedPiece = null;
-    activeColor = activePlayer.color;
-    rotateBoard(activePlayer);
+    $game = $game;
   }
+
+  $: rotateBoard($moveList);
 </script>
 
-<Board {rotate} board={game.board} let:row let:file>
-  {@const piece = game.board.get(row, file)}
+<Board {rotate} board={$game.board} let:row let:file>
+  {@const piece = $game.board.get(row, file)}
   {#if piece}
     <ChessPiece
       {piece}
@@ -222,7 +153,7 @@
   {/if}
 
   {#each ghostMoves as ghostMove}
-    {@const piece = game.board.getSquareContent(row, file)}
+    {@const piece = $game.board.getSquareContent(row, file)}
     {#if ghostMove.row === row && ghostMove.file === file}
       <GhostMove
         isCapturedPiece={!!piece}

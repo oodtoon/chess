@@ -1,16 +1,47 @@
 <script lang="ts">
- import { moveList } from "$lib/store"
+  import { exportToPgn, copyPgn, parsePgn } from "$lib/io";
+  import { getGameContext } from "$lib/context";
+  import GameModel from "$lib/models/game";
+  import CopyIcon from "./CopyIcon.svelte";
 
   let copied = false;
- 
 
-  const handleCopyBtnClick = () => {
+  let ctx = getGameContext();
+  const { game, moveList } = ctx
+
+  const handleExport = () => {
+    exportToPgn($game)
+  }
+
+  const handleCopy = () => {
+    copyPgn($game)
     copied = true;
     setTimeout(() => {
       copied = false;
     }, 4000);
   };
 
+
+  const handleImport = () => {
+    const fileInput = document.querySelector("#file-input") as HTMLInputElement
+    fileInput!.click()
+    
+    fileInput.addEventListener("change", (event) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+      
+        $game = new GameModel($game.eventBus);
+  
+        console.log(event.target.result)
+        const pgn = event.target?.result;
+        const parsedPgn = parsePgn(pgn);
+        $game.fromParsedToken(parsedPgn);
+        
+      };
+      reader.readAsText(event.target?.files[0]);
+    });
+  }
+  $: console.log({$moveList})
 </script>
 
 <div class="moves-list">
@@ -31,40 +62,26 @@
       </li>
       {/if}
       {/each}
+      <!-- svelte-ignore empty-block -->
+      {#if $game.result} 
+        <span class="game-result">{$game.result}</span>
+        {/if}
     </ol>
-    
-    <section class="btns-container">
-      <button class="export" type="button">export pgn</button>
-      <button class="copy" type="button" on:click={handleCopyBtnClick}
-        >copy pgn <span class="copy-icon">
-          {#if !copied}
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 16 16"
-              ><path
-                fill="currentColor"
-                d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-              /><path
-                fill="currentColor"
-                d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-              /></svg
-            >
-          {:else}
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 12 16"
-              ><path
-                fill-rule="evenodd"
-                d="M12 5l-8 8l-4-4l1.5-1.5L4 10l6.5-6.5L12 5z"
-                fill="currentColor"
-              /></svg
-            >
-          {/if}
-        </span>
-      </button>
-      <input type="file" id="file-input" style="display: none" />
-      <button class="import" type="button">import pgn</button>
-    </section>
+
+
+  <section class="btns-container">
+    <button class="export" type="button" on:click={handleExport}>export pgn</button>
+    <button class="copy" type="button" on:click={handleCopy}
+      >copy pgn <span class="copy-icon">
+        <CopyIcon {copied}/>
+      </span>
+    </button>
+    <input type="file" id="file-input" style="display: none" />
+    <button class="import" type="button" on:click={handleImport}>import pgn</button>
+  </section>
 </div>
 
 <style>
-
   h3 {
     text-align: center;
   }
@@ -79,34 +96,44 @@
   }
 
   li {
-  display: flex;
-  padding: 0.25em 1em;
-  width: 100%;
-}
+    display: flex;
+    padding: 0.25em 1em;
+    width: 100%;
+  }
 
-span {
+  span {
     margin-left: 1em;
     display: inline-block;
   }
 
-.number {
- width: 10%
-}
+  .number {
+    width: 10%;
+  }
 
+  .move {
+    width: 30%;
+  }
 
-.move {
-  width: 30%
-}
+  li:nth-child(even) {
+    background-color: white;
+  }
 
-li:nth-child(even) {
-  background-color: white;
-}
+  li:nth-child(even)::marker {
+    background-color: white;
+  }
 
-li:nth-child(even)::marker {
-  background-color: white;
-}
+  .li-result {
+    display: flex;
+    padding: 0;
+    justify-content: center;
+  }
 
-
+  .game-result {
+    margin: 0;
+  }
+  .hidden {
+    display: none;
+  }
 
   .moves-list {
     grid-area: moves-list;

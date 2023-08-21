@@ -1,5 +1,5 @@
 import Piece from "./piece";
-import Move, { CompoundMove } from "../move";
+import Move, { BaseMove, CompoundMove } from "../move";
 import type Game from "../game";
 import type Board from "../board";
 import type Player from "../player";
@@ -20,7 +20,7 @@ class King extends Piece {
     this.isChecked = false;
   }
 
-  countEmptySquares(row, from, to) {
+  countEmptySquares(row: number, from: number, to: number) {
     let count = 0;
     for (let file = from; file < to; file++) {
       if (!this.isSquareOccupied(row, file)) {
@@ -99,7 +99,7 @@ class King extends Piece {
     return this.isWhite() ? "♔" : "♚";
   }
 
-  onMove(move) {
+  onMove(move: BaseMove) {
     super.onMove(move);
   }
 

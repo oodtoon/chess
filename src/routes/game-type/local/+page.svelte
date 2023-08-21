@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import EventBus from "$lib/event-bus";
   import CapturePool from "$lib/components/CapturePool.svelte";
   import Game from "$lib/components/Game.svelte";
@@ -9,11 +9,20 @@
   import { setGameContext } from "$lib/context";
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
+  import End from "$lib/components/dialogs/End.svelte";
+  import Promotion from "$lib/components/dialogs/Promotion.svelte";
+  import Undo from "$lib/components/dialogs/Undo.svelte";
+  import Review from "$lib/components/dialogs/Review.svelte";
 
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
 
   setGameContext(game);
+
+  function getTurnText(game: GameModel) {
+    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`
+  }
+  
 </script>
 
 <svelte:head>
@@ -21,7 +30,7 @@
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">White's Turn</h2>
+  <h2 class="turn" id="turn">{getTurnText(game)}</h2>
 
   <section class="capture-container">
     <CapturePool color="White" capturedPieces={$capturedBlackPieces}/>
@@ -29,14 +38,11 @@
   </section>
 
   <Game />
-  <MoveList />
+  <MoveList {game}/>
   <GameButtons />
 
-  <end-game-dialog class="end-game-dialog" />
-  <undo-dialog class="undo-dialog" />
-  <review-dialog class="review-dialog" />
-  <promotion-dialog class="promotion-dialog" />
 </div>
+
 
 <style>
   :root {

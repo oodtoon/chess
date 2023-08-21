@@ -3,6 +3,7 @@
   import type { Color } from "$lib/type";
   import ChessPiece from "./ChessPiece.svelte";
 
+
   export let color: Color;
   export let capturedPieces: Piece[] | null[];
 </script>

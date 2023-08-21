@@ -1,3 +1,4 @@
+import type { BaseMove } from "../move.js";
 import Piece from "./piece.js";
 
 class Bishop extends Piece {
@@ -21,7 +22,7 @@ class Bishop extends Piece {
     return available;
   }
 
-  onMove(move) {
+  onMove(move: BaseMove) {
     super.onMove(move);
   }
 

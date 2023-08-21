@@ -7,15 +7,30 @@ import type EventBus from "$lib/event-bus.js";
 import { CompoundMove, type BaseMove } from "./move.js";
 import type { PgnGame, PgnReaderMove } from "@mliebelt/pgn-types";
 
+type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
+type GameTerminationReason =
+  | "checkmate"
+  | "stalemate"
+  | "three-fold repitition"
+  | "resignation"
+  | "draw agreed"
+  | null;
+type GameTerminationOptions = {
+  result: GameResult;
+  reason: GameTerminationReason;
+};
+
 export default class Game {
   #initialMoveId = Symbol(crypto.randomUUID());
 
   board = new Board(this);
   whitePlayer = new Player("White", this);
   blackPlayer = new Player("Black", this);
+  winner: Player | null = null;
 
   moves: BaseMove[] = [];
-  result: string | null = null;
+  result: GameResult = null;
+  terminationReason: GameTerminationReason = null;
 
   constructor(readonly eventBus: EventBus) {
     this.wireUpOpposition();
@@ -74,9 +89,9 @@ export default class Game {
     }
   }
 
-  unstageMove(move: BaseMove) {
+  unstageMove(move: BaseMove, shouldCommit: boolean = false) {
     if (move instanceof CompoundMove) {
-      move.moves.forEach((move) => this.unstageMove(move));
+      move.moves.forEach((move) => this.unstageMove(move, shouldCommit));
     } else {
       const {
         row,
@@ -86,16 +101,33 @@ export default class Game {
         initiatingPiece,
         capturedPiece,
       } = move as Move;
+      this.board.set(row, file, null);
       if (capturedPiece) {
-        //FIX EN PASSANT ISSUE!
-        this.board.set(row, file, capturedPiece);
+        this.board.set(capturedPiece.row, capturedPiece.file, capturedPiece);
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
-      } else {
-        this.board.set(row, file, null);
       }
       this.board.set(sourceRow, sourceFile, initiatingPiece);
+
+      if (shouldCommit) {
+        if (
+          initiatingPiece?.isPawn() ||
+          initiatingPiece?.isRook() ||
+          initiatingPiece?.isKing()
+        ) {
+          const firstMove = this.moves.find(
+            (move: BaseMove) => move.initiatingPiece === initiatingPiece
+          );
+          if (!firstMove || firstMove === move) {
+            initiatingPiece.hasMoved = false;
+          }
+        }
+      }
     }
+  }
+
+  isMoveEnPassant(piece: Piece, move: Move) {
+    return piece.isPawn() && piece.row !== move.row;
   }
 
   getActivePlayer() {
@@ -109,7 +141,7 @@ export default class Game {
 
   undoMove() {
     if (!this.hasMoves) return;
-    this.unstageMove(this.moves.at(-1)!);
+    this.unstageMove(this.moves.at(-1)!, true);
     this.moves.pop();
   }
 
@@ -125,8 +157,10 @@ export default class Game {
     return this.hasMoves && this.lastMove!.isCheck;
   }
 
+  //THIS HAS CHANGED. THERE ARE UNUSED LINES MAKE UPDATES BASED ON GIT TO HAVE CORRECT INFO
   fromParsedToken(pgn: PgnGame[]) {
     pgn[0].moves.forEach((token) => {
+      console.log(token.notation.notation);
       if (token.notation.notation === "O-O") {
         if (token.turn === "w") {
           const shortObj = { row: 0, file: 6 };
@@ -142,7 +176,6 @@ export default class Game {
           const longObj = { row: 0, file: 2 };
         } else {
           const longObjectBlack = { row: 7, file: 2 };
-
         }
       } else {
         consumeToken(token, this);
@@ -151,12 +184,30 @@ export default class Game {
     console.log(this.board.debug());
   }
 
+  terminate(options: GameTerminationOptions) {
+    this.result = options.result;
+    this.terminationReason = options.reason;
+  }
+
   get moveId() {
     return this.lastMove?.id ?? this.#initialMoveId;
   }
 
   get isGameOver() {
     return this.result !== null;
+  }
+
+  get resultText() {
+    switch (this.result) {
+      case null:
+        return null;
+      case "0-1":
+        return "Black wins!";
+      case "1-0":
+        return "White wins!";
+      case "1/2-1/2":
+        return "Draw!";
+    }
   }
 }
 
@@ -176,8 +227,10 @@ const consumeToken = (token: PgnReaderMove, game: Game) => {
     {} as Record<string, Piece[]>
   );
 
+  const pieceShortHand = !token.notation.fig ? "" : token.notation.fig;
+
   const movingPiece = getPieceToMove(
-    figMapping[token.notation.fig!],
+    figMapping[pieceShortHand],
     row,
     file,
     token.notation.disc
@@ -203,6 +256,7 @@ const getPieceToMove = (
       discriminate = (move: BaseMove) => move.sourceFile === discFile;
     }
   }
+
   return piecesOfType.find((p: Piece) => {
     return p.moves.some(
       (m) => m.row === row && m.file === file && discriminate(m)

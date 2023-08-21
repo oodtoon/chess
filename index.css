@@ -1,5 +1,6 @@
 html {
   background-color: rgb(32, 32, 32);
+  font-family: "Courier New", Courier, monospace;
 }
 
 :root {
@@ -106,16 +107,6 @@ chess-piece {
   color: #49a6e9;
   grid-area: turn;
   place-self: center;
-}
-
-end-game-dialog,
-undo-dialog,
-review-dialog,
-promotion-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 
 @media (min-width: 700px) {

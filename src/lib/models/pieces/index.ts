@@ -17,7 +17,7 @@ export const PIECE_NAME_MAPPING = {
   Pawn,
 };
 
-export type PieceName = keyof typeof PIECE_NAME_MAPPING
+export type PieceName = keyof typeof PIECE_NAME_MAPPING;
 
 export function promote(move, type) {
   const pawn = move.initiatingPiece;

@@ -83,4 +83,12 @@ export default class Player {
   set opponent(player: Player) {
     this._opponent = player;
   }
+
+  get isWhite() {
+    return this.color === "White";
+  }
+
+  get isBlack() {
+    return this.color === "Black";
+  }
 }

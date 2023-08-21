@@ -19,7 +19,7 @@ abstract class Piece {
   abstract get notation(): string;
 
   constructor(
-    private readonly game: Game,
+    readonly game: Game,
     private readonly board: Board,
     readonly player: Player,
     public row: number,
@@ -72,7 +72,7 @@ abstract class Piece {
           legalMoves.push(Move.fromSquare(square, this));
         } else {
           const otherPiece = this.getSquareContent(...square);
-          if (otherPiece.color !== this.color) {
+          if (otherPiece?.color !== this.color) {
             legalMoves.push(Move.fromSquare(square, this, otherPiece));
           }
           break;
