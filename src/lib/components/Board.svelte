@@ -1,11 +1,5 @@
 <script lang="ts">
-  import type Board from "$lib/models/board";
-
-
   export let rotate: boolean;
-  export let board: Board;
-
-
 
 </script>
 

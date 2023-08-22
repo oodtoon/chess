@@ -1,7 +1,6 @@
 <script lang="ts">
   import { exportToPgn, copyPgn, parsePgn } from "$lib/io";
   import { getGameContext } from "$lib/context";
-  import type { PgnGame } from "@mliebelt/pgn-types";
   import type { ParseTree } from "@mliebelt/pgn-parser";
   import GameModel from "$lib/models/game";
   import CopyIcon from "./CopyIcon.svelte";
@@ -66,7 +65,7 @@
       {/each}
       <!-- svelte-ignore empty-block -->
       {#if $game.result} 
-        <span class="game-result">{$game.result}</span>
+        <span class="game-result">Game Result: {$game.result}</span>
         {/if}
     </ol>
 
@@ -124,18 +123,14 @@
     background-color: white;
   }
 
-  .li-result {
-    display: flex;
-    padding: 0;
-    justify-content: center;
-  }
 
   .game-result {
     margin: 0;
+    display: flex;
+    padding: .5em 0;
+    justify-content: center;
   }
-  .hidden {
-    display: none;
-  }
+
 
   .moves-list {
     grid-area: moves-list;
@@ -199,10 +194,5 @@
 
   .import:hover {
     background-color: black;
-  }
-
-  .icon {
-    height: var(--element-size);
-    width: var(--element-size);
   }
 </style>

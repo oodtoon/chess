@@ -78,15 +78,6 @@
     justify-self: center;
   }
 
-  .exit {
-    grid-area: exit;
-    justify-self: end;
-    background-color: transparent;
-    border: transparent;
-    color: #8b0000;
-    cursor: pointer;
-  }
-
   .btn-container {
     grid-area: btn;
     justify-self: center;

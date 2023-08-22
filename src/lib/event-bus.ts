@@ -3,24 +3,28 @@ export default class EventBus {
     this.bus = document.createElement("fakeelement");
   }
 
+  bus;
+
   /**
    * Add an event listener.
    */
-  addEventListener(event, callback) {
+  addEventListener(event: string, callback: () => void) {
+    console.log({ callback });
     this.bus.addEventListener(event, callback);
   }
 
   /**
    * Remove an event listener.
    */
-  removeEventListener(event, callback) {
+  removeEventListener(event: string, callback: () => void) {
+    console.log("ramove", { callback });
     this.bus.removeEventListener(event, callback);
   }
 
   /**
    * Dispatch an event.
    */
-  dispatchEvent(event, detail = {}) {
+  dispatchEvent(event: string, detail = {}) {
     this.bus.dispatchEvent(new CustomEvent(event, { detail }));
   }
 }

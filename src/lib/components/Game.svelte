@@ -127,11 +127,12 @@
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
       $promotedPieceType = promotedPiece;
+      
       $game.doMove(move);
     } else {
       $game.doMove(move);
     }
-
+   
     selectedPiece = null;
     $game = $game;
   }
@@ -139,7 +140,7 @@
   $: rotateBoard($moveList);
 </script>
 
-<Board {rotate} board={$game.board} let:row let:file>
+<Board {rotate} let:row let:file>
   {@const piece = $game.board.get(row, file)}
   {#if piece}
     <ChessPiece

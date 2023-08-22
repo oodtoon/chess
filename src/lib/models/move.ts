@@ -85,8 +85,8 @@ export default class Move extends BaseMove {
     return new Move(...square, initiatingPiece, capturedPiece);
   }
 
-  sourceRow: number;
-  sourceFile: number;
+  sourceRow: number | null;
+  sourceFile: number | null;
 
   constructor(
     readonly row: number,

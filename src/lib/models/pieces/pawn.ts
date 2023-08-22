@@ -24,7 +24,7 @@ class Pawn extends Piece {
     );
   }
 
-  computeMoves() {
+  computeMoves(): Move[] {
     const available = [];
     const direction = this.isWhite() ? 1 : -1;
 

@@ -17,7 +17,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
+<button
   class="piece"
   class:active
   class:captured
@@ -25,7 +25,7 @@
   on:click
 >
   {pieceType?.icon}
-</div>
+</button>
 
 <style>
   .piece {
@@ -34,6 +34,9 @@
     background-size: cover;
     height: 100%;
     width: 100%;
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
   }
 
   .active {

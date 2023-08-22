@@ -1,4 +1,4 @@
-import Move, { BaseMove } from "../move";
+import Move, { BaseMove, CompoundMove } from "../move";
 import Board from "../board";
 import type Game from "../game";
 import type Player from "../player";
@@ -13,14 +13,14 @@ abstract class Piece {
   id = crypto.randomUUID();
   hasMoved = false;
 
-  abstract computeMoves: () => Move[];
+  abstract computeMoves(): (Move | CompoundMove)[];
   abstract get icon(): string;
   abstract get img(): string;
   abstract get notation(): string;
 
   constructor(
     readonly game: Game,
-    private readonly board: Board,
+    readonly board: Board,
     readonly player: Player,
     public row: number,
     public file: number

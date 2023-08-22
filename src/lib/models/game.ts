@@ -1,13 +1,17 @@
 import Board from "./board.js";
 import Player from "./player.js";
 import { fileToInt } from "../util.js";
-import { PIECE_NAME_MAPPING, Piece, type PieceName } from "./pieces/index.js";
+import {
+  PIECE_NAME_MAPPING,
+  Piece,
+  promote,
+  type PieceName,
+} from "./pieces/index.js";
 import type Move from "./move.js";
 import type EventBus from "$lib/event-bus.js";
 import { CompoundMove, type BaseMove } from "./move.js";
 import type { PgnMove } from "@mliebelt/pgn-types";
 import type { ParseTree } from "@mliebelt/pgn-parser";
-
 
 type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
 type GameTerminationReason =
@@ -109,7 +113,7 @@ export default class Game {
         capturedPiece.player.removeCapturedPiece(capturedPiece);
         capturedPiece.player.addLivePiece(capturedPiece);
       }
-      this.board.set(sourceRow, sourceFile, initiatingPiece);
+      this.board.set(sourceRow!, sourceFile!, initiatingPiece);
 
       if (shouldCommit) {
         if (
@@ -160,20 +164,15 @@ export default class Game {
   }
 
   fromParsedToken(pgn: ParseTree) {
-    let castleMove: CompoundMove
+    let castleMove: CompoundMove;
     let castleType: string;
-    let castlingKing: Piece
-    console.log(pgn)
+    let castlingKing: Piece;
     pgn.moves.forEach((token) => {
       if (
         token.notation.notation === "O-O" ||
         token.notation.notation === "O-O-O"
       ) {
-        if (token.notation.notation === "O-O") {
-          castleType = "O-O";
-        } else {
-          castleType = "O-O-O";
-        }
+        castleType = token.notation.notation;
 
         if (token.turn === "w") {
           castlingKing = this.whitePlayer.livePieceMap.King[0];
@@ -186,6 +185,7 @@ export default class Game {
 
         this.doMove(castleMove);
       } else {
+        console.log(token);
         consumeToken(token, this);
       }
     });
@@ -223,6 +223,7 @@ const consumeToken = (token: PgnMove, game: Game) => {
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);
   const player = token.turn === "w" ? game.whitePlayer : game.blackPlayer;
+  const promoteType = token.notation.promotion;
 
   const figMapping = Object.entries(player.livePieceMap).reduce(
     (acc, tuple) => {
@@ -242,7 +243,8 @@ const consumeToken = (token: PgnMove, game: Game) => {
     file,
     token.notation.disc
   );
-  movePiece(movingPiece, game, row, file);
+
+  movePiece(movingPiece, game, row, file, promoteType);
 };
 
 type Discriminate = (move: BaseMove) => boolean;
@@ -271,12 +273,36 @@ const getPieceToMove = (
   })!;
 };
 
-const movePiece = (piece: Piece, game: Game, row: number, file: number) => {
+const pieceSelector = {
+  Q: "Queen",
+  N: "Knight",
+  B: "Bishop",
+  R: "Rook",
+} as const;
+
+const movePiece = (
+  piece: Piece,
+  game: Game,
+  row: number,
+  file: number,
+  promoteType: string | null
+) => {
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
       .find((m) => m.row === row && m.file === file);
 
     game.doMove(pieceMove!);
+
+    if (promoteType) {
+      const promotedPiece = pieceSelector[promoteType.slice(-1) as keyof typeof pieceSelector]
+      // const newPiece = new PIECE_NAME_MAPPING[promotedPiece as PieceName]()
+      // pieceMove!.pieceToPromoteTo = newPiece
+      promote(
+        pieceMove!,
+        promotedPiece,
+        true
+      );
+    }
   }
 };

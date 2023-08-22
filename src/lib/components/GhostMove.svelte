@@ -17,7 +17,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="ghost-move-container" on:click={handleGhostMoveClick}>
+<button class="ghost-move-container" on:click={handleGhostMoveClick}>
   {#if !isCapturedPiece}
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -49,12 +49,15 @@
       /></svg
     >
   {/if}
-</div>
+</button>
 
 <style>
   .ghost-move-container {
     width: 100%;
     height: 100%;
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
   }
 
   .ghost-move-container:hover > .ghost-move {

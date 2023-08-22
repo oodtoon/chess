@@ -9,10 +9,6 @@
   import { setGameContext } from "$lib/context";
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
-  import End from "$lib/components/dialogs/End.svelte";
-  import Promotion from "$lib/components/dialogs/Promotion.svelte";
-  import Undo from "$lib/components/dialogs/Undo.svelte";
-  import Review from "$lib/components/dialogs/Review.svelte";
 
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
@@ -78,16 +74,6 @@
     color: #49a6e9;
     grid-area: turn;
     place-self: center;
-  }
-
-  end-game-dialog,
-  undo-dialog,
-  review-dialog,
-  promotion-dialog {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
   }
 
   @media (min-width: 700px) {

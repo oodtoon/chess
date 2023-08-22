@@ -1,8 +1,6 @@
 import Piece from "./piece";
 import Move, { BaseMove, CompoundMove } from "../move";
-import type Game from "../game";
-import type Board from "../board";
-import type Player from "../player";
+import type { Square } from "$lib/type";
 
 class King extends Piece {
   static startingRows = [0, 7];
@@ -30,7 +28,7 @@ class King extends Piece {
     return count;
   }
 
-  getAvailableCastlingMoves() {
+  getAvailableCastlingMoves(): CompoundMove[] {
     if (this.hasMoved) return [];
 
     const leftSquareCount = this.countEmptySquares(this.row, 1, 4);
@@ -68,8 +66,8 @@ class King extends Piece {
       .map(
         ({ rook, targetSquare, rookTargetSquare, isShort }) =>
           new CompoundMove(
-            Move.fromSquare(targetSquare, this),
-            Move.fromSquare(rookTargetSquare, rook),
+            Move.fromSquare(targetSquare as Square, this),
+            Move.fromSquare(rookTargetSquare as Square, rook!),
             isShort
           )
       );
@@ -88,7 +86,7 @@ class King extends Piece {
     ];
     const available = directions.flatMap((dir) =>
       this.getLegalDirectionalMoves(dir, 1)
-    );
+    )
 
     available.push(...this.getAvailableCastlingMoves());
 
