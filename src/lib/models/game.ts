@@ -159,11 +159,12 @@ export default class Game {
     return this.hasMoves && this.lastMove!.isCheck;
   }
 
-  fromParsedToken(pgn: ParseTree[]) {
+  fromParsedToken(pgn: ParseTree) {
     let castleMove: CompoundMove
     let castleType: string;
     let castlingKing: Piece
-    pgn[0].moves.forEach((token) => {
+    console.log(pgn)
+    pgn.moves.forEach((token) => {
       if (
         token.notation.notation === "O-O" ||
         token.notation.notation === "O-O-O"

@@ -36,7 +36,7 @@
         $game = new GameModel($game.eventBus);
   
         const pgn = event.target?.result as string
-        const parsedPgn = parsePgn(pgn) as ParseTree[]
+        const parsedPgn = parsePgn(pgn) as ParseTree
         $game.fromParsedToken(parsedPgn);
         
       };
