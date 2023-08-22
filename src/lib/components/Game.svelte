@@ -10,13 +10,12 @@
     displayPromotionDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
-  import type Move from "$lib/models/move";
-  import { capturedPiece, promotedPieceType, isUndoMove } from "$lib/store";
+  import { promotedPieceType, isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
 
   const gameContext = getGameContext();
-  const { game, moveList } = gameContext;
+  let { game, moveList } = gameContext;
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
@@ -108,7 +107,6 @@
   }
 
   function rotateBoard(_: BaseMove[]) {
-    console.log({ _ });
     if ($game.getActivePlayer() !== $game.whitePlayer) {
       rotate = true;
     } else {

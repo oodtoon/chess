@@ -1,8 +1,11 @@
 <script lang="ts">
   import { exportToPgn, copyPgn, parsePgn } from "$lib/io";
   import { getGameContext } from "$lib/context";
+  import type { PgnGame } from "@mliebelt/pgn-types";
+  import type { ParseTree } from "@mliebelt/pgn-parser";
   import GameModel from "$lib/models/game";
   import CopyIcon from "./CopyIcon.svelte";
+
 
   let copied = false;
 
@@ -29,19 +32,18 @@
     fileInput.addEventListener("change", (event) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-      
+
         $game = new GameModel($game.eventBus);
   
-        console.log(event.target.result)
-        const pgn = event.target?.result;
-        const parsedPgn = parsePgn(pgn);
+        const pgn = event.target?.result as string
+        const parsedPgn = parsePgn(pgn) as ParseTree[]
         $game.fromParsedToken(parsedPgn);
         
       };
-      reader.readAsText(event.target?.files[0]);
+      const files = (event.target as HTMLInputElement).files
+      reader.readAsText(files![0])
     });
   }
-  $: console.log({$moveList})
 </script>
 
 <div class="moves-list">

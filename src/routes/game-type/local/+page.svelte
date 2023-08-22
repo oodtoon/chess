@@ -38,7 +38,7 @@
   </section>
 
   <Game />
-  <MoveList {game}/>
+  <MoveList />
   <GameButtons />
 
 </div>

@@ -5,7 +5,9 @@ import { PIECE_NAME_MAPPING, Piece, type PieceName } from "./pieces/index.js";
 import type Move from "./move.js";
 import type EventBus from "$lib/event-bus.js";
 import { CompoundMove, type BaseMove } from "./move.js";
-import type { PgnGame, PgnReaderMove } from "@mliebelt/pgn-types";
+import type { PgnMove } from "@mliebelt/pgn-types";
+import type { ParseTree } from "@mliebelt/pgn-parser";
+
 
 type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
 type GameTerminationReason =
@@ -80,9 +82,9 @@ export default class Game {
 
     if (shouldCommitMove) {
       if (move instanceof CompoundMove) {
-        move.kingMove.initiatingPiece.hasMoved = true;
-        move.rookMove.initiatingPiece.hasMoved = true;
-        move.kingMove.initiatingPiece.onMove(move);
+        move.kingMove.initiatingPiece!.hasMoved = true;
+        move.rookMove.initiatingPiece!.hasMoved = true;
+        move.kingMove.initiatingPiece!.onMove(move);
       } else {
         move.initiatingPiece!.onMove(move);
       }
@@ -157,31 +159,35 @@ export default class Game {
     return this.hasMoves && this.lastMove!.isCheck;
   }
 
-  //THIS HAS CHANGED. THERE ARE UNUSED LINES MAKE UPDATES BASED ON GIT TO HAVE CORRECT INFO
-  fromParsedToken(pgn: PgnGame[]) {
+  fromParsedToken(pgn: ParseTree[]) {
+    let castleMove: CompoundMove
+    let castleType: string;
+    let castlingKing: Piece
     pgn[0].moves.forEach((token) => {
-      console.log(token.notation.notation);
-      if (token.notation.notation === "O-O") {
+      if (
+        token.notation.notation === "O-O" ||
+        token.notation.notation === "O-O-O"
+      ) {
+        if (token.notation.notation === "O-O") {
+          castleType = "O-O";
+        } else {
+          castleType = "O-O-O";
+        }
+
         if (token.turn === "w") {
-          const shortObj = { row: 0, file: 6 };
+          castlingKing = this.whitePlayer.livePieceMap.King[0];
         } else {
-          const blackKing = this.blackPlayer.livePieceMap.King[0];
-          const castleMove = this.getMoves(blackKing).find(
-            (m) => m.isCompoundMove
-          ) as CompoundMove;
-          this.doMove(castleMove);
+          castlingKing = this.blackPlayer.livePieceMap.King[0];
         }
-      } else if (token.notation.notation === "O-O-O") {
-        if (token.turn === "b") {
-          const longObj = { row: 0, file: 2 };
-        } else {
-          const longObjectBlack = { row: 7, file: 2 };
-        }
+        castleMove = this.getMoves(castlingKing).find(
+          (m) => m.isCompoundMove && m.toString() === castleType
+        ) as CompoundMove;
+
+        this.doMove(castleMove);
       } else {
         consumeToken(token, this);
       }
     });
-    console.log(this.board.debug());
   }
 
   terminate(options: GameTerminationOptions) {
@@ -211,7 +217,7 @@ export default class Game {
   }
 }
 
-const consumeToken = (token: PgnReaderMove, game: Game) => {
+const consumeToken = (token: PgnMove, game: Game) => {
   const row = parseInt(token.notation.row!) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);

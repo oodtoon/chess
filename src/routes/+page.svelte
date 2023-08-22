@@ -1,5 +1,4 @@
-<script>
-  import openDialog from '$lib/components/dialogs';
+<script lang="ts">
     import boardImg from '$lib/images/board.png';
 </script>
 

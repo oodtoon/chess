@@ -10,6 +10,6 @@
 <style>
     .icon {
     height: var(--element-size);
-    weight: var(--font-weight);
+    font-weight: var(--font-weight);
   }
 </style>

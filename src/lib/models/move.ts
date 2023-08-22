@@ -15,6 +15,9 @@ export abstract class BaseMove {
   abstract get file(): number;
   abstract get isCompoundMove(): boolean;
 
+  abstract get isCapture(): boolean
+  abstract get isPawnDoubleMove(): boolean;
+
   id = Symbol(crypto.randomUUID());
   constructor(readonly player: Player) {}
 
@@ -73,6 +76,7 @@ export abstract class BaseMove {
 }
 
 export default class Move extends BaseMove {
+
   static fromSquare(
     square: [number, number],
     initiatingPiece: Piece,
@@ -87,19 +91,19 @@ export default class Move extends BaseMove {
   constructor(
     readonly row: number,
     readonly file: number,
-    readonly initiatingPiece: Piece,
+    readonly initiatingPiece: Piece | null,
     readonly capturedPiece: Piece | null
   ) {
-    super(initiatingPiece.player);
+    super(initiatingPiece!.player);
 
-    this.sourceRow = initiatingPiece.row;
-    this.sourceFile = initiatingPiece.file;
+    this.sourceRow = initiatingPiece!.row;
+    this.sourceFile = initiatingPiece!.file;
   }
 
   get isPawnDoubleMove() {
     return (
-      this.initiatingPiece.name === "Pawn" &&
-      Math.abs(this.sourceRow - this.row) === 2
+      this.initiatingPiece!.name === "Pawn" &&
+      Math.abs(this.sourceRow! - this.row) === 2
     );
   }
 
@@ -112,11 +116,11 @@ export default class Move extends BaseMove {
   }
 
   toString() {
-    const letter = this.initiatingPiece.isPawn()
+    const letter = this.initiatingPiece!.isPawn()
       ? this.isCapture
         ? intToFile(this.sourceFile)
         : ""
-      : this.initiatingPiece.notation;
+      : this.initiatingPiece!.notation;
 
     const capture = this.isCapture ? "x" : "";
     const checkMate = this.isCheckmate ? "#" : "";
@@ -141,9 +145,9 @@ export class CompoundMove extends BaseMove {
 
   toString() {
     if (this.isShort) {
-      return "o-o";
+      return "O-O";
     } else {
-      return "o-o-o";
+      return "O-O-O";
     }
   }
 
@@ -165,5 +169,13 @@ export class CompoundMove extends BaseMove {
 
   get moves(): Move[] {
     return [this.kingMove, this.rookMove];
+  }
+
+  get isPawnDoubleMove() {
+    return false
+  }
+
+  get isCapture() {
+    return false
   }
 }

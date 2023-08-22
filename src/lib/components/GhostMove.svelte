@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type BaseMove from "$lib/models/move";
   import { createEventDispatcher } from "svelte";
 
   import { selectedPiece } from "../store"; 
+  import type { BaseMove } from "$lib/models/move";
+
   export let isCapturedPiece: boolean = false;
   export let move: BaseMove
 
