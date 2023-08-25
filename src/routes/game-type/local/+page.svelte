@@ -10,15 +10,21 @@
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
 
+  import { createRoom } from "$lib/client";
+  import { onMount } from "svelte";
+
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
 
   setGameContext(game);
 
   function getTurnText(game: GameModel) {
-    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`
+    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
-  
+
+  onMount(() => {
+    createRoom();
+  });
 </script>
 
 <svelte:head>
@@ -29,16 +35,14 @@
   <h2 class="turn" id="turn">{getTurnText(game)}</h2>
 
   <section class="capture-container">
-    <CapturePool color="White" capturedPieces={$capturedBlackPieces}/>
-    <CapturePool color="Black" capturedPieces={$capturedWhitePieces}/>
+    <CapturePool color="White" capturedPieces={$capturedBlackPieces} />
+    <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
   </section>
 
   <Game />
   <MoveList />
   <GameButtons />
-
 </div>
-
 
 <style>
   :root {
@@ -124,6 +128,5 @@
       display: block;
       margin: 0;
     }
-
   }
 </style>

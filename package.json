@@ -28,5 +28,8 @@
     "vite": "^4.0.0",
     "vitest": "^0.32.2"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "colyseus.js": "^0.15.13"
+  }
 }

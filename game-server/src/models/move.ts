@@ -1,15 +1,18 @@
 import { coordToAlgebraic, intToFile } from "../util.js";
-import type Piece from "./pieces/piece.js";
-import type Player from "./player.js";
+import { Piece } from "./pieces/index.js";
+import type { Player } from "./index";
+import { Schema, type } from "@colyseus/schema"
 
-export abstract class BaseMove {
+export abstract class BaseMove extends Schema {
   #isCheck: null | boolean = null;
   #isCheckmate: null | boolean = null;
-  initiatingPiece: Piece | null = null;
-  capturedPiece: Piece | null = null;
-  pieceToPromoteTo: Piece | null = null;
-  sourceRow: number | null = null;
-  sourceFile: number | null = null;
+
+  @type("number") sourceRow: number | null = null;
+  @type("number") sourceFile: number | null = null;
+
+  @type(Piece) initiatingPiece: Piece | null = null 
+  @type(Piece) capturedPiece: Piece | null = null;
+  @type(Piece) pieceToPromoteTo: Piece | null = null;
 
   abstract get row(): number;
   abstract get file(): number;
@@ -18,8 +21,10 @@ export abstract class BaseMove {
   abstract get isCapture(): boolean
   abstract get isPawnDoubleMove(): boolean;
 
-  id = Symbol(crypto.randomUUID());
-  constructor(readonly player: Player) {}
+
+  constructor(readonly player: Player) {
+    super()
+  }
 
   #doesMoveExposeCheck(targetPlayer: Player) {
     const { livePieces } = targetPlayer;
@@ -73,24 +78,6 @@ export abstract class BaseMove {
     }
     return this.row === 0;
   }
-
-  toString() {
-    const letter = this.initiatingPiece!.isPawn()
-      ? this.isCapture
-        ? intToFile(this.sourceFile!)
-        : ""
-      : this.initiatingPiece!.notation;
-
-    const capture = this.isCapture ? "x" : "";
-    const checkMate = this.isCheckmate ? "#" : "";
-    const check = this.isCheck && !this.isCheckmate ? "+" : "";
-    const promotion = this.pieceToPromoteTo
-      ? "=" + this.pieceToPromoteTo.notation
-      : "";
-
-    const square = coordToAlgebraic([this.row, this.file]);
-    return letter + capture + square + promotion + check + checkMate;
-  }
 }
 
 export default class Move extends BaseMove {
@@ -131,6 +118,24 @@ export default class Move extends BaseMove {
 
   get isCompoundMove() {
     return false;
+  }
+
+  toString() {
+    const letter = this.initiatingPiece!.isPawn()
+      ? this.isCapture
+        ? intToFile(this.sourceFile)
+        : ""
+      : this.initiatingPiece!.notation;
+
+    const capture = this.isCapture ? "x" : "";
+    const checkMate = this.isCheckmate ? "#" : "";
+    const check = this.isCheck && !this.isCheckmate ? "+" : "";
+    const promotion = this.pieceToPromoteTo
+      ? "=" + this.pieceToPromoteTo.notation
+      : "";
+
+    const square = coordToAlgebraic([this.row, this.file]);
+    return letter + capture + square + promotion + check + checkMate;
   }
 }
 

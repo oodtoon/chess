@@ -8,16 +8,14 @@ export default class EventBus {
   /**
    * Add an event listener.
    */
-  addEventListener(event: string, callback: () => void) {
-    console.log({ callback });
+  addEventListener(event: string, callback: EventListener) {
     this.bus.addEventListener(event, callback);
   }
 
   /**
    * Remove an event listener.
    */
-  removeEventListener(event: string, callback: () => void) {
-    console.log("ramove", { callback });
+  removeEventListener(event: string, callback: EventListener) {
     this.bus.removeEventListener(event, callback);
   }
 

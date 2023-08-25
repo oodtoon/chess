@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import EventBus from "$lib/event-bus";
   import CapturePool from "$lib/components/CapturePool.svelte";
   import Game from "$lib/components/Game.svelte";
@@ -9,16 +9,29 @@
   import { setGameContext } from "$lib/context";
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
-  import End from "$lib/components/dialogs/End.svelte";
-  import Promotion from "$lib/components/dialogs/Promotion.svelte";
-  import Undo from "$lib/components/dialogs/Undo.svelte";
-  import Review from "$lib/components/dialogs/Review.svelte";
+
+  import { createRoom } from "$lib/client";
+  import { onMount } from "svelte";
+  import type { BaseMove } from "$lib/models/move";
+  import type { Room } from "colyseus.js";
 
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
+  let room: Room
 
-  const ctx = setGameContext(game);
-  
+  setGameContext(game);
+
+  function getTurnText(game: GameModel) {
+    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
+  }
+
+  onMount(() => {
+    createRoom().then(r => room = r);
+  });
+
+  function handleMove(event: CustomEvent<{move: BaseMove}>) {
+    room.send("move", event.detail.move)
+  }
 </script>
 
 <svelte:head>
@@ -26,26 +39,16 @@
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">White's Turn</h2>
+  <h2 class="turn" id="turn">{getTurnText(game)}</h2>
 
   <section class="capture-container">
-    <CapturePool color="White" capturedPieces={$capturedBlackPieces}/>
-    <CapturePool color="Black" capturedPieces={$capturedWhitePieces}/>
+    <CapturePool color="White" capturedPieces={$capturedBlackPieces} />
+    <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
   </section>
 
-  <Game />
-  <MoveList {game}/>
-  <GameButtons {game}/>
-
-  <End {game}/>
-  <Promotion />
-  <Undo {game}/>
-  <Review {game}/>
-
-  <end-game-dialog class="end-game-dialog" />
-  <undo-dialog class="undo-dialog" />
-  <review-dialog class="review-dialog" />
-  <promotion-dialog class="promotion-dialog" />
+  <Game on:move={handleMove}/>
+  <MoveList />
+  <GameButtons />
 </div>
 
 <style>
@@ -78,54 +81,10 @@
     width: 100%;
   }
 
-  chess-board {
-    width: calc(var(--responsive-size) * 8);
-    height: calc(var(--responsive-size) * 8);
-    min-width: calc(var(--min-size) * 8);
-    min-height: calc(var(--min-size) * 8);
-    border: solid rgb(23, 23, 23) 5px;
-    display: flex;
-    flex-wrap: wrap-reverse;
-    margin: 3em auto;
-    box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
-    grid-area: board;
-    place-self: start;
-  }
-
-  .game-btns {
-    grid-area: btns;
-    display: block;
-  }
-
-  .moves-list {
-    grid-area: moves-list;
-    display: block;
-    border: 3px solid black;
-    background-color: aliceblue;
-    border-radius: 1em;
-    margin-top: 3em;
-    margin-bottom: auto;
-    width: 100%;
-  }
-  chess-piece {
-    width: var(--captured-piece-size);
-    height: var(--captured-piece-size);
-  }
-
   .turn {
     color: #49a6e9;
     grid-area: turn;
     place-self: center;
-  }
-
-  end-game-dialog,
-  undo-dialog,
-  review-dialog,
-  promotion-dialog {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
   }
 
   @media (min-width: 700px) {
@@ -151,33 +110,9 @@
       width: 100%;
     }
 
-    chess-board {
-      width: calc(var(--responsive-size) * 8);
-      height: calc(var(--responsive-size) * 8);
-      margin: auto;
-    }
-
-    #white-pieces {
-      min-height: 100px;
-    }
-
-    #black-pieces {
-      min-height: 100px;
-    }
-
-    .moves-list {
-      margin: auto;
-    }
-
     .turn {
       margin: auto;
       place-self: center;
-    }
-  }
-
-  @media (min-width: 775px) {
-    .moves-list {
-      margin-top: 2em;
     }
   }
 
@@ -196,24 +131,9 @@
         ". board  .";
     }
 
-    chess-board {
-      width: calc(var(--responsive-size) * 8);
-      height: calc(var(--responsive-size) * 8);
-      max-height: calc(88px * 8);
-      max-width: calc(88px * 8);
-      min-width: calc(75px * 8);
-      min-height: calc(75px * 8);
-      margin: 2em auto;
-    }
-
     .capture-container {
       display: block;
       margin: 0;
-    }
-
-    .moves-list {
-      justify-self: start;
-      width: 100%;
     }
   }
 </style>

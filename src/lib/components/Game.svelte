@@ -2,7 +2,7 @@
   import Board from "./Board.svelte";
   import ChessPiece from "./ChessPiece.svelte";
   import GhostMove from "./GhostMove.svelte";
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
   import {
@@ -16,6 +16,7 @@
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
+  const dispatch = createEventDispatcher()
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
@@ -76,10 +77,11 @@
     $isUndoMove = false;
   }
 
-  function handleMove() {
+  function handleMove(event: CustomEvent<BaseMove>) {
     const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
     updatePlayerTurnAndText(activePlayer);
+    dispatch("move", event.detail)
   }
 
   function checkForTerminalState(activePlayer: Player) {
