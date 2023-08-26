@@ -141,7 +141,7 @@ export default class Game {
   }
 
   doMove(move: BaseMove) {
-    this.stageMove(move);
+    this.stageMove(move, true);
     this.moves.push(move);
   }
 
@@ -164,31 +164,7 @@ export default class Game {
   }
 
   fromParsedToken(pgn: ParseTree) {
-    let castleMove: CompoundMove;
-    let castleType: string;
-    let castlingKing: Piece;
-    pgn.moves.forEach((token) => {
-      if (
-        token.notation.notation === "O-O" ||
-        token.notation.notation === "O-O-O"
-      ) {
-        castleType = token.notation.notation;
-
-        if (token.turn === "w") {
-          castlingKing = this.whitePlayer.livePieceMap.King[0];
-        } else {
-          castlingKing = this.blackPlayer.livePieceMap.King[0];
-        }
-        castleMove = this.getMoves(castlingKing).find(
-          (m) => m.isCompoundMove && m.toString() === castleType
-        ) as CompoundMove;
-
-        this.doMove(castleMove);
-      } else {
-        console.log(token);
-        consumeToken(token, this);
-      }
-    });
+    pgn.moves.forEach((token) => consumeToken(token, this));
   }
 
   terminate(options: GameTerminationOptions) {
@@ -218,7 +194,39 @@ export default class Game {
   }
 }
 
-const consumeToken = (token: PgnMove, game: Game) => {
+export const consumeToken = (token: PgnMove, game: Game) => {
+  if (
+    token.notation.notation === "O-O" ||
+    token.notation.notation === "O-O-O"
+  ) {
+    consumeCastleToken(token, game);
+  } else {
+    consumeStandardToken(token, game);
+  }
+};
+
+const consumeCastleToken = (token: PgnMove, game: Game) => {
+  let castleMove: CompoundMove;
+  let castleType: string;
+  let castlingKing: Piece;
+
+  castleType = token.notation.notation;
+
+  if (token.turn === "w") {
+    castlingKing = game.whitePlayer.livePieceMap.King[0];
+  } else {
+    castlingKing = game.blackPlayer.livePieceMap.King[0];
+  }
+  castleMove = game
+    .getMoves(castlingKing)
+    .find(
+      (m) => m.isCompoundMove && m.toString() === castleType
+    ) as CompoundMove;
+
+  game.doMove(castleMove);
+};
+
+const consumeStandardToken = (token: PgnMove, game: Game) => {
   const row = parseInt(token.notation.row!) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);
@@ -287,6 +295,7 @@ const movePiece = (
   file: number,
   promoteType: string | null
 ) => {
+  console.log("movepiece");
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
@@ -295,14 +304,11 @@ const movePiece = (
     game.doMove(pieceMove!);
 
     if (promoteType) {
-      const promotedPiece = pieceSelector[promoteType.slice(-1) as keyof typeof pieceSelector]
+      const promotedPiece =
+        pieceSelector[promoteType.slice(-1) as keyof typeof pieceSelector];
       // const newPiece = new PIECE_NAME_MAPPING[promotedPiece as PieceName]()
       // pieceMove!.pieceToPromoteTo = newPiece
-      promote(
-        pieceMove!,
-        promotedPiece,
-        true
-      );
+      promote(pieceMove!, promotedPiece, true);
     }
   }
 };

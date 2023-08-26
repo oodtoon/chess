@@ -1,8 +1,8 @@
 <script lang="ts">
   import EventBus from "$lib/event-bus";
   import CapturePool from "$lib/components/CapturePool.svelte";
-  import Game from "$lib/components/Game.svelte";
-  import GameModel from "$lib/models/game";
+  import OnlineGame from "$lib/components/OnlineGame.svelte";
+  import GameModel, { consumeToken } from "$lib/models/game";
 
   import GameButtons from "$lib/components/GameButtons.svelte";
   import MoveList from "$lib/components/MoveList.svelte";
@@ -14,39 +14,72 @@
   import { onMount } from "svelte";
   import type { BaseMove } from "$lib/models/move";
   import type { Room } from "colyseus.js";
+  import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
+  import type { ParseTree } from "@mliebelt/pgn-parser";
 
   const eventBus = new EventBus();
-  let game = new GameModel(eventBus);
-  let room: Room
+  let room: Room;
+  let team: string;
 
-  setGameContext(game);
+  const { game } = setGameContext(new GameModel(eventBus));
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
 
   onMount(() => {
-    createRoom().then(r => room = r);
+    setupRoom();
   });
 
-  function handleMove(event: CustomEvent<{move: BaseMove}>) {
-    room.send("move", event.detail.move)
+  async function setupRoom() {
+    room = await createRoom();
+    room.state.players.onAdd((player: any, sessionId: string) => {
+      console.log("player:", sessionId, player.color, "has joined");
+
+      if (sessionId === room.sessionId) {
+        team = player.color;
+      }
+    });
+
+    room.state.strMoves.onChange(() => {
+      updateGameState([...room.state.strMoves]);
+    });
+  }
+
+  function handleMove(event: CustomEvent<{ move: BaseMove }>) {
+    if (team === event.detail.move.player.color[0].toLowerCase()) {
+      const message = {
+        move: event.detail.move.toString(),
+        color: event.detail.move.player.color.charAt(0).toLowerCase(),
+      };
+      room.send("move", message);
+    }
+  }
+
+  function updateGameState(strMoves: string[]) {
+    const pgn = derivePgnFromMoveStrings(strMoves);
+    const parsedPgn = parsePgn(pgn);
+    const newMove = parsedPgn.moves.at(-1);
+    if (newMove?.turn !== team) {
+      consumeToken(newMove!, $game);
+    }
+    $game = $game;
   }
 </script>
 
 <svelte:head>
-  <title>Chess | Local</title>
+  <title>Chess | Online</title>
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">{getTurnText(game)}</h2>
+  <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
     <CapturePool color="White" capturedPieces={$capturedBlackPieces} />
     <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
   </section>
 
-  <Game on:move={handleMove}/>
+  <OnlineGame on:move={handleMove} bind:team />
   <MoveList />
   <GameButtons />
 </div>

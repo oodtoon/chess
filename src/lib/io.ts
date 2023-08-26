@@ -17,6 +17,17 @@ export function derivePgn(game: Game) {
   return movesPgn;
 }
 
+export function derivePgnFromMoveStrings(arr: string[]) {
+  let movesPgn = arr.reduce((acc: string, move: string, index: number) => {
+    if (index % 2 === 0) {
+      acc = acc + (Math.floor(index / 2) + 1) + "." + " ";
+    }
+    acc = acc + move.toString() + " ";
+    return acc;
+  }, "");
+  return movesPgn;
+}
+
 export function exportToPgn(game: Game) {
   const pgn = derivePgn(game);
   const anchor = document.createElement("a");
@@ -34,5 +45,5 @@ export function copyPgn(game: Game) {
 const parseTree: ParseTree[] = []
 
 export function parsePgn(pgn: string) {
-  return parse(pgn, {startRule: "pgn"});
+  return parse(pgn, {startRule: "pgn"}) as ParseTree;
 }

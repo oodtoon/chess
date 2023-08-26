@@ -13,15 +13,24 @@
   import { promotedPieceType, isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
+  import { derivePgnFromMoveStrings } from "$lib/io";
+
+  export let team: string;
+  $: teamColor = team === "w" ? "White" : "Black";
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher();
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
 
-  let rotate: boolean = false;
+  let rotate: boolean;
+  $: if (team === "w" || !team) {
+    rotate = false;
+  } else {
+    rotate = true;
+  }
 
   let turn: HTMLElement;
   let endGameDialog: HTMLDialogElement;
@@ -57,7 +66,13 @@
   });
 
   function handlePieceClick(piece: Piece) {
+    
+    if (teamColor !== piece.color) {
+      return
+    }
+
     if (piece.color !== $game.getActivePlayer().color) {
+      return;
     } else {
       if (selectedPiece === piece) {
         selectedPiece = null;
@@ -77,11 +92,11 @@
     $isUndoMove = false;
   }
 
-  function handleMove(event: CustomEvent<BaseMove>) {
+  async function handleMove(event: CustomEvent) {
     const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
     updatePlayerTurnAndText(activePlayer);
-    dispatch("move", event.detail)
+    dispatch("move", event.detail);
   }
 
   function checkForTerminalState(activePlayer: Player) {
@@ -108,39 +123,25 @@
     turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
-  function rotateBoard(_: BaseMove[]) {
-    if ($game.getActivePlayer() !== $game.whitePlayer) {
-      rotate = true;
-    } else {
-      rotate = false;
-    }
-  }
-
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
     if ($promotedPieceType) {
-      game = game 
+      game = game;
       $promotedPieceType = null;
     }
 
     const move = event.detail;
-    
 
     if (move.isPromotion) {
       const chosenPromotionPiece = await displayPromotionDialog(gameContext);
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
       $promotedPieceType = promotedPiece;
-      
-      $game.doMove(move);
-    } else {
-      $game.doMove(move);
-    }
-   
+    } 
+    
+    $game.doMove(move)
     selectedPiece = null;
     $game = $game;
   }
-
-  $: rotateBoard($moveList);
 </script>
 
 <Board {rotate} let:row let:file>

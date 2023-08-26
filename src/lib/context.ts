@@ -17,7 +17,7 @@ export const getGameContext = () => getContext<GameContext>(contextKey);
 export const setGameContext = (game: Game) => {
   const gameStore = writable(game);
 
-  setContext<GameContext>(contextKey, {
+  return setContext<GameContext>(contextKey, {
     game: gameStore,
     moveList: derived(gameStore, ($gameStore) => $gameStore.moves),
     capturedWhitePieces: derived(
