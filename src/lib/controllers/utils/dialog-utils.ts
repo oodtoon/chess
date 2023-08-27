@@ -1,12 +1,12 @@
 import openDialog from "$lib/components/dialogs";
 import End from "$lib/components/dialogs/End.svelte";
+import Join from "$lib/components/dialogs/Join.svelte";
 import Promotion from "$lib/components/dialogs/Promotion.svelte";
 import Review from "$lib/components/dialogs/Review.svelte";
 import Undo from "$lib/components/dialogs/Undo.svelte";
 import type { GameContext } from "$lib/context";
 
 import type Game from "$lib/models/game";
-import type { EndGameTitle } from "$lib/type";
 import { get } from "svelte/store";
 
 export async function displayEndGameDialog(gameContext: GameContext) {
@@ -59,3 +59,5 @@ export function closePromotionSelect() {
   ) as HTMLDialogElement;
   dialog!.close();
 }
+
+

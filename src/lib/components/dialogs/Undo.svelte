@@ -13,12 +13,6 @@
   let textareaRef: HTMLTextAreaElement
 
   function handleAccept() {
-    // const activePlayer = game.getActivePlayer();
-    // const reviewColor = activePlayer.color;
-    // const requestingColor = activePlayer.opponent.color;
-    // const msg = `${requestingColor} is requesting to undo the last move. ${reviewColor} do you accept their plea?`;
-    // displayReviewDialog(msg, true);
-
     close(true, textareaRef.value)
   }
 

@@ -2,7 +2,6 @@
   import type { GameContext } from "$lib/context";
   import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
-  import type { Piece } from "$lib/models/pieces";
 
   interface $$Events {
     close: CustomEvent<string>;

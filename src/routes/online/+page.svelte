@@ -10,12 +10,12 @@
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
 
-  import { createRoom } from "$lib/client";
+  import { createRoom, joinRoom } from "$lib/client";
   import { onMount } from "svelte";
   import type { BaseMove } from "$lib/models/move";
   import type { Room } from "colyseus.js";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
-  import type { ParseTree } from "@mliebelt/pgn-parser";
+  import Join from "$lib/components/dialogs/Join.svelte";
 
   const eventBus = new EventBus();
   let room: Room;
@@ -32,7 +32,7 @@
   });
 
   async function setupRoom() {
-    room = await createRoom();
+    room = await joinRoom();
     room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
@@ -73,6 +73,8 @@
 
 <div class="container">
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
+
+  <Join />
 
   <section class="capture-container">
     <CapturePool color="White" capturedPieces={$capturedBlackPieces} />

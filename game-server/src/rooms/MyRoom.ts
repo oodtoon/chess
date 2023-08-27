@@ -43,6 +43,7 @@ export class MyRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, options: any) {
+    console.log("I have arrived!", options)
     let type;
     const colors = ["w", "b"];
     if (this.state.players.size === 0) {

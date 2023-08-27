@@ -13,7 +13,7 @@
   import { promotedPieceType, isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
-  import { derivePgnFromMoveStrings } from "$lib/io";
+
 
   export let team: string;
   $: teamColor = team === "w" ? "White" : "Black";
