@@ -43,7 +43,7 @@ export class MyRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, options: any) {
-    console.log("I have arrived!", options)
+    console.log("I have arrived!", options);
     let type;
     const colors = ["w", "b"];
     if (this.state.players.size === 0) {
@@ -61,13 +61,24 @@ export class MyRoom extends Room<GameState> {
     this.state.players.set(client.sessionId, new PlayerMap(type));
   }
 
-  onLeave(client: Client, consented: boolean) {
-    console.log(
-      client.sessionId,
-      this.state.players.get(client.sessionId).color,
-      "left!"
-    );
-    this.state.players.delete(client.sessionId);
+  async onLeave(client: Client, consented: boolean) {
+    const player = this.state.players.get(client.sessionId);
+    console.log(client.sessionId, player.color, "left!");
+    player.connected = false;
+
+    try {
+      if (consented) {
+        console.log("consented leave")
+        throw new Error("consented leave");
+      }
+
+      await this.allowReconnection(client, 20);
+      console.log(client.sessionId, player.color, "reconnected!")
+      player.connected = true;
+    } catch (error) {
+      console.log("no reconnect", error)
+      this.state.players.delete(client.sessionId);
+    }
   }
 
   onDispose() {

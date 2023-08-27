@@ -1,5 +1,4 @@
-import { Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-
+import { Schema, type, ArraySchema, MapSchema } from "@colyseus/schema";
 
 export class PlayerMap extends Schema {
   constructor(color: string) {
@@ -8,12 +7,11 @@ export class PlayerMap extends Schema {
   }
 
   @type("string") color: string;
+  @type("boolean") connected = true;
 }
 
 export default class GameState extends Schema {
-
   @type({ array: "string" }) strMoves = new ArraySchema<string>();
 
-  @type({ map: PlayerMap }) players = new MapSchema<PlayerMap>()
+  @type({ map: PlayerMap }) players = new MapSchema<PlayerMap>();
 }
-

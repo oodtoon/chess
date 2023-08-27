@@ -47,6 +47,7 @@
     $room.state.strMoves.onChange(() => {
       updateGameState([...$room.state.strMoves]);
     });
+    
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {

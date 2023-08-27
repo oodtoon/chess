@@ -71,13 +71,10 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "board local" "board online" "board join";
+    grid-template-areas: "board local" "board online";
     gap: 1em;
   }
 
-  a {
-    cursor: pointer;
-  }
 
   .btn {
     font-size: 1.5rem;
@@ -87,6 +84,7 @@
     padding: 2em 0;
     display: flex;
     place-content: center;
+    cursor: pointer;
   }
 
   .board-btn {
@@ -110,25 +108,19 @@
     align-self: end;
   }
 
-  .join {
-    grid-area: join;
-    align-self: start;
-  }
-  .local,
-  .join {
+  .local {
     color: brown;
     border: 3px solid brown;
   }
 
-  .local:hover,
-  .join:hover {
+  .local:hover {
     color: white;
     background-color: brown;
   }
 
   .online {
     grid-area: online;
-    align-self: center;
+    align-self: start;
     color: #49a6e9;
     border: 3px solid #49a6e9;
   }
