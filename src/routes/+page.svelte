@@ -5,7 +5,6 @@
   import type { Room } from "colyseus.js";
 
   export let data;
-  console.log(data);
 
   let room: Room;
   let roomId: string;

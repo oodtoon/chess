@@ -10,7 +10,7 @@
     displayPromotionDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
-  import { promotedPieceType, isUndoMove } from "$lib/store";
+  import { isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
 
@@ -124,10 +124,6 @@
   }
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
-    if ($promotedPieceType) {
-      game = game;
-      $promotedPieceType = null;
-    }
 
     const move = event.detail;
 
@@ -135,7 +131,6 @@
       const chosenPromotionPiece = await displayPromotionDialog(gameContext);
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
-      $promotedPieceType = promotedPiece;
     } 
     
     $game.doMove(move)

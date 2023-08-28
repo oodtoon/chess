@@ -1,6 +1,5 @@
 import openDialog from "$lib/components/dialogs";
 import End from "$lib/components/dialogs/End.svelte";
-import Join from "$lib/components/dialogs/Join.svelte";
 import Promotion from "$lib/components/dialogs/Promotion.svelte";
 import Review from "$lib/components/dialogs/Review.svelte";
 import Undo from "$lib/components/dialogs/Undo.svelte";

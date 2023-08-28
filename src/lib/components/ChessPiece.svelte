@@ -1,19 +1,10 @@
 <script lang="ts">
   import type { Piece } from "$lib/models/pieces";
-  import { promotedPieceType } from "$lib/store";
-  
+
+
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;
-
-  $: pieceType =
-    $promotedPieceType &&
-    piece?.isPawn() &&
-    piece.row === $promotedPieceType.row &&
-    piece.file === $promotedPieceType.file
-      ? $promotedPieceType
-      : piece;
-
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -21,10 +12,10 @@
   class="piece"
   class:active
   class:captured
-  style:background-image="url({pieceType?.img})"
+  style:background-image="url({piece?.img})"
   on:click
 >
-  {pieceType?.icon}
+  {piece?.icon}
 </button>
 
 <style>

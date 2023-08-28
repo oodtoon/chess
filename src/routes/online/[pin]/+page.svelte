@@ -1,7 +1,7 @@
 <script lang="ts">
   import EventBus from "$lib/event-bus";
   import CapturePool from "$lib/components/CapturePool.svelte";
-  import OnlineGame from "$lib/components/OnlineGame.svelte";
+  // import OnlineGame from "$lib/components/OnlineGame.svelte";
   import GameModel, { consumeToken } from "$lib/models/game";
 
   import GameButtons from "$lib/components/GameButtons.svelte";
@@ -10,12 +10,11 @@
 
   import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
 
-  import { createRoom, joinPrivateRoom, joinRoom } from "$lib/client";
+  import { joinPrivateRoom } from "$lib/client";
   import { onMount } from "svelte";
   import type { BaseMove } from "$lib/models/move";
-  import type { Room } from "colyseus.js";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
-  import Join from "$lib/components/dialogs/Join.svelte";
+  import Game from "$lib/components/Game.svelte";
 
   export let data;
   const { room, team } = data;
@@ -43,6 +42,10 @@
         $team = player.color;
         console.log($team);
       }
+      if ($room.state.strMoves.length > 0) {
+        resetGameBoard([...$room.state.strMoves])
+      }
+
     });
     $room.state.strMoves.onChange(() => {
       updateGameState([...$room.state.strMoves]);
@@ -61,13 +64,25 @@
   }
 
   function updateGameState(strMoves: string[]) {
-    const pgn = derivePgnFromMoveStrings(strMoves);
-    const parsedPgn = parsePgn(pgn);
+    const parsedPgn = createPgn(strMoves)
     const newMove = parsedPgn.moves.at(-1);
     if (newMove?.turn !== $team) {
       consumeToken(newMove!, $game);
     }
     $game = $game;
+  }
+
+  function resetGameBoard(strMoves: string[]) {
+    const parsedPgn = createPgn(strMoves)
+    parsedPgn.moves.forEach(move => {
+      consumeToken(move, $game)
+    })
+    $game=$game
+  }
+
+  function createPgn(strMoves: string[]) {
+    const pgn = derivePgnFromMoveStrings(strMoves);
+    return parsePgn(pgn);
   }
 </script>
 
@@ -83,7 +98,8 @@
     <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
   </section>
 
-  <OnlineGame on:move={handleMove} team={$team} />
+  <!-- <OnlineGame on:move={handleMove} team={$team} /> -->
+  <Game on:move={handleMove} team={$team} isMultiPlayer={true}/>
   <MoveList />
   <GameButtons />
 </div>

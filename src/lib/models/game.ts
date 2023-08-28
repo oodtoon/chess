@@ -71,7 +71,14 @@ export default class Game {
     }
 
     for (const move of moves) {
-      const { row, file, initiatingPiece, capturedPiece } = move;
+      const {
+        row,
+        file,
+        initiatingPiece,
+        capturedPiece,
+        pieceToPromoteTo,
+        isPromotion,
+      } = move;
 
       if (capturedPiece) {
         const { row: capturedRow, file: capturedFile } = capturedPiece;
@@ -81,7 +88,12 @@ export default class Game {
       }
       const { row: initiatingRow, file: initiatingFile } = initiatingPiece!;
       this.board.set(initiatingRow, initiatingFile, null);
-      this.board.set(row, file, initiatingPiece);
+
+      if (isPromotion) {
+        this.board.set(row, file, pieceToPromoteTo);
+      } else {
+        this.board.set(row, file, initiatingPiece);
+      }
     }
 
     if (shouldCommitMove) {
@@ -301,14 +313,12 @@ const movePiece = (
       .getMoves(piece)
       .find((m) => m.row === row && m.file === file);
 
-    game.doMove(pieceMove!);
-
     if (promoteType) {
       const promotedPiece =
         pieceSelector[promoteType.slice(-1) as keyof typeof pieceSelector];
-      // const newPiece = new PIECE_NAME_MAPPING[promotedPiece as PieceName]()
-      // pieceMove!.pieceToPromoteTo = newPiece
-      promote(pieceMove!, promotedPiece, true);
+      pieceMove!.pieceToPromoteTo = promote(pieceMove!, promotedPiece, true);
     }
+
+    game.doMove(pieceMove!);
   }
 };

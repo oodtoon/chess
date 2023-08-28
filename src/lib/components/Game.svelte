@@ -10,13 +10,17 @@
     displayPromotionDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
-  import { promotedPieceType, isUndoMove } from "$lib/store";
+  import { isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
 
+  export let isMultiPlayer: boolean = false;
+  export let team: string = "w";
+  $: teamColor = team === "w" ? "White" : "Black";
+
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher();
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
@@ -31,6 +35,9 @@
 
   let whitePieces: HTMLElement;
   let blackPieces: HTMLElement;
+
+  let selectedPiece: Piece | null;
+  $: ghostMoves = selectedPiece ? $game.getMoves(selectedPiece) : [];
 
   onMount(() => {
     eventBus.addEventListener("move", handleMove);
@@ -57,6 +64,10 @@
   });
 
   function handlePieceClick(piece: Piece) {
+    if (isMultiPlayer && teamColor !== piece.color) {
+      return
+    }
+
     if (piece.color !== $game.getActivePlayer().color) {
     } else {
       if (selectedPiece === piece) {
@@ -67,8 +78,7 @@
     }
   }
 
-  let selectedPiece: Piece | null;
-  $: ghostMoves = selectedPiece ? $game.getMoves(selectedPiece) : [];
+
 
   $: if ($isUndoMove) {
     const activePlayer = $game.getActivePlayer();
@@ -81,7 +91,7 @@
     const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
     updatePlayerTurnAndText(activePlayer);
-    dispatch("move", event.detail)
+    dispatch("move", event.detail);
   }
 
   function checkForTerminalState(activePlayer: Player) {
@@ -117,30 +127,29 @@
   }
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
-    if ($promotedPieceType) {
-      game = game 
-      $promotedPieceType = null;
-    }
-
     const move = event.detail;
-    
 
     if (move.isPromotion) {
       const chosenPromotionPiece = await displayPromotionDialog(gameContext);
       const promotedPiece = promote(move, chosenPromotionPiece);
       move.pieceToPromoteTo = promotedPiece;
-      $promotedPieceType = promotedPiece;
-      
-      $game.doMove(move);
-    } else {
-      $game.doMove(move);
     }
-   
+
+    $game.doMove(move);
     selectedPiece = null;
     $game = $game;
   }
 
-  $: rotateBoard($moveList);
+  $: if (isMultiPlayer) {
+    if (team === "w") {
+      rotate = false;
+    } else {
+      rotate = true;
+    }
+  } else {
+    rotateBoard($moveList);
+  }
+
 </script>
 
 <Board {rotate} let:row let:file>
