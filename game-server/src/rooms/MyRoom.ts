@@ -45,16 +45,16 @@ export class MyRoom extends Room<GameState> {
   onJoin(client: Client, options: any) {
     console.log("I have arrived!", options);
     let type;
-    const colors = ["w", "b"];
+    const colors = ["White", "Black"];
     if (this.state.players.size === 0) {
       const colorIndex = Math.floor(Math.random() * colors.length);
       type = colors[colorIndex];
     } else if (this.state.players.size === 1) {
       this.state.players.forEach((value) => {
-        if (value.color === "w") {
-          type = "b";
+        if (value.color === "White") {
+          type = "Black";
         } else {
-          type = "w";
+          type = "White";
         }
       });
     }

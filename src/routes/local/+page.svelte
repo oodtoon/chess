@@ -8,15 +8,14 @@
   import MoveList from "$lib/components/MoveList.svelte";
   import { setGameContext } from "$lib/context";
 
-  import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
-
   import { createRoom } from "$lib/client";
   import { onMount } from "svelte";
 
   const eventBus = new EventBus();
   let game = new GameModel(eventBus);
 
-  setGameContext(game);
+  const gameContext = setGameContext(game);
+  let { game: gameCtx } = gameContext;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -35,8 +34,14 @@
   <h2 class="turn" id="turn">{getTurnText(game)}</h2>
 
   <section class="capture-container">
-    <CapturePool color="White" capturedPieces={$capturedBlackPieces} />
-    <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
+    <CapturePool
+      color="White"
+      capturedPieces={$gameCtx.blackPlayer.capturedPieces}
+    />
+    <CapturePool
+      color="Black"
+      capturedPieces={$gameCtx.whitePlayer.capturedPieces}
+    />
   </section>
 
   <Game />

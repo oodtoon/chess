@@ -7,8 +7,6 @@ import type { Piece } from "./models/pieces";
 export type GameContext = {
   game: Writable<Game>;
   moveList: Readable<BaseMove[]>;
-  capturedWhitePieces: Readable<Piece[] | null[]>;
-  capturedBlackPieces: Readable<Piece[] | null[]>;
   reset: () => void;
 };
 
@@ -20,15 +18,6 @@ export const setGameContext = (game: Game) => {
   return setContext<GameContext>(contextKey, {
     game: gameStore,
     moveList: derived(gameStore, ($gameStore) => $gameStore.moves),
-    capturedWhitePieces: derived(
-      gameStore,
-      ($gameStore) => $gameStore.whitePlayer.capturedPieces
-    ),
-    capturedBlackPieces: derived(
-      gameStore,
-      ($gameStore) => $gameStore.blackPlayer.capturedPieces
-    ),
-
     reset() {
       gameStore.update(($game) => {
         return new Game($game.eventBus);

@@ -15,8 +15,7 @@
   import type { BaseMove } from "$lib/models/move";
 
   export let isMultiPlayer: boolean = false;
-  export let team: string = "w";
-  $: teamColor = team === "w" ? "White" : "Black";
+  export let team: string = "White";
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
@@ -64,7 +63,7 @@
   });
 
   function handlePieceClick(piece: Piece) {
-    if (isMultiPlayer && teamColor !== piece.color) {
+    if (isMultiPlayer && team !== piece.color) {
       return
     }
 
@@ -141,7 +140,7 @@
   }
 
   $: if (isMultiPlayer) {
-    if (team === "w") {
+    if (team === "White") {
       rotate = false;
     } else {
       rotate = true;

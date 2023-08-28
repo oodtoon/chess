@@ -1,14 +1,11 @@
 <script lang="ts">
   import EventBus from "$lib/event-bus";
   import CapturePool from "$lib/components/CapturePool.svelte";
-  // import OnlineGame from "$lib/components/OnlineGame.svelte";
   import GameModel, { consumeToken } from "$lib/models/game";
 
   import GameButtons from "$lib/components/GameButtons.svelte";
   import MoveList from "$lib/components/MoveList.svelte";
   import { setGameContext } from "$lib/context";
-
-  import { capturedBlackPieces, capturedWhitePieces } from "$lib/store";
 
   import { joinPrivateRoom } from "$lib/client";
   import { onMount } from "svelte";
@@ -54,10 +51,10 @@
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
-    if ($team === event.detail.move.player.color[0].toLowerCase()) {
+    if ($team === event.detail.move.player.color) {
       const message = {
         move: event.detail.move.toString(),
-        color: event.detail.move.player.color.charAt(0).toLowerCase(),
+        color: event.detail.move.player.color,
       };
       $room.send("move", message);
     }
@@ -94,8 +91,8 @@
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
-    <CapturePool color="White" capturedPieces={$capturedBlackPieces} />
-    <CapturePool color="Black" capturedPieces={$capturedWhitePieces} />
+    <CapturePool color="White" capturedPieces={$game.blackPlayer.capturedPieces} />
+    <CapturePool color="Black" capturedPieces={$game.whitePlayer.capturedPieces} />
   </section>
 
   <!-- <OnlineGame on:move={handleMove} team={$team} /> -->
