@@ -9,36 +9,32 @@
   let room: Room;
   let roomId: string;
 
-  async function setUpRoom() {
-    room = await createRoom();
-    roomId = room.roomId
-    data.room.set(room)
+  async function setUpRoom(isMultiPlayer: boolean) {
+    if (isMultiPlayer) {
+      room = await createRoom();
+    } else {
+      room = await createLocalRoom();
+    }
+
+    roomId = room.roomId;
+    data.room.set(room);
   }
 
-  async function setUpLocalRoom() {
-    room = await createLocalRoom();
-    roomId = room.roomId
-    data.room.set(room)
-  }
+  async function createRoomPin(isMultiPlayer: boolean) {
+    let roomType = isMultiPlayer ? "online" : "local";
+    await setUpRoom(isMultiPlayer);
 
-  async function createRoomPin() {
-    await setUpRoom();
-    await navigator.clipboard.writeText(
-      `${window.location.origin}/online/${room.roomId}`
-    );
+    if (isMultiPlayer) {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/${roomType}/${room.roomId}`
+      );
 
-    window.alert(
-      "Room URL is saved to your clipboard. Share with a friend to play online!"
-    );
-    goto(`/online/${roomId}`);
-  }
+      window.alert(
+        "Room URL is saved to your clipboard. Share with a friend to play online!"
+      );
+    }
 
-  async function createLocalPin() {
-    await setUpLocalRoom();
-    await navigator.clipboard.writeText(
-      `${window.location.origin}/local/${room.roomId}`
-    );
-    goto(`/local/${roomId}`);
+    goto(`/${roomType}/${roomId}`);
   }
 </script>
 
@@ -46,12 +42,14 @@
   <h1>Welcome to some guy's chess website</h1>
 
   <div class="container">
-    <button on:click={createLocalPin} class="board-btn">
+    <button on:click={() => createRoomPin(false)} class="board-btn">
       <img src={boardImg} alt="chess board" class="board" />
     </button>
 
-    <button on:click={createLocalPin} class="btn local">Play On Same Computer</button>
-    <button on:click={createRoomPin} class="btn online"
+    <button on:click={() => createRoomPin(false)} class="btn local"
+      >Play On Same Computer</button
+    >
+    <button on:click={() => createRoomPin(true)} class="btn online"
       >Create Game To Share</button
     >
   </div>
