@@ -1,11 +1,11 @@
 <script lang="ts">
+  import Dots from "../Dots.svelte";
   import Dialog from "./Dialog.svelte";
-
 </script>
 
 <Dialog id="welcome" class="welcome-dialog">
   <h1 id="welcome-msg" class="msg">
-    Waiting on opponent...
+    Waiting on opponent<span class="dots"><Dots /></span>
   </h1>
 
   <div class="btn-container">
@@ -20,6 +20,12 @@
       "msg"
       "btns";
     justify-items: center;
+  }
+
+  .dots {
+    padding: 0;
+    position: relative;
+    top: .4em;
   }
 
   .msg {
@@ -50,9 +56,10 @@
     color: brown;
   }
 
-
   .decline:hover {
     color: white;
     background-color: brown;
   }
+
+
 </style>

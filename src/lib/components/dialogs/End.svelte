@@ -5,6 +5,7 @@
   import CopyIcon from "../CopyIcon.svelte";
   import { createEventDispatcher } from "svelte";
   import type { GameContext } from "$lib/context";
+  import Trophy from "../Trophy.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -13,6 +14,7 @@
   $: ({ game } = gameContext)
 
   let copied: boolean = false;
+  let winner: string
 
   const handlePlayAgain = () => {
     gameContext.reset();
@@ -38,10 +40,14 @@
 <Dialog class="end-dialog" on:submit={close}>
   <ExitButton/>
 
-  <h2 class="title" id="end-title">
+  <h1 class="title" id="end-title">
+
     <span class="reason">{$game.terminationReason}!</span>
-    <span class="result">{$game.resultText}</span>
-  </h2>
+    <span class="result">{$game.resultText}</span>    
+  </h1>
+
+  <div class="trophy"><Trophy winner={$game.result}/></div>
+
   <span class="btn-container">
     <button class="play-again-btn" on:click={handlePlayAgain}
       >play again!</button
@@ -64,6 +70,7 @@
     grid-template-areas:
       ". . exit"
       "title title title"
+      ". trophy ."
       "btn btn btn";
     background-color: white;
   }
@@ -127,4 +134,9 @@
     background-color: black;
   }
 
+  .trophy {
+    grid-area: trophy;
+    justify-self: center;
+    margin-top: -.8rem;
+  }
 </style>

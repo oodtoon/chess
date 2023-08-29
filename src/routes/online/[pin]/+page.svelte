@@ -12,7 +12,7 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
-  import Welcome from "$lib/components/dialogs/Welcome.svelte";
+  import Waiting from "$lib/components/dialogs/Waiting.svelte";
 
   export let data;
   let isRoomFull: boolean = false;
@@ -92,7 +92,7 @@
 
 <div class="container">
   {#if !isRoomFull}
-    <Welcome />
+    <Waiting />
   {/if}
 
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
