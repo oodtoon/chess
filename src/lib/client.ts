@@ -12,6 +12,15 @@ export async function createRoom() {
   return room;
 }
 
+export async function createLocalRoom() {
+  const room = (await client.create("local_room")) as Colyseus.Room
+
+  reconnectionToken.set(room.reconnectionToken)
+  console.log("local room", room, "created")
+  
+  return room
+}
+
 export async function joinRoom() {
   const room = (await client.join("my_room")) as Colyseus.Room;
   reconnectionToken.set(room.reconnectionToken);

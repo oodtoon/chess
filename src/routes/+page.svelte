@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { createRoom } from "$lib/client";
+  import { createLocalRoom, createRoom } from "$lib/client";
   import boardImg from "$lib/images/board.png";
   import type { Room } from "colyseus.js";
 
@@ -11,8 +11,14 @@
 
   async function setUpRoom() {
     room = await createRoom();
-    roomId = room.roomId;
-    data.room.set(room);
+    roomId = room.roomId
+    data.room.set(room)
+  }
+
+  async function setUpLocalRoom() {
+    room = await createLocalRoom();
+    roomId = room.roomId
+    data.room.set(room)
   }
 
   async function createRoomPin() {
@@ -26,17 +32,25 @@
     );
     goto(`/online/${roomId}`);
   }
+
+  async function createLocalPin() {
+    await setUpLocalRoom();
+    await navigator.clipboard.writeText(
+      `${window.location.origin}/local/${room.roomId}`
+    );
+    goto(`/local/${roomId}`);
+  }
 </script>
 
 <main>
   <h1>Welcome to some guy's chess website</h1>
 
   <div class="container">
-    <a href="/local" class="board-btn">
+    <button on:click={createLocalPin} class="board-btn">
       <img src={boardImg} alt="chess board" class="board" />
-    </a>
+    </button>
 
-    <a href="/local" class="btn local">Play On Same Computer</a>
+    <button on:click={createLocalPin} class="btn local">Play On Same Computer</button>
     <button on:click={createRoomPin} class="btn online"
       >Create Game To Share</button
     >
@@ -66,6 +80,10 @@
     color: white;
   }
 
+  button {
+    cursor: pointer;
+  }
+
   .container {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -73,7 +91,6 @@
     grid-template-areas: "board local" "board online";
     gap: 1em;
   }
-
 
   .btn {
     font-size: 1.5rem;
@@ -83,7 +100,6 @@
     padding: 2em 0;
     display: flex;
     place-content: center;
-    cursor: pointer;
   }
 
   .board-btn {

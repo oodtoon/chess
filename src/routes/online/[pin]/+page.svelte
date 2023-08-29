@@ -15,7 +15,7 @@
   import Welcome from "$lib/components/dialogs/Welcome.svelte";
 
   export let data;
-  let isRoomFull: boolean = false
+  let isRoomFull: boolean = false;
   const { room, team } = data;
 
   const eventBus = new EventBus();
@@ -44,10 +44,8 @@
         resetGameBoard([...$room.state.strMoves]);
       }
 
-      if ($room.state.players.size < 2) {
-        welcomeMessage = "Waiting for opponent...";
-      } else {
-        isRoomFull = true
+      if ($room.state.players.size === 2) {
+        isRoomFull = true;
       }
     });
     $room.state.strMoves.onChange(() => {
@@ -94,9 +92,9 @@
 
 <div class="container">
   {#if !isRoomFull}
-  <Welcome />
+    <Welcome />
   {/if}
-  
+
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
@@ -110,7 +108,6 @@
     />
   </section>
 
-  
   <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
   <MoveList />
   <GameButtons />

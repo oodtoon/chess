@@ -8,22 +8,74 @@
   import MoveList from "$lib/components/MoveList.svelte";
   import { setGameContext } from "$lib/context";
 
-  import { createRoom } from "$lib/client";
   import { onMount } from "svelte";
+  import type { BaseMove } from "$lib/models/move.js";
+
+  import { consumeToken } from "$lib/models/game";
+
+  import { derivePgnFromMoveStrings, parsePgn } from "$lib/io.js";
+  import { joinPrivateRoom } from "$lib/client.js";
+
+  export let data;
+  const { room, team } = data;
 
   const eventBus = new EventBus();
-  let game = new GameModel(eventBus);
-
-  const gameContext = setGameContext(game);
-  let { game: gameCtx } = gameContext;
+  const { game } = setGameContext(new GameModel(eventBus));
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
 
   onMount(() => {
-    createRoom();
+    setupRoom();
   });
+
+  async function setupRoom() {
+    if (!$room) {
+      $room = await joinPrivateRoom(data.pin);
+    }
+
+    $room.state.players.onAdd((player: any, sessionId: string) => {
+      console.log("player:", sessionId, player.color, "has joined");
+
+      if ($room.state.strMoves.length > 0) {
+        resetGameBoard([...$room.state.strMoves]);
+      }
+    });
+    $room.state.strMoves.onChange(() => {
+      updateGameState([...$room.state.strMoves]);
+    });
+  }
+
+  function handleMove(event: CustomEvent<{ move: BaseMove }>) {
+    const message = {
+      move: event.detail.move.toString(),
+      color: "Both"
+    };
+    $room.send("move", message);
+  }
+
+  function updateGameState(strMoves: string[]) {
+    const parsedPgn = createPgn(strMoves);
+    const newMove = parsedPgn.moves.at(-1);
+    if (newMove?.turn !== $team) {
+      consumeToken(newMove!, $game);
+    }
+    $game = $game;
+  }
+
+  function resetGameBoard(strMoves: string[]) {
+    const parsedPgn = createPgn(strMoves);
+    parsedPgn.moves.forEach((move) => {
+      consumeToken(move, $game);
+    });
+    $game = $game;
+  }
+
+  function createPgn(strMoves: string[]) {
+    const pgn = derivePgnFromMoveStrings(strMoves);
+    return parsePgn(pgn);
+  }
 </script>
 
 <svelte:head>
@@ -31,20 +83,20 @@
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">{getTurnText(game)}</h2>
+  <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
     <CapturePool
       color="White"
-      capturedPieces={$gameCtx.blackPlayer.capturedPieces}
+      capturedPieces={$game.blackPlayer.capturedPieces}
     />
     <CapturePool
       color="Black"
-      capturedPieces={$gameCtx.whitePlayer.capturedPieces}
+      capturedPieces={$game.whitePlayer.capturedPieces}
     />
   </section>
 
-  <Game />
+  <Game on:move={handleMove} />
   <MoveList />
   <GameButtons />
 </div>

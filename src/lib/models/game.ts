@@ -307,7 +307,6 @@ const movePiece = (
   file: number,
   promoteType: string | null
 ) => {
-  console.log("movepiece");
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
