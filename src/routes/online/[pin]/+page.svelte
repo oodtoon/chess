@@ -12,8 +12,10 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
+  import Welcome from "$lib/components/dialogs/Welcome.svelte";
 
   export let data;
+  let isRoomFull: boolean = false
   const { room, team } = data;
 
   const eventBus = new EventBus();
@@ -37,17 +39,20 @@
 
       if (sessionId === $room.sessionId) {
         $team = player.color;
-        console.log($team);
       }
       if ($room.state.strMoves.length > 0) {
-        resetGameBoard([...$room.state.strMoves])
+        resetGameBoard([...$room.state.strMoves]);
       }
 
+      if ($room.state.players.size < 2) {
+        welcomeMessage = "Waiting for opponent...";
+      } else {
+        isRoomFull = true
+      }
     });
     $room.state.strMoves.onChange(() => {
       updateGameState([...$room.state.strMoves]);
     });
-    
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
@@ -61,7 +66,7 @@
   }
 
   function updateGameState(strMoves: string[]) {
-    const parsedPgn = createPgn(strMoves)
+    const parsedPgn = createPgn(strMoves);
     const newMove = parsedPgn.moves.at(-1);
     if (newMove?.turn !== $team) {
       consumeToken(newMove!, $game);
@@ -70,11 +75,11 @@
   }
 
   function resetGameBoard(strMoves: string[]) {
-    const parsedPgn = createPgn(strMoves)
-    parsedPgn.moves.forEach(move => {
-      consumeToken(move, $game)
-    })
-    $game=$game
+    const parsedPgn = createPgn(strMoves);
+    parsedPgn.moves.forEach((move) => {
+      consumeToken(move, $game);
+    });
+    $game = $game;
   }
 
   function createPgn(strMoves: string[]) {
@@ -88,15 +93,25 @@
 </svelte:head>
 
 <div class="container">
+  {#if !isRoomFull}
+  <Welcome />
+  {/if}
+  
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
-    <CapturePool color="White" capturedPieces={$game.blackPlayer.capturedPieces} />
-    <CapturePool color="Black" capturedPieces={$game.whitePlayer.capturedPieces} />
+    <CapturePool
+      color="White"
+      capturedPieces={$game.blackPlayer.capturedPieces}
+    />
+    <CapturePool
+      color="Black"
+      capturedPieces={$game.whitePlayer.capturedPieces}
+    />
   </section>
 
-  <!-- <OnlineGame on:move={handleMove} team={$team} /> -->
-  <Game on:move={handleMove} team={$team} isMultiPlayer={true}/>
+  
+  <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
   <MoveList />
   <GameButtons />
 </div>
@@ -113,6 +128,11 @@
     user-select: none;
   }
 
+  .welcomeMessage {
+    color: white;
+    font-weight: 800;
+    font-size: xx-large;
+  }
   .container {
     display: grid;
     grid-template-columns: 1fr;
