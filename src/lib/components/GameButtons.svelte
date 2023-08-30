@@ -1,8 +1,8 @@
 <script lang="ts">
   import {
     displayEndGameDialog,
-    displayReviewDialog,
     displayUndoMoveDialog,
+    openWaitingDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import { getGameContext } from "$lib/context";
   import UndoIcon from "./UndoIcon.svelte";
@@ -10,19 +10,33 @@
   const gameContext = getGameContext();
   const { game } = gameContext;
 
+  export let isMultiPlayer: boolean;
+  export let data;
+  export let isAccepted: boolean;
+
+  const { room } = data;
+
   async function handleDraw() {
-    const activePlayer = $game.getActivePlayer();
-    const activeColor = activePlayer.color;
-    const opponentColor = activePlayer.opponent.color;
-    const drawMsg = `${activeColor} wishes to draw. ${opponentColor}, do you accept?`;
-    const { accepted } = await displayReviewDialog(drawMsg);
-    if (accepted) {
+    let drawMsg;
+
+    if (isMultiPlayer) {
+      let player = $room.state.players.get($room.sessionId).color;
+      const opposingPlayer = player === "White" ? "Black" : "White";
+      drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
+      $room.send("request", { type: "draw", title: drawMsg });
+      openWaitingDialog("waiting");
+    } else {
+      isAccepted = true;
+    }
+
+    if (isAccepted) {
       $game.terminate({
         result: "1/2-1/2",
         reason: "draw agreed",
       });
-      $game = $game;
       displayEndGameDialog(gameContext);
+      $game = $game;
+    } else {
     }
   }
 
@@ -35,8 +49,22 @@
     $game = $game;
   }
 
-  function handleUndo() {
-    displayUndoMoveDialog(gameContext);
+  async function handleUndo() {
+    if (isMultiPlayer) {
+      let playerColor = $room.state.players.get($room.sessionId).color;
+      const undoRequest = await displayUndoMoveDialog(playerColor);
+      $room.send("request", {
+        type: "undo",
+        title: undoRequest!.title,
+        message: undoRequest!.message,
+      });
+      openWaitingDialog("waiting");
+    } else {
+      game.update(($game) => {
+        $game.undoMove();
+        return $game;
+      });
+    }
   }
 </script>
 

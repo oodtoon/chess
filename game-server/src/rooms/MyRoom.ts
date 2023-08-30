@@ -40,6 +40,15 @@ export class MyRoom extends Room<GameState> {
           }
         }
       });
+
+      this.onMessage("request", (client, message) => {
+        this.broadcast("request", message, {except: client})
+      })
+
+      this.onMessage("response", (client, message) => {
+        console.log(message)
+        this.broadcast("response", message)
+      })
   }
 
   onJoin(client: Client, options: any) {

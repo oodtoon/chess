@@ -24,27 +24,21 @@ export function closeDialog(id: string) {
   dialogToClose!.close();
 }
 
-function getUndoTitle(game: Game) {
-  const activePlayer = game.getActivePlayer();
-  const reviewColor = activePlayer.color;
-  const requestingColor = activePlayer.opponent.color;
-  return `${requestingColor} is requesting to undo the last move. ${reviewColor} do you accept their plea?`;
+export function openWaitingDialog(id: string) {
+  const waitingDialog = document.getElementById(id) as HTMLDialogElement
+  waitingDialog!.showModal()
 }
 
-export async function displayUndoMoveDialog(gameContext: GameContext) {
+export function getUndoTitle(color: string) {
+  const opposingPlayer = color === "White" ? "Black" : "White";
+  return `${color} requests to undo last move. ${opposingPlayer}, do you accept their plea?`;
+}
+
+export async function displayUndoMoveDialog(color: string) {
   const { accepted, message } = await openDialog(Undo);
+  const title = getUndoTitle(color)
   if (accepted) {
-    const { game } = gameContext;
-
-    await openDialog(Review, {
-      title: getUndoTitle(get(game)),
-      content: message || "I made an oopsie",
-    });
-
-    game.update(($game) => {
-      $game.undoMove();
-      return $game;
-    });
+    return { title, message: message || "I made an oopsie"}
   }
 }
 
@@ -58,5 +52,4 @@ export function closePromotionSelect() {
   ) as HTMLDialogElement;
   dialog!.close();
 }
-
 

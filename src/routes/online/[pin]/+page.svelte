@@ -13,14 +13,21 @@
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
+  import {
+    closeDialog,
+    displayEndGameDialog,
+    displayReviewDialog,
+  } from "$lib/controllers/utils/dialog-utils.js";
 
   export let data;
   let isRoomFull: boolean = false;
+  let isAccepted: boolean;
   const { room, team } = data;
 
   const eventBus = new EventBus();
 
-  const { game } = setGameContext(new GameModel(eventBus));
+  const gameCtx = setGameContext(new GameModel(eventBus));
+  const { game } = gameCtx;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -29,6 +36,10 @@
   onMount(() => {
     setupRoom();
   });
+
+  $: if (isRoomFull) {
+    closeDialog("waiting");
+  }
 
   async function setupRoom() {
     if (!$room) {
@@ -50,6 +61,24 @@
     });
     $room.state.strMoves.onChange(() => {
       updateGameState([...$room.state.strMoves]);
+    });
+
+    $room.onMessage("request", (msg) => {
+      const { type, title, message } = msg;
+      if (message) {
+        handleReviewDialog(type, title, message);
+      } else {
+        handleReviewDialog(type, title);
+      }
+    });
+
+    $room.onMessage("response", (message) => {
+      if (message.type === "draw") {
+        $game.terminate({ result: message.result, reason: message.reason });
+        $game = $game;
+        displayEndGameDialog(gameCtx);
+      }
+      closeDialog("waiting");
     });
   }
 
@@ -84,6 +113,33 @@
     const pgn = derivePgnFromMoveStrings(strMoves);
     return parsePgn(pgn);
   }
+
+  async function handleReviewDialog(type: string, title: string, msg?: string) {
+    const accepted = await displayReviewDialog(title, msg);
+    isAccepted = accepted.accepted;
+    if (isAccepted) {
+      if (type === "draw") {
+        $room.send("response", {
+          type,
+          result: "1/2-1/2",
+          reason: "draw agreed",
+        });
+      } else {
+        $room.send("response", {
+          type,
+        });
+        game.update(($game) => {
+          $game.undoMove();
+          return $game;
+        });
+      }
+      $game = $game;
+    } else {
+      $room.send("response", {
+        type: "close",
+      });
+    }
+  }
 </script>
 
 <svelte:head>
@@ -91,9 +147,7 @@
 </svelte:head>
 
 <div class="container">
-  {#if !isRoomFull}
-    <Waiting />
-  {/if}
+  <Waiting {isRoomFull} />
 
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
@@ -110,7 +164,7 @@
 
   <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
   <MoveList />
-  <GameButtons />
+  <GameButtons {data} isMultiPlayer={true} {isAccepted} />
 </div>
 
 <style>
