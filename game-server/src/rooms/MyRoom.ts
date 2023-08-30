@@ -43,15 +43,7 @@ export class MyRoom extends Room<GameState> {
 
     this.onMessage("undoMove", () => {
       this.state.strMoves.pop();
-      const undoState = [...this.state.strMoves];
-      const pgn = formatAsPgnString(undoState);
-      console.log(undoState)
 
-      try {
-        parsePgn(pgn);
-      } catch (e) {
-        console.log("unable to undo")
-      }
     });
 
     this.onMessage("request", (client, message) => {
