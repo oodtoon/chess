@@ -4,27 +4,27 @@
 
   interface $$Events {
     close: CustomEvent<{
-      accepted: boolean
-      message: string
-    }>
+      accepted: boolean;
+      message: string;
+    }>;
   }
 
-  const dispatch = createEventDispatcher()
-  let textareaRef: HTMLTextAreaElement
+  const dispatch = createEventDispatcher();
+  let textareaRef: HTMLTextAreaElement;
 
   function handleAccept() {
-    close(true, textareaRef.value)
+    close(true, textareaRef.value);
   }
 
   function handleDecline() {
-    close(false, "")
+    close(false, "");
   }
 
   function close(accepted: boolean, message: string) {
     dispatch("close", {
       accepted,
-      message
-    })
+      message,
+    });
   }
 </script>
 
@@ -34,7 +34,7 @@
   </h2>
   <section class="input">
     <label
-      >Message to opponent:
+      ><span class="label">Message to opponent:</span>
       <textarea bind:this={textareaRef} />
     </label>
   </section>
@@ -56,11 +56,16 @@
   :global(#undo-dialog > form) {
     display: grid;
     grid-template-areas:
-      "title title"
-      "input btn";
+      "title"
+      "input"
+      "btn";
     background-color: white;
   }
 
+  textarea {
+    border-radius: 4px;
+    border: 1px solid black;
+  }
   .title {
     grid-area: title;
     place-self: center;
@@ -68,8 +73,14 @@
 
   .input {
     grid-area: input;
+    align-self: start;
+    justify-self: center;
   }
 
+  .label {
+    position: relative;
+    top: -1.5em;
+  }
   .btn-container {
     grid-area: btn;
     justify-self: center;

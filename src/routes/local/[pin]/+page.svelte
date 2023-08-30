@@ -22,8 +22,6 @@
   const eventBus = new EventBus();
   const { game } = setGameContext(new GameModel(eventBus));
 
-
-
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
@@ -100,7 +98,7 @@
 
   <Game on:move={handleMove} />
   <MoveList />
-  <GameButtons {data} isMultiPlayer={false}/>
+  <GameButtons {data} isMultiPlayer={false} isAccepted={null}/>
 </div>
 
 <style>

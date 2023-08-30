@@ -12,9 +12,9 @@
 
   export let isMultiPlayer: boolean;
   export let data;
-  export let isAccepted: boolean;
+  export let isAccepted: boolean | null;
 
-  const { room } = data;
+  const { room, team } = data;
 
   async function handleDraw() {
     let drawMsg;
@@ -36,8 +36,7 @@
       });
       displayEndGameDialog(gameContext);
       $game = $game;
-    } else {
-    }
+    } 
   }
 
   function handleResign() {
@@ -51,14 +50,16 @@
 
   async function handleUndo() {
     if (isMultiPlayer) {
-      let playerColor = $room.state.players.get($room.sessionId).color;
-      const undoRequest = await displayUndoMoveDialog(playerColor);
-      $room.send("request", {
-        type: "undo",
-        title: undoRequest!.title,
-        message: undoRequest!.message,
-      });
-      openWaitingDialog("waiting");
+      if ($game.getActivePlayer().color !== $team) {
+        let playerColor = $room.state.players.get($room.sessionId).color;
+        const undoRequest = await displayUndoMoveDialog(playerColor);
+        $room.send("request", {
+          type: "undo",
+          title: undoRequest!.title,
+          content: undoRequest!.content,
+        });
+        openWaitingDialog("waiting");
+      }
     } else {
       game.update(($game) => {
         $game.undoMove();

@@ -6,8 +6,6 @@ export const selectedPiece = writable<Piece | null>();
 
 export const capturedPiece = writable<Piece>();
 
-export const isUndoMove = writable<boolean>(false);
-
 export const moveList = writable<Move[]>([]);
 
 export const ghostMoves = derived(selectedPiece, ($selectedPiece) => {

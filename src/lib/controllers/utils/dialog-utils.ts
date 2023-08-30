@@ -5,9 +5,6 @@ import Review from "$lib/components/dialogs/Review.svelte";
 import Undo from "$lib/components/dialogs/Undo.svelte";
 import type { GameContext } from "$lib/context";
 
-import type Game from "$lib/models/game";
-import { get } from "svelte/store";
-
 export async function displayEndGameDialog(gameContext: GameContext) {
   await openDialog(End, { gameContext });
 }
@@ -25,20 +22,24 @@ export function closeDialog(id: string) {
 }
 
 export function openWaitingDialog(id: string) {
-  const waitingDialog = document.getElementById(id) as HTMLDialogElement
-  waitingDialog!.showModal()
+  const waitingDialog = document.getElementById(id) as HTMLDialogElement;
+  waitingDialog!.showModal();
 }
 
 export function getUndoTitle(color: string) {
   const opposingPlayer = color === "White" ? "Black" : "White";
-  return `${color} requests to undo last move. ${opposingPlayer}, do you accept their plea?`;
+  return (
+    `${color} requests to undo last move.` +
+    "\n" +
+    `${opposingPlayer}, do you accept their plea?`
+  );
 }
 
 export async function displayUndoMoveDialog(color: string) {
   const { accepted, message } = await openDialog(Undo);
-  const title = getUndoTitle(color)
+  const title = getUndoTitle(color);
   if (accepted) {
-    return { title, message: message || "I made an oopsie"}
+    return { title, content: message || "I made an oopsie" };
   }
 }
 
@@ -52,4 +53,3 @@ export function closePromotionSelect() {
   ) as HTMLDialogElement;
   dialog!.close();
 }
-

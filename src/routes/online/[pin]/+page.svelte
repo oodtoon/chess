@@ -18,10 +18,12 @@
     displayEndGameDialog,
     displayReviewDialog,
   } from "$lib/controllers/utils/dialog-utils.js";
+  import type { Request, Response } from "$lib/type.js";
 
   export let data;
   let isRoomFull: boolean = false;
   let isAccepted: boolean;
+  let oldMovesLength: number = 0;
   const { room, team } = data;
 
   const eventBus = new EventBus();
@@ -52,33 +54,46 @@
         $team = player.color;
       }
       if ($room.state.strMoves.length > 0) {
-        resetGameBoard([...$room.state.strMoves]);
+        setAllPieces([...$room.state.strMoves]);
       }
 
       if ($room.state.players.size === 2) {
         isRoomFull = true;
       }
     });
+
     $room.state.strMoves.onChange(() => {
-      updateGameState([...$room.state.strMoves]);
+      if (
+        oldMovesLength > $room.state.strMoves.length &&
+        $room.state.strMoves.length !== 0
+      ) {
+        game.update(($game) => {
+          $game.undoMove();
+          return $game;
+        });
+        setAllPieces([...$room.state.strMoves]);
+      } else {
+        updateGameState([...$room.state.strMoves]);
+      }
+      oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("request", (msg) => {
-      const { type, title, message } = msg;
-      if (message) {
-        handleReviewDialog(type, title, message);
+    $room.onMessage("request", (message: Request) => {
+      const { type, title, content } = message;
+      if (content) {
+        handleReviewDialog(type, title, content);
       } else {
         handleReviewDialog(type, title);
       }
     });
 
-    $room.onMessage("response", (message) => {
+    $room.onMessage("response", (message: Response) => {
       if (message.type === "draw") {
         $game.terminate({ result: message.result, reason: message.reason });
-        $game = $game;
         displayEndGameDialog(gameCtx);
       }
       closeDialog("waiting");
+      $game=$game
     });
   }
 
@@ -101,7 +116,7 @@
     $game = $game;
   }
 
-  function resetGameBoard(strMoves: string[]) {
+  function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     parsedPgn.moves.forEach((move) => {
       consumeToken(move, $game);
@@ -128,10 +143,7 @@
         $room.send("response", {
           type,
         });
-        game.update(($game) => {
-          $game.undoMove();
-          return $game;
-        });
+        $room.send("undoMove");
       }
       $game = $game;
     } else {
@@ -177,12 +189,6 @@
 
   * {
     user-select: none;
-  }
-
-  .welcomeMessage {
-    color: white;
-    font-weight: 800;
-    font-size: xx-large;
   }
   .container {
     display: grid;
