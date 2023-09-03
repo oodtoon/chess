@@ -11,30 +11,20 @@ export class LocalRoom extends Room<GameState> {
 
     this.onMessage("move", (client, message) => {
       if (message) {
-        console.log(
-          message.color,
-          this.state.players.get(client.sessionId).color
-        );
-
         // if (message.shouldCommit) {
         //   return;
         // }
 
-        if (message.color === "Both") {
-          const nextState = [...this.state.strMoves, message.move];
-          console.log(nextState);
-          const pgn = formatAsPgnString(nextState);
+        const nextState = [...this.state.strMoves, message.move];
+        console.log(nextState);
+        const pgn = formatAsPgnString(nextState);
 
-          try {
-            parsePgn(pgn);
-            this.state.strMoves.push(message.move);
-          } catch (e) {
-            message.send(client, "error", e);
-            console.log(`${client} sent invalid move`);
-          }
-        } else {
-          this.send(client, "warning", { message: "not your turn" });
-          console.log("not your turn!");
+        try {
+          parsePgn(pgn);
+          this.state.strMoves.push(message.move);
+        } catch (e) {
+          message.send(client, "error", e);
+          console.log(`${client} sent invalid move`);
         }
       }
     });

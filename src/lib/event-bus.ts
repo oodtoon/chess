@@ -1,3 +1,4 @@
+type CustomEventListener<T> = (event: CustomEvent<T>) => void
 export default class EventBus {
   constructor() {
     this.bus = document.createElement("fakeelement");
@@ -8,15 +9,15 @@ export default class EventBus {
   /**
    * Add an event listener.
    */
-  addEventListener(event: string, callback: EventListener) {
-    this.bus.addEventListener(event, callback);
+  addEventListener<T>(event: string, callback: CustomEventListener<T>) {
+    this.bus.addEventListener(event, callback as EventListener);
   }
 
   /**
    * Remove an event listener.
    */
-  removeEventListener(event: string, callback: EventListener) {
-    this.bus.removeEventListener(event, callback);
+  removeEventListener<T>(event: string, callback: CustomEventListener<T>) {
+    this.bus.removeEventListener(event, callback as EventListener);
   }
 
   /**

@@ -1,8 +1,20 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import Dots from "../Dots.svelte";
   import Dialog from "./Dialog.svelte";
+  import { goto } from "$app/navigation";
 
-  export let isRoomFull: boolean
+  export let promise: Promise<void>;
+  export let displayDeclineButton = false;
+
+  const dispatch = createEventDispatcher();
+
+  promise.then(() => dispatch("close"));
+
+  function handleLeave() {
+    dispatch("close")
+    goto("/")
+  }
 </script>
 
 <Dialog id="waiting" class="waiting-dialog">
@@ -10,10 +22,10 @@
     Waiting on opponent<span class="dots"><Dots /></span>
   </h1>
 
-  {#if !isRoomFull}
-  <div class="btn-container">
-    <a class="decline btn" href="/">Leave</a>
-  </div>
+  {#if displayDeclineButton}
+    <div class="btn-container">
+      <button class="leave btn" on:click={handleLeave}>Leave</button>
+    </div>
   {/if}
 </Dialog>
 
@@ -29,7 +41,7 @@
   .dots {
     padding: 0;
     position: relative;
-    top: .4em;
+    top: 0.4em;
   }
 
   .msg {
@@ -54,16 +66,14 @@
     box-shadow: 0.2em 0.2em 0.2em black;
   }
 
-  .decline {
+  .leave {
     text-decoration: none;
     border: 3px solid brown;
     color: brown;
   }
 
-  .decline:hover {
+  .leave:hover {
     color: white;
     background-color: brown;
   }
-
-
 </style>

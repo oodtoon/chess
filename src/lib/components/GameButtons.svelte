@@ -1,71 +1,27 @@
 <script lang="ts">
   import {
     displayEndGameDialog,
-    displayUndoMoveDialog,
-    openWaitingDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import { getGameContext } from "$lib/context";
   import UndoIcon from "./UndoIcon.svelte";
 
+  import { createEventDispatcher } from "svelte";
+
   const gameContext = getGameContext();
   const { game } = gameContext;
 
-  export let isMultiPlayer: boolean;
-  export let data;
-  export let isAccepted: boolean | null;
-
-  const { room, team } = data;
+  const dispatch = createEventDispatcher();
 
   async function handleDraw() {
-    let drawMsg;
-
-    if (isMultiPlayer) {
-      let player = $room.state.players.get($room.sessionId).color;
-      const opposingPlayer = player === "White" ? "Black" : "White";
-      drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
-      $room.send("request", { type: "draw", title: drawMsg });
-      openWaitingDialog("waiting");
-    } else {
-      isAccepted = true;
-    }
-
-    if (isAccepted) {
-      $game.terminate({
-        result: "1/2-1/2",
-        reason: "draw agreed",
-      });
-      displayEndGameDialog(gameContext);
-      $game = $game;
-    } 
+    dispatch("draw");
   }
 
   function handleResign() {
-    $game.terminate({
-      result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
-      reason: "resignation",
-    });
-    displayEndGameDialog(gameContext);
-    $game = $game;
+    dispatch("resign", {accepted: true})
   }
 
   async function handleUndo() {
-    if (isMultiPlayer) {
-      if ($game.getActivePlayer().color !== $team) {
-        let playerColor = $room.state.players.get($room.sessionId).color;
-        const undoRequest = await displayUndoMoveDialog(playerColor);
-        $room.send("request", {
-          type: "undo",
-          title: undoRequest!.title,
-          content: undoRequest!.content,
-        });
-        openWaitingDialog("waiting");
-      }
-    } else {
-      game.update(($game) => {
-        $game.undoMove();
-        return $game;
-      });
-    }
+    dispatch("undo");
   }
 </script>
 
@@ -75,11 +31,12 @@
     <button class="resign" type="button" on:click={handleResign}>Resign</button>
   </section>
   <section class="btns-container">
-    <button class="undo" type="button" on:click={handleUndo}
-      >Undo Move <span>
+    <button class="undo" type="button" on:click={handleUndo}>
+      Undo Move
+      <span>
         <UndoIcon />
-      </span></button
-    >
+      </span>
+    </button>
   </section>
 </div>
 

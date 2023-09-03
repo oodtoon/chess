@@ -11,14 +11,14 @@
 
   async function setUpRoom() {
     room = await createRoom();
-    roomId = room.roomId
-    data.room.set(room)
+    roomId = room.roomId;
+    data.room.set(room);
   }
 
   async function setUpLocalRoom() {
     room = await createLocalRoom();
-    roomId = room.roomId
-    data.room.set(room)
+    roomId = room.roomId;
+    data.room.set(room);
   }
 
   async function createRoomPin() {
@@ -50,7 +50,9 @@
       <img src={boardImg} alt="chess board" class="board" />
     </button>
 
-    <button on:click={createLocalPin} class="btn local">Play On Same Computer</button>
+    <button on:click={createLocalPin} class="btn local"
+      >Play On Same Computer</button
+    >
     <button on:click={createRoomPin} class="btn online"
       >Create Game To Share</button
     >
@@ -80,6 +82,7 @@
     color: white;
   }
 
+  a,
   button {
     cursor: pointer;
   }

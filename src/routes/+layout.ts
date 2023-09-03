@@ -7,6 +7,6 @@ export const ssr = false;
 export function load() {
   return {
     room: writable<Room>(),
-    team: writable<"w" | "b">(),
+    team: writable<"White" | "Black">(),
   };
 }

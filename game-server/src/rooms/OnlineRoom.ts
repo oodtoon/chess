@@ -3,7 +3,7 @@ import GameState from "../models/game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { PlayerMap } from "../models/game-state";
 
-export class MyRoom extends Room<GameState> {
+export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
 
   onCreate() {
@@ -43,16 +43,27 @@ export class MyRoom extends Room<GameState> {
 
     this.onMessage("undoMove", () => {
       this.state.strMoves.pop();
-
     });
 
     this.onMessage("request", (client, message) => {
-      this.broadcast("request", message, { except: client });
+      const other = this.getOtherClient(client);
+      this.send(other, "request", message);
     });
 
     this.onMessage("response", (client, message) => {
-      console.log(message);
       this.broadcast("response", message);
+    });
+
+    this.onMessage("resign", (client, message) => {
+      const resignResult =
+        this.state.players.get(client.sessionId).color === "White"
+          ? "0-1"
+          : "1-0";
+      const resignMsg = {
+        result: resignResult,
+        reason: "resignation",
+      };
+      this.broadcast("resign", resignMsg);
     });
   }
 
@@ -93,6 +104,12 @@ export class MyRoom extends Room<GameState> {
       console.log("no reconnect", error);
       this.state.players.delete(client.sessionId);
     }
+  }
+
+  private getOtherClient(client: Client) {
+    const currentIndex = this.clients.indexOf(client);
+    const otherIndex = +!currentIndex;
+    return this.clients[otherIndex];
   }
 
   onDispose() {

@@ -12,17 +12,15 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
-  import Waiting from "$lib/components/dialogs/Waiting.svelte";
   import {
-    closeDialog,
     displayEndGameDialog,
     displayReviewDialog,
+    displayUndoMoveDialog,
+    displayWaitingDialog,
   } from "$lib/controllers/utils/dialog-utils.js";
   import type { Request, Response } from "$lib/type.js";
 
   export let data;
-  let isRoomFull: boolean = false;
-  let isAccepted: boolean;
   let oldMovesLength: number = 0;
   const { room, team } = data;
 
@@ -39,14 +37,12 @@
     setupRoom();
   });
 
-  $: if (isRoomFull) {
-    closeDialog("waiting");
-  }
-
   async function setupRoom() {
     if (!$room) {
       $room = await joinPrivateRoom(data.pin);
     }
+    let stopWaiting: () => void;
+
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
@@ -56,9 +52,15 @@
       if ($room.state.strMoves.length > 0) {
         setAllPieces([...$room.state.strMoves]);
       }
-
-      if ($room.state.players.size === 2) {
-        isRoomFull = true;
+      if ($room.state.players.size === 1) {
+        displayWaitingDialog(
+          new Promise((resolve) => {
+            stopWaiting = resolve;
+          }),
+          true
+        );
+      } else {
+        stopWaiting?.();
       }
     });
 
@@ -78,22 +80,20 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("request", (message: Request) => {
+    $room.onMessage("request", async (message: Request) => {
       const { type, title, content } = message;
-      if (content) {
-        handleReviewDialog(type, title, content);
-      } else {
-        handleReviewDialog(type, title);
-      }
+      const { accepted } = await displayReviewDialog(title, content);
+      sendResponse(type, accepted);
     });
 
-    $room.onMessage("response", (message: Response) => {
-      if (message.type === "draw") {
-        $game.terminate({ result: message.result, reason: message.reason });
-        displayEndGameDialog(gameCtx);
-      }
-      closeDialog("waiting");
-      $game=$game
+    $room.onMessage("resign", (message: Response) => {
+      const { result, reason } = message;
+      $game.terminate({
+        result,
+        reason,
+      });
+      displayEndGameDialog(gameCtx);
+      $game = $game;
     });
   }
 
@@ -110,7 +110,7 @@
   function updateGameState(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     const newMove = parsedPgn.moves.at(-1);
-    if (newMove?.turn !== $team) {
+    if (newMove?.turn !== $team?.[0].toLowerCase()) {
       consumeToken(newMove!, $game);
     }
     $game = $game;
@@ -118,9 +118,7 @@
 
   function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
-    parsedPgn.moves.forEach((move) => {
-      consumeToken(move, $game);
-    });
+    $game.fromParsedToken(parsedPgn);
     $game = $game;
   }
 
@@ -129,27 +127,76 @@
     return parsePgn(pgn);
   }
 
-  async function handleReviewDialog(type: string, title: string, msg?: string) {
-    const accepted = await displayReviewDialog(title, msg);
-    isAccepted = accepted.accepted;
-    if (isAccepted) {
-      if (type === "draw") {
-        $room.send("response", {
-          type,
-          result: "1/2-1/2",
-          reason: "draw agreed",
-        });
-      } else {
-        $room.send("response", {
-          type,
-        });
+  async function sendResponse(type: string, accepted: boolean) {
+    if (accepted) {
+      if (type === "undoMove") {
         $room.send("undoMove");
+      } else if (type === "draw") {
+        drawGame(type);
       }
+
+      $room.send("response", {
+        type,
+      });
+
       $game = $game;
     } else {
       $room.send("response", {
         type: "close",
       });
+    }
+  }
+
+  function drawGame(type: string) {
+    $game.terminate({
+      result: "1/2-1/2",
+      reason: "draw agreed",
+    });
+
+    displayEndGameDialog(gameCtx);
+    $game = $game;
+  }
+
+  function handleDraw() {
+    let drawMsg;
+
+    let player = $room.state.players.get($room.sessionId).color;
+    const opposingPlayer = player === "White" ? "Black" : "White";
+    drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
+    $room.send("request", { type: "draw", title: drawMsg });
+
+    displayWaitingDialog(
+      new Promise((resolve) => {
+        $room.onMessage("response", (message: Response) => {
+          resolve();
+          if (message.type === "draw") {
+            drawGame(message.type);
+          }
+        });
+      })
+    );
+  }
+
+  function handleResign() {
+    $room.send("resign", {
+      type: "resign",
+    });
+  }
+
+  async function handleUndo() {
+    if ($game.getActivePlayer().color !== $team) {
+      let playerColor = $room.state.players.get($room.sessionId).color;
+      const undoRequest = await displayUndoMoveDialog(playerColor);
+      $room.send("request", {
+        type: "undoMove",
+        title: undoRequest!.title,
+        content: undoRequest!.content,
+      });
+      displayWaitingDialog(
+        new Promise((resolve) => {
+          $room.onMessage("response", resolve);
+        })
+      );
     }
   }
 </script>
@@ -159,8 +206,6 @@
 </svelte:head>
 
 <div class="container">
-  <Waiting {isRoomFull} />
-
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
@@ -174,9 +219,13 @@
     />
   </section>
 
-  <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
+  <Game on:move={handleMove} team={$team} isMultiPlayer />
   <MoveList />
-  <GameButtons {data} isMultiPlayer={true} {isAccepted} />
+  <GameButtons
+    on:draw={handleDraw}
+    on:undo={handleUndo}
+    on:resign={handleResign}
+  />
 </div>
 
 <style>

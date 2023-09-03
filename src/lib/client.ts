@@ -1,10 +1,11 @@
-import * as Colyseus from "colyseus.js";
+// import * as Colyseus from "colyseus.js";
+import { Room, Client } from "colyseus.js";
 import { get } from "svelte/store";
 
-let client = new Colyseus.Client("ws://localhost:2567");
+let client = new Client("ws://localhost:2567");
 
 export async function createRoom() {
-  const room = (await client.create("my_room")) as Colyseus.Room;
+  const room = (await client.create("online_room")) as Room;
 
   reconnectionToken.set(room.reconnectionToken);
   console.log(room, "created");
@@ -13,7 +14,7 @@ export async function createRoom() {
 }
 
 export async function createLocalRoom() {
-  const room = (await client.create("local_room")) as Colyseus.Room
+  const room = (await client.create("local_room")) as Room
 
   reconnectionToken.set(room.reconnectionToken)
   console.log("local room", room, "created")
@@ -22,7 +23,7 @@ export async function createLocalRoom() {
 }
 
 export async function joinRoom() {
-  const room = (await client.join("my_room")) as Colyseus.Room;
+  const room = (await client.join("online_room")) as Room;
   reconnectionToken.set(room.reconnectionToken);
   console.log("joined successfully", room);
 

@@ -81,11 +81,11 @@ export default class Game {
       const { row: initiatingRow, file: initiatingFile } = initiatingPiece!;
       this.board.set(initiatingRow, initiatingFile, null);
 
-      if (isPromotion) {
-        this.board.set(row, file, pieceToPromoteTo);
-      } else {
-        this.board.set(row, file, initiatingPiece);
-      }
+      this.board.set(
+        row,
+        file,
+        isPromotion ? pieceToPromoteTo : initiatingPiece
+      );
     }
 
     if (shouldCommitMove) {
@@ -302,14 +302,14 @@ const movePiece = (
   if (piece) {
     const pieceMove = game
       .getMoves(piece)
-      .find((m) => m.row === row && m.file === file);
+      .find((m) => m.row === row && m.file === file)!;
 
     if (promoteType) {
       const promotedPiece =
         pieceSelector[promoteType.slice(-1) as keyof typeof pieceSelector];
-      pieceMove!.pieceToPromoteTo = promote(pieceMove!, promotedPiece, true);
+      pieceMove.pieceToPromoteTo = promote(pieceMove, promotedPiece, true);
     }
 
-    game.doMove(pieceMove!);
+    game.doMove(pieceMove);
   }
 };

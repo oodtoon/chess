@@ -22,7 +22,7 @@
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
-  
+
   let rotate: boolean = false;
 
   let turn: HTMLElement;
@@ -64,7 +64,7 @@
 
   function handlePieceClick(piece: Piece) {
     if (isMultiPlayer && team !== piece.color) {
-      return
+      return;
     }
 
     if (piece.color !== $game.getActivePlayer().color) {
@@ -126,15 +126,10 @@
   }
 
   $: if (isMultiPlayer) {
-    if (team === "White") {
-      rotate = false;
-    } else {
-      rotate = true;
-    }
+    rotate = team === "White" ? false : true;
   } else {
     rotateBoard($moveList);
   }
-
 </script>
 
 <Board {rotate} let:row let:file>
