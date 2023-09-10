@@ -22,11 +22,11 @@
 
   export let data;
   let oldMovesLength: number = 0;
-  const { room, team } = data;
+  const { room, team, pin } = data;
 
   const eventBus = new EventBus();
 
-  const gameCtx = setGameContext(new GameModel(eventBus));
+  const gameCtx = setGameContext(new GameModel(eventBus), "online");
   const { game } = gameCtx;
 
   function getTurnText(game: GameModel) {
@@ -39,7 +39,8 @@
 
   async function setupRoom() {
     if (!$room) {
-      $room = await joinPrivateRoom(data.pin);
+      console.log("pin", pin)
+      $room = await joinPrivateRoom(pin);
     }
     let stopWaiting: () => void;
 
@@ -118,7 +119,9 @@
 
   function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
+    $game.eventBus.muted = true
     $game.fromParsedToken(parsedPgn);
+    $game.eventBus.muted = false
     $game = $game;
   }
 

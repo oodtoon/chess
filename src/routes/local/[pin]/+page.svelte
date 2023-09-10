@@ -21,7 +21,7 @@
   const { room, team } = data;
 
   const eventBus = new EventBus();
-  const gameContext = setGameContext(new GameModel(eventBus));
+  const gameContext = setGameContext(new GameModel(eventBus), "local");
   const { game } = gameContext;
 
   function getTurnText(game: GameModel) {

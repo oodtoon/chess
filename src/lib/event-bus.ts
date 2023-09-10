@@ -1,10 +1,11 @@
-type CustomEventListener<T> = (event: CustomEvent<T>) => void
+type CustomEventListener<T> = (event: CustomEvent<T>) => void;
 export default class EventBus {
   constructor() {
     this.bus = document.createElement("fakeelement");
   }
 
   bus;
+  muted = false;
 
   /**
    * Add an event listener.
@@ -24,6 +25,8 @@ export default class EventBus {
    * Dispatch an event.
    */
   dispatchEvent(event: string, detail = {}) {
-    this.bus.dispatchEvent(new CustomEvent(event, { detail }));
+    if (!this.muted) {
+      this.bus.dispatchEvent(new CustomEvent(event, { detail }));
+    }
   }
 }

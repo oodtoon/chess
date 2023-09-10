@@ -1,7 +1,5 @@
 <script lang="ts">
-  import {
-    displayEndGameDialog,
-  } from "$lib/controllers/utils/dialog-utils";
+  import { displayEndGameDialog } from "$lib/controllers/utils/dialog-utils";
   import { getGameContext } from "$lib/context";
   import UndoIcon from "./UndoIcon.svelte";
 
@@ -17,11 +15,15 @@
   }
 
   function handleResign() {
-    dispatch("resign", {accepted: true})
+    dispatch("resign", { accepted: true });
   }
 
   async function handleUndo() {
     dispatch("undo");
+  }
+
+  function handlePlayAgain() {
+    gameContext.reset();
   }
 </script>
 
@@ -37,6 +39,11 @@
         <UndoIcon />
       </span>
     </button>
+    {#if $game.result}
+      <button class="play-again-btn" on:click={handlePlayAgain}
+        >Play Again</button
+      >
+    {/if}
   </section>
 </div>
 
@@ -56,9 +63,19 @@
     background-color: white;
   }
 
+  .btns-container > button:hover {
+    color: white;
+    cursor: pointer;
+    box-shadow: 0em 0em 0em 0.1em white;
+  }
+
   .draw {
     border: 3px solid #49a6e9;
     color: #49a6e9;
+  }
+
+  .draw:hover {
+    background-color: #49a6e9;
   }
 
   .resign {
@@ -66,25 +83,26 @@
     color: brown;
   }
 
+  .resign:hover {
+    background-color: brown;
+  }
+
   .undo {
     border: 3px solid black;
     color: black;
   }
 
-  .btns-container > button:hover {
-    color: white;
-    cursor: pointer;
-    box-shadow: 0em 0em 0em 0.1em white;
-  }
-  .draw:hover {
-    background-color: #49a6e9;
-  }
-
-  .resign:hover {
-    background-color: brown;
-  }
-
   .undo:hover {
     background-color: black;
+  }
+
+  .play-again-btn {
+    border: 3px solid #49a6e9;
+    color: #49a6e9;
+  }
+
+  .play-again-btn:hover {
+    color: white;
+    background-color: #49a6e9;
   }
 </style>

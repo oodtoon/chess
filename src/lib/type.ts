@@ -66,3 +66,5 @@ export type Response = {
   result: GameResult,
   reason: GameTerminationReason
 }
+
+export type GameMode = "local" | "online"

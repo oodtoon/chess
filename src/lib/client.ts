@@ -1,6 +1,6 @@
-// import * as Colyseus from "colyseus.js";
 import { Room, Client } from "colyseus.js";
 import { get } from "svelte/store";
+import { dev } from "$app/environment";
 
 let client = new Client("ws://localhost:2567");
 
@@ -14,12 +14,12 @@ export async function createRoom() {
 }
 
 export async function createLocalRoom() {
-  const room = (await client.create("local_room")) as Room
+  const room = (await client.create("local_room")) as Room;
 
-  reconnectionToken.set(room.reconnectionToken)
-  console.log("local room", room, "created")
-  
-  return room
+  reconnectionToken.set(room.reconnectionToken);
+  console.log("local room", room, "created");
+
+  return room;
 }
 
 export async function joinRoom() {
@@ -33,26 +33,31 @@ export async function joinRoom() {
 export async function joinPrivateRoom(id: string) {
   const token = get(reconnectionToken);
 
-  if (token) {
-    try {
-      const room = await client.reconnect(token);
-      reconnectionToken.set(room.reconnectionToken);
-      console.log("reconnected to room");
-      return room;
-    } catch {
-      console.log("joining new room");
+  try {
+    const room = await client.joinById(id);
+    reconnectionToken.set(room.reconnectionToken);
+    return room;
+  } catch {
+    console.log("joining new room");
+    if (token) {
+      try {
+        const room = await client.reconnect(token);
+        reconnectionToken.set(room.reconnectionToken);
+        console.log("reconnected to room");
+        return room;
+      } catch {}
     }
   }
-  const room = await client.joinById(id);
-  reconnectionToken.set(room.reconnectionToken);
-  return room;
+  throw new Error("connection failed");
 }
 
 type ReconnectionTokenUpdater = (str: string | null) => string;
 type ReconnectionTokenSubscribe = (str: string | null) => void;
 
+const storage = dev ? sessionStorage : localStorage;
+
 export const reconnectionToken = (function () {
-  const key = "session";
+  const key = "reconnectionToken";
   const subs: ReconnectionTokenSubscribe[] = [];
 
   function notify(val: string) {
@@ -61,21 +66,21 @@ export const reconnectionToken = (function () {
 
   return {
     update(updater: ReconnectionTokenUpdater) {
-      const currentVal = localStorage.getItem(key);
+      const currentVal = storage.getItem(key);
       const newVal = updater(currentVal);
-      localStorage.setItem(key, newVal);
+      storage.setItem(key, newVal);
       notify(newVal);
     },
     subscribe(subscribeFunc: ReconnectionTokenSubscribe) {
       subs.push(subscribeFunc);
-      subscribeFunc(localStorage.getItem(key));
+      subscribeFunc(storage.getItem(key));
       return () => {
         const indexToRemove = subs.indexOf(subscribeFunc);
         subs.splice(indexToRemove, 1);
       };
     },
     set(value: string) {
-      localStorage.setItem(key, value);
+      storage.setItem(key, value);
       notify(value);
     },
   };
