@@ -10,8 +10,16 @@ export class Player extends Schema {
   @type("boolean") connected = true;
 }
 
+class RequestState extends Schema {
+  @type("boolean") hasRequest: boolean = false;
+  @type("string") type: string = "";
+  @type("string") title: string = "";
+  @type("string") content: string = "";
+  @type("string") playerColor: string = ""
+}
+
 export default class GameState extends Schema {
   @type({ array: "string" }) strMoves = new ArraySchema<string>();
-
   @type({ map: Player }) players = new MapSchema<Player>();
+  @type(RequestState) requestState: RequestState = new RequestState();
 }

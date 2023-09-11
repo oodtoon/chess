@@ -1,7 +1,7 @@
 import { Room, Client } from "@colyseus/core";
 import GameState from "../models/game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
-import { PlayerMap } from "../models/game-state";
+import { Player } from "../models/game-state";
 
 export class LocalRoom extends Room<GameState> {
   maxClients = 1;
@@ -31,7 +31,7 @@ export class LocalRoom extends Room<GameState> {
   }
 
   onJoin(client: Client) {
-    this.state.players.set(client.sessionId, new PlayerMap("Both"));
+    this.state.players.set(client.sessionId, new Player("Both"));
     console.log(
       "I have arrived!",
       this.state.players.get(client.sessionId).color

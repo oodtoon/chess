@@ -6,16 +6,16 @@ import Undo from "$lib/components/dialogs/Undo.svelte";
 import Waiting from "$lib/components/dialogs/Waiting.svelte";
 import type { GameContext } from "$lib/context";
 
-
 export async function displayEndGameDialog(gameContext: GameContext) {
   await openDialog(End, { gameContext });
 }
 
 export async function displayReviewDialog(title: string, content?: string) {
-  return openDialog(Review, {
+  const reviewResponse = await openDialog(Review, {
     title,
     content: content ?? "",
   });
+  return reviewResponse;
 }
 
 export async function displayWaitingDialog(

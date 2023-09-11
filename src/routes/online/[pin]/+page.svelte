@@ -33,13 +33,15 @@
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
 
+  let isRequestStateChange = false;
+
   onMount(() => {
     setupRoom();
   });
 
   async function setupRoom() {
     if (!$room) {
-      console.log("pin", pin)
+      console.log("pin", pin);
       $room = await joinPrivateRoom(pin);
     }
     let stopWaiting: () => void;
@@ -81,12 +83,6 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("request", async (message: Request) => {
-      const { type, title, content } = message;
-      const { accepted } = await displayReviewDialog(title, content);
-      sendResponse(type, accepted);
-    });
-
     $room.onMessage("resign", (message: Response) => {
       const { result, reason } = message;
       $game.terminate({
@@ -119,9 +115,9 @@
 
   function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
-    $game.eventBus.muted = true
+    $game.eventBus.muted = true;
     $game.fromParsedToken(parsedPgn);
-    $game.eventBus.muted = false
+    $game.eventBus.muted = false;
     $game = $game;
   }
 
@@ -148,6 +144,7 @@
         type: "close",
       });
     }
+    isRequestStateChange = false;
   }
 
   function drawGame(type: string) {
@@ -160,14 +157,7 @@
     $game = $game;
   }
 
-  function handleDraw() {
-    let drawMsg;
-
-    let player = $room.state.players.get($room.sessionId).color;
-    const opposingPlayer = player === "White" ? "Black" : "White";
-    drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
-    $room.send("request", { type: "draw", title: drawMsg });
-
+  async function handleDrawWaiting() {
     displayWaitingDialog(
       new Promise((resolve) => {
         $room.onMessage("response", (message: Response) => {
@@ -178,6 +168,49 @@
         });
       })
     );
+  }
+
+  async function handleUndoWaiting() {
+    displayWaitingDialog(
+      new Promise((resolve) => {
+        $room.onMessage("response", resolve);
+      })
+    );
+  }
+
+  $: $room?.state.requestState.onChange(async () => {
+    if (!$room.state.requestState.hasRequest) {
+      return;
+    }
+
+    if ($team === $room.state.requestState.playerColor) {
+      switch ($room.state.requestState.type) {
+        case "draw": {
+          await handleDrawWaiting();
+          break;
+        }
+        case "undoMove": {
+          await handleUndoWaiting();
+          break;
+        }
+      }
+    } else {
+      if (!isRequestStateChange) {
+        isRequestStateChange = true;
+        const { type, title, content } = $room.state.requestState;
+        const { accepted } = await displayReviewDialog(title, content);
+        sendResponse(type, accepted);
+      }
+    }
+  });
+
+  function handleDraw() {
+    let drawMsg;
+
+    let player = $room.state.players.get($room.sessionId).color;
+    const opposingPlayer = player === "White" ? "Black" : "White";
+    drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
+    $room.send("request", { type: "draw", title: drawMsg });
   }
 
   function handleResign() {
@@ -195,11 +228,6 @@
         title: undoRequest!.title,
         content: undoRequest!.content,
       });
-      displayWaitingDialog(
-        new Promise((resolve) => {
-          $room.onMessage("response", resolve);
-        })
-      );
     }
   }
 </script>

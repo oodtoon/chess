@@ -48,7 +48,8 @@ export async function joinPrivateRoom(id: string) {
       } catch {}
     }
   }
-  throw new Error("connection failed");
+  window.alert("connection failed")
+  throw new Error("connection error")
 }
 
 type ReconnectionTokenUpdater = (str: string | null) => string;

@@ -1,7 +1,7 @@
 import { Room, Client } from "@colyseus/core";
-import GameState from "../models/game-state";
+import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
-import { PlayerMap } from "../models/game-state";
+import { Player } from "../models/online-game-state";
 
 export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
@@ -46,15 +46,28 @@ export class OnlineRoom extends Room<GameState> {
     });
 
     this.onMessage("request", (client, message) => {
-      const other = this.getOtherClient(client);
-      this.send(other, "request", message);
+      const stateUpdate = {
+        ...message,
+        hasRequest: true,
+        playerColor: this.state.players.get(client.sessionId).color,
+      };
+      Object.assign(this.state.requestState, stateUpdate);
     });
 
     this.onMessage("response", (client, message) => {
       this.broadcast("response", message);
+
+      const requestStateReset = {
+        hasRequest: false,
+        type: "",
+        title: "",
+        content: "",
+        playerColor: "",
+      };
+      Object.assign(this.state.requestState, requestStateReset);
     });
 
-    this.onMessage("resign", (client, message) => {
+    this.onMessage("resign", (client) => {
       const resignResult =
         this.state.players.get(client.sessionId).color === "White"
           ? "0-1"
@@ -83,7 +96,7 @@ export class OnlineRoom extends Room<GameState> {
         }
       });
     }
-    this.state.players.set(client.sessionId, new PlayerMap(type));
+    this.state.players.set(client.sessionId, new Player(type));
   }
 
   async onLeave(client: Client, consented: boolean) {

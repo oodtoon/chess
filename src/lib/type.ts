@@ -68,3 +68,5 @@ export type Response = {
 }
 
 export type GameMode = "local" | "online"
+
+export type Scope = { controller: null | AbortController };
