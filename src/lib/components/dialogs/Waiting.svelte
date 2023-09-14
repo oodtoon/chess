@@ -1,18 +1,12 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import Dots from "../Dots.svelte";
   import Dialog from "./Dialog.svelte";
   import { goto } from "$app/navigation";
 
-  export let promise: Promise<void>;
   export let displayDeclineButton = false;
 
-  const dispatch = createEventDispatcher();
-
-  promise.then(() => dispatch("close"));
 
   function handleLeave() {
-    dispatch("close")
     goto("/")
   }
 </script>

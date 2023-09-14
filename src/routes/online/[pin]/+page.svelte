@@ -12,17 +12,25 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
-  import {
-    displayEndGameDialog,
-    displayReviewDialog,
-    displayUndoMoveDialog,
-    displayWaitingDialog,
-  } from "$lib/controllers/utils/dialog-utils.js";
-  import type { Request, Response } from "$lib/type.js";
+  import { getUndoTitle } from "$lib/controllers/utils/dialog-utils.js";
+  import type { Response } from "$lib/type.js";
+  import Waiting from "$lib/components/dialogs/Waiting.svelte";
+  import Review from "$lib/components/dialogs/Review.svelte";
+  import End from "$lib/components/dialogs/End.svelte";
+  import Undo from "$lib/components/dialogs/Undo.svelte";
 
   export let data;
-  let oldMovesLength: number = 0;
+
+  let roomSize = 0;
+  let isUndoDialog = false;
   const { room, team, pin } = data;
+
+  $: dialogState = $room
+    ? $room?.state.requestState
+    : { hasRequest: false, type: "", title: "", content: "", playerColor: "" };
+
+  $: oldMovesLength =
+    $room?.state.strMoves.length > 0 ? $room.state.strMoves.length : 0;
 
   const eventBus = new EventBus();
 
@@ -33,18 +41,14 @@
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
   }
 
-  let isRequestStateChange = false;
-
   onMount(() => {
     setupRoom();
   });
 
   async function setupRoom() {
     if (!$room) {
-      console.log("pin", pin);
       $room = await joinPrivateRoom(pin);
     }
-    let stopWaiting: () => void;
 
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
@@ -55,16 +59,8 @@
       if ($room.state.strMoves.length > 0) {
         setAllPieces([...$room.state.strMoves]);
       }
-      if ($room.state.players.size === 1) {
-        displayWaitingDialog(
-          new Promise((resolve) => {
-            stopWaiting = resolve;
-          }),
-          true
-        );
-      } else {
-        stopWaiting?.();
-      }
+
+      roomSize = $room.state.players.size;
     });
 
     $room.state.strMoves.onChange(() => {
@@ -89,8 +85,13 @@
         result,
         reason,
       });
-      displayEndGameDialog(gameCtx);
       $game = $game;
+    });
+
+    $room.onMessage("response", (message: Response) => {
+      if (message.type === "draw") {
+        drawGame();
+      }
     });
   }
 
@@ -131,7 +132,7 @@
       if (type === "undoMove") {
         $room.send("undoMove");
       } else if (type === "draw") {
-        drawGame(type);
+        drawGame();
       }
 
       $room.send("response", {
@@ -144,69 +145,39 @@
         type: "close",
       });
     }
-    isRequestStateChange = false;
   }
 
-  function drawGame(type: string) {
+  function drawGame() {
     $game.terminate({
       result: "1/2-1/2",
       reason: "draw agreed",
     });
-
-    displayEndGameDialog(gameCtx);
     $game = $game;
   }
 
-  async function handleDrawWaiting() {
-    displayWaitingDialog(
-      new Promise((resolve) => {
-        $room.onMessage("response", (message: Response) => {
-          resolve();
-          if (message.type === "draw") {
-            drawGame(message.type);
-          }
-        });
-      })
-    );
+  function closeReviewDialog(event: CustomEvent) {
+    const { accepted } = event.detail;
+    sendResponse($room.state.requestState.type, accepted);
   }
 
-  async function handleUndoWaiting() {
-    displayWaitingDialog(
-      new Promise((resolve) => {
-        $room.onMessage("response", resolve);
-      })
-    );
+  function closeUndoDialog(event: CustomEvent) {
+    isUndoDialog = false;
+    const { accepted, message } = event.detail;
+    if (accepted) {
+      $room.send("request", {
+        type: "undoMove",
+        title: getUndoTitle($team),
+        content: message || "I made an oopsie",
+      });
+    }
   }
 
   $: $room?.state.requestState.onChange(async () => {
-    if (!$room.state.requestState.hasRequest) {
-      return;
-    }
-
-    if ($team === $room.state.requestState.playerColor) {
-      switch ($room.state.requestState.type) {
-        case "draw": {
-          await handleDrawWaiting();
-          break;
-        }
-        case "undoMove": {
-          await handleUndoWaiting();
-          break;
-        }
-      }
-    } else {
-      if (!isRequestStateChange) {
-        isRequestStateChange = true;
-        const { type, title, content } = $room.state.requestState;
-        const { accepted } = await displayReviewDialog(title, content);
-        sendResponse(type, accepted);
-      }
-    }
+    dialogState = { ...$room.state.requestState };
   });
 
   function handleDraw() {
     let drawMsg;
-
     let player = $room.state.players.get($room.sessionId).color;
     const opposingPlayer = player === "White" ? "Black" : "White";
     drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
@@ -221,13 +192,7 @@
 
   async function handleUndo() {
     if ($game.getActivePlayer().color !== $team) {
-      let playerColor = $room.state.players.get($room.sessionId).color;
-      const undoRequest = await displayUndoMoveDialog(playerColor);
-      $room.send("request", {
-        type: "undoMove",
-        title: undoRequest!.title,
-        content: undoRequest!.content,
-      });
+      isUndoDialog = true;
     }
   }
 </script>
@@ -257,6 +222,30 @@
     on:undo={handleUndo}
     on:resign={handleResign}
   />
+
+  {#if roomSize !== 2}
+    <Waiting displayDeclineButton={true} />
+  {/if}
+
+  {#if dialogState.hasRequest}
+    {#if $team === dialogState.playerColor}
+      <Waiting displayDeclineButton={false} />
+    {:else}
+      <Review
+        title={dialogState.title}
+        content={dialogState.content}
+        on:close={closeReviewDialog}
+      />
+    {/if}
+  {/if}
+
+  {#if isUndoDialog}
+    <Undo on:close={closeUndoDialog} />
+  {/if}
+
+  {#if $game.result}
+    <End gameContext={gameCtx} />
+  {/if}
 </div>
 
 <style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
+ 
 
   interface $$Events {
     close: CustomEvent<{
@@ -8,6 +9,8 @@
       message: string;
     }>;
   }
+
+  
 
   const dispatch = createEventDispatcher();
   let textareaRef: HTMLTextAreaElement;
