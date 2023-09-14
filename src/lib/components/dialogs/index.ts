@@ -15,23 +15,4 @@ export function abort(reason: any) {
   scope.controller?.abort(reason);
 }
 
-export default async function openDialog<CMP extends ComponentType>(
-  component: CMP,
-  props?: GetProps<CMP>
-): Promise<DialogPayload<CMP>> {
-  
-  return new Promise((resolve, reject) => {
-    scope.controller = new AbortController();
 
-    const dialog = new component({ target: document.body, props });
-
-    scope.controller.signal.addEventListener("abort", () => {
-      dialog.$destroy();
-    });
-
-    dialog.$on("close", (event) => {
-      resolve(event.detail);
-      dialog.$destroy();
-    });
-  });
-}

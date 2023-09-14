@@ -5,13 +5,11 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
-  import {
-    displayEndGameDialog,
-    displayPromotionDialog,
-  } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
+  import Promotion from "./dialogs/Promotion.svelte";
+  import End from "./dialogs/End.svelte";
 
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
@@ -36,6 +34,9 @@
 
   let selectedPiece: Piece | null;
   $: ghostMoves = selectedPiece ? $game.getMoves(selectedPiece) : [];
+
+  let promotionMove: BaseMove | null = null;
+  let isClosed = false;
 
   onMount(() => {
     eventBus.addEventListener("move", handleMove);
@@ -98,7 +99,6 @@
           });
         }
         $game = $game;
-        displayEndGameDialog(gameContext);
       }, 500);
     }
   }
@@ -111,13 +111,23 @@
     }
   }
 
+  function handlePromotion(event: CustomEvent) {
+    if (promotionMove) {
+      const promotedPiece = promote(promotionMove, event.detail);
+      promotionMove.pieceToPromoteTo = promotedPiece;
+      $game.doMove(promotionMove);
+      selectedPiece = null;
+      $game = $game;
+    }
+    promotionMove = null;
+  }
+
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
     const move = event.detail;
 
     if (move.isPromotion) {
-      const chosenPromotionPiece = await displayPromotionDialog(gameContext);
-      const promotedPiece = promote(move, chosenPromotionPiece);
-      move.pieceToPromoteTo = promotedPiece;
+      promotionMove = move;
+      return;
     }
 
     $game.doMove(move);
@@ -129,6 +139,10 @@
     rotate = team === "White" ? false : true;
   } else {
     rotateBoard($moveList);
+  }
+
+  function handleEndGameClose() {
+    isClosed = true;
   }
 </script>
 
@@ -154,6 +168,14 @@
     {/if}
   {/each}
 </Board>
+
+{#if promotionMove}
+  <Promotion {gameContext} on:close={handlePromotion} />
+{/if}
+
+{#if $game.result && !isClosed}
+  <End {gameContext} on:close={handleEndGameClose} />
+{/if}
 
 <style>
 </style>

@@ -16,7 +16,6 @@
   import type { Response } from "$lib/type.js";
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
   import Review from "$lib/components/dialogs/Review.svelte";
-  import End from "$lib/components/dialogs/End.svelte";
   import Undo from "$lib/components/dialogs/Undo.svelte";
 
   export let data;
@@ -243,9 +242,6 @@
     <Undo on:close={closeUndoDialog} />
   {/if}
 
-  {#if $game.result}
-    <End gameContext={gameCtx} />
-  {/if}
 </div>
 
 <style>

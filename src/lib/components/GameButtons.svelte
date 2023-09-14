@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { displayEndGameDialog } from "$lib/controllers/utils/dialog-utils";
   import { getGameContext } from "$lib/context";
   import UndoIcon from "./UndoIcon.svelte";
 

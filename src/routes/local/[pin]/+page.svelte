@@ -15,7 +15,6 @@
 
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io.js";
   import { joinPrivateRoom } from "$lib/client.js";
-  import { displayEndGameDialog } from "$lib/controllers/utils/dialog-utils.js";
 
   export let data;
   const { room, team } = data;
@@ -60,7 +59,7 @@
   function updateGameState(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     const newMove = parsedPgn.moves.at(-1);
-    const color = newMove?.turn === "w" ? "White" : "Black"
+    const color = newMove?.turn === "w" ? "White" : "Black";
     if (color !== $team) {
       consumeToken(newMove!, $game);
     }
@@ -85,7 +84,7 @@
       result: "1/2-1/2",
       reason: "draw agreed",
     });
-    displayEndGameDialog(gameContext);
+
     $game = $game;
   }
 
@@ -94,7 +93,7 @@
       result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
       reason: "resignation",
     });
-    displayEndGameDialog(gameContext);
+
     $game = $game;
   }
 
