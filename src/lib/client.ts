@@ -2,7 +2,7 @@ import { Room, Client } from "colyseus.js";
 import { get } from "svelte/store";
 import { dev } from "$app/environment";
 
-let client = new Client("ws://localhost:2567");
+let client = new Client(`ws://${import.meta.env.VITE_GAME_SERVER_BASE_URL}`);
 
 export async function createRoom() {
   const room = (await client.create("online_room")) as Room;
