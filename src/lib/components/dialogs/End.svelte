@@ -14,7 +14,6 @@
   $: ({ game } = gameContext)
 
   let copied: boolean = false;
-  let winner: string
 
   const handlePlayAgain = () => {
     gameContext.reset();
@@ -137,6 +136,6 @@
   .trophy {
     grid-area: trophy;
     justify-self: center;
-    margin-top: -.8rem;
+    margin-bottom: .8rem;
   }
 </style>

@@ -5,80 +5,81 @@
   import GameModel from "$lib/models/game";
   import CopyIcon from "./CopyIcon.svelte";
 
-
   let copied = false;
 
   let ctx = getGameContext();
-  const { game, moveList } = ctx
+  const { game, moveList } = ctx;
 
   const handleExport = () => {
-    exportToPgn($game)
-  }
+    exportToPgn($game);
+  };
 
   const handleCopy = () => {
-    copyPgn($game)
+    copyPgn($game);
     copied = true;
     setTimeout(() => {
       copied = false;
     }, 4000);
   };
 
-
   const handleImport = () => {
-    const fileInput = document.querySelector("#file-input") as HTMLInputElement
-    fileInput!.click()
-    
+    const fileInput = document.querySelector("#file-input") as HTMLInputElement;
+    fileInput!.click();
+
     fileInput.addEventListener("change", (event) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-
         $game = new GameModel($game.eventBus);
-  
-        const pgn = event.target?.result as string
-        const parsedPgn = parsePgn(pgn) as ParseTree
+
+        const pgn = event.target?.result as string;
+        const parsedPgn = parsePgn(pgn) as ParseTree;
         $game.fromParsedToken(parsedPgn);
-        
       };
-      const files = (event.target as HTMLInputElement).files
-      reader.readAsText(files![0])
+      const files = (event.target as HTMLInputElement).files;
+      reader.readAsText(files![0]);
     });
-  }
+  };
 </script>
 
 <div class="moves-list">
-    <h3>moves list</h3>
-    <ol>
-      {#each $moveList as move, i }
-      {#if (i % 2 === 0)}
-      <li>
-        {#if i === 0}
-          <span class="number">1.</span>
+  <h3>moves list</h3>
+  <ol>
+    {#each $moveList as move, i}
+      {#if i % 2 === 0}
+        <li>
+          {#if i === 0}
+            <span class="number">1.</span>
           {:else}
-          <span class="number">{(i / 2) + 1}.</span>
-        {/if}
-        <span class="move">{move}</span>
-        {#if $moveList[i +1]}
-        <span class="move">{$moveList[i + 1]}</span>
-        {/if}
-      </li>
+            <span class="number">{i / 2 + 1}.</span>
+          {/if}
+          <span class="move">{move}</span>
+          {#if $moveList[i + 1]}
+            <span class="move">{$moveList[i + 1]}</span>
+          {/if}
+        </li>
       {/if}
-      {/each}
-      <!-- svelte-ignore empty-block -->
-      {#if $game.result} 
-        <span class="game-result">Game Result: {$game.result}</span>
-        {/if}
-    </ol>
-
+    {/each}
+    <!-- svelte-ignore empty-block -->
+    {#if $game.result}
+      <span class="game-result">Game Result: {$game.result}</span>
+    {/if}
+  </ol>
 
   <section class="btns-container">
-    <button class="export" type="button" on:click={handleExport}>export pgn</button>
+    <button class="export" type="button" on:click={handleExport}
+      >export pgn</button
+    >
     <button class="copy" type="button" on:click={handleCopy}
       >copy pgn <span class="copy-icon">
-        <CopyIcon {copied}/>
+        <CopyIcon {copied} />
       </span>
     </button>
     <input type="file" id="file-input" style="display: none" />
-    <button class="import" type="button" on:click={handleImport}>import pgn</button>
+    {#if ctx.mode === "local"}
+      <button class="import" type="button" on:click={handleImport}
+        >import pgn</button
+      >
+    {/if}
   </section>
 </div>
 
@@ -123,14 +124,12 @@
     background-color: white;
   }
 
-
   .game-result {
     margin: 0;
     display: flex;
-    padding: .5em 0;
+    padding: 0.5em 0;
     justify-content: center;
   }
-
 
   .moves-list {
     grid-area: moves-list;

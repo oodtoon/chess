@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
+ 
 
   interface $$Events {
     close: CustomEvent<{
@@ -8,6 +9,8 @@
       message: string;
     }>;
   }
+
+  
 
   const dispatch = createEventDispatcher();
   let textareaRef: HTMLTextAreaElement;
@@ -32,9 +35,9 @@
   <h2 class="title" id="undo-title">
     Send undo move request to opponent for approval.
   </h2>
-  <section class="input">
-    <label
-      ><span class="label">Message to opponent:</span>
+  <section class="input-field">
+    <label>
+      <span class="label">Message to opponent:</span>
       <textarea bind:this={textareaRef} />
     </label>
   </section>
@@ -71,15 +74,14 @@
     place-self: center;
   }
 
-  .input {
+  .input-field {
     grid-area: input;
     align-self: start;
     justify-self: center;
   }
 
   .label {
-    position: relative;
-    top: -1.5em;
+    display: block;
   }
   .btn-container {
     grid-area: btn;

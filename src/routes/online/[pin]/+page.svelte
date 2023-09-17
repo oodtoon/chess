@@ -12,23 +12,28 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
+  import { getUndoTitle } from "$lib/controllers/utils/dialog-utils.js";
+  import type { Response } from "$lib/type.js";
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
-  import {
-    closeDialog,
-    displayEndGameDialog,
-    displayReviewDialog,
-  } from "$lib/controllers/utils/dialog-utils.js";
-  import type { Request, Response } from "$lib/type.js";
+  import Review from "$lib/components/dialogs/Review.svelte";
+  import Undo from "$lib/components/dialogs/Undo.svelte";
 
   export let data;
-  let isRoomFull: boolean = false;
-  let isAccepted: boolean;
-  let oldMovesLength: number = 0;
-  const { room, team } = data;
+
+  let roomSize = 0;
+  let isUndoDialog = false;
+  const { room, team, pin } = data;
+
+  $: dialogState = $room
+    ? $room?.state.requestState
+    : { hasRequest: false, type: "", title: "", content: "", playerColor: "" };
+
+  $: oldMovesLength =
+    $room?.state.strMoves.length > 0 ? $room.state.strMoves.length : 0;
 
   const eventBus = new EventBus();
 
-  const gameCtx = setGameContext(new GameModel(eventBus));
+  const gameCtx = setGameContext(new GameModel(eventBus), "online");
   const { game } = gameCtx;
 
   function getTurnText(game: GameModel) {
@@ -39,14 +44,11 @@
     setupRoom();
   });
 
-  $: if (isRoomFull) {
-    closeDialog("waiting");
-  }
-
   async function setupRoom() {
     if (!$room) {
-      $room = await joinPrivateRoom(data.pin);
+      $room = await joinPrivateRoom(pin);
     }
+
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
@@ -57,9 +59,7 @@
         setAllPieces([...$room.state.strMoves]);
       }
 
-      if ($room.state.players.size === 2) {
-        isRoomFull = true;
-      }
+      roomSize = $room.state.players.size;
     });
 
     $room.state.strMoves.onChange(() => {
@@ -78,22 +78,19 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("request", (message: Request) => {
-      const { type, title, content } = message;
-      if (content) {
-        handleReviewDialog(type, title, content);
-      } else {
-        handleReviewDialog(type, title);
-      }
+    $room.onMessage("resign", (message: Response) => {
+      const { result, reason } = message;
+      $game.terminate({
+        result,
+        reason,
+      });
+      $game = $game;
     });
 
     $room.onMessage("response", (message: Response) => {
       if (message.type === "draw") {
-        $game.terminate({ result: message.result, reason: message.reason });
-        displayEndGameDialog(gameCtx);
+        drawGame();
       }
-      closeDialog("waiting");
-      $game=$game
     });
   }
 
@@ -110,7 +107,7 @@
   function updateGameState(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     const newMove = parsedPgn.moves.at(-1);
-    if (newMove?.turn !== $team) {
+    if (newMove?.turn !== $team?.[0].toLowerCase()) {
       consumeToken(newMove!, $game);
     }
     $game = $game;
@@ -118,9 +115,9 @@
 
   function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
-    parsedPgn.moves.forEach((move) => {
-      consumeToken(move, $game);
-    });
+    $game.eventBus.muted = true;
+    $game.fromParsedToken(parsedPgn);
+    $game.eventBus.muted = false;
     $game = $game;
   }
 
@@ -129,27 +126,72 @@
     return parsePgn(pgn);
   }
 
-  async function handleReviewDialog(type: string, title: string, msg?: string) {
-    const accepted = await displayReviewDialog(title, msg);
-    isAccepted = accepted.accepted;
-    if (isAccepted) {
-      if (type === "draw") {
-        $room.send("response", {
-          type,
-          result: "1/2-1/2",
-          reason: "draw agreed",
-        });
-      } else {
-        $room.send("response", {
-          type,
-        });
+  async function sendResponse(type: string, accepted: boolean) {
+    if (accepted) {
+      if (type === "undoMove") {
         $room.send("undoMove");
+      } else if (type === "draw") {
+        drawGame();
       }
+
+      $room.send("response", {
+        type,
+      });
+
       $game = $game;
     } else {
       $room.send("response", {
         type: "close",
       });
+    }
+  }
+
+  function drawGame() {
+    $game.terminate({
+      result: "1/2-1/2",
+      reason: "draw agreed",
+    });
+    $game = $game;
+  }
+
+  function closeReviewDialog(event: CustomEvent) {
+    const { accepted } = event.detail;
+    sendResponse($room.state.requestState.type, accepted);
+  }
+
+  function closeUndoDialog(event: CustomEvent) {
+    isUndoDialog = false;
+    const { accepted, message } = event.detail;
+    if (accepted) {
+      $room.send("request", {
+        type: "undoMove",
+        title: getUndoTitle($team),
+        content: message || "I made an oopsie",
+      });
+    }
+  }
+
+  $: $room?.state.requestState.onChange(async () => {
+    dialogState = { ...$room.state.requestState };
+  });
+
+  function handleDraw() {
+    let drawMsg;
+    let player = $room.state.players.get($room.sessionId).color;
+    const opposingPlayer = player === "White" ? "Black" : "White";
+    drawMsg = `${player} wishes to draw. ${opposingPlayer}, do you accept?`;
+    $room.send("request", { type: "draw", title: drawMsg });
+  }
+
+  function handleResign() {
+    $room.send("resign", {
+      type: "resign",
+    });
+  }
+
+  async function handleUndo() {
+    if ($game.getActivePlayer().color !== $team) {
+      isUndoDialog = true;
     }
   }
 </script>
@@ -159,8 +201,6 @@
 </svelte:head>
 
 <div class="container">
-  <Waiting {isRoomFull} />
-
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
   <section class="capture-container">
@@ -174,9 +214,34 @@
     />
   </section>
 
-  <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
+  <Game on:move={handleMove} team={$team} isMultiPlayer />
   <MoveList />
-  <GameButtons {data} isMultiPlayer={true} {isAccepted} />
+  <GameButtons
+    on:draw={handleDraw}
+    on:undo={handleUndo}
+    on:resign={handleResign}
+  />
+
+  {#if roomSize !== 2}
+    <Waiting displayDeclineButton={true} />
+  {/if}
+
+  {#if dialogState.hasRequest}
+    {#if $team === dialogState.playerColor}
+      <Waiting displayDeclineButton={false} />
+    {:else}
+      <Review
+        title={dialogState.title}
+        content={dialogState.content}
+        on:close={closeReviewDialog}
+      />
+    {/if}
+  {/if}
+
+  {#if isUndoDialog}
+    <Undo on:close={closeUndoDialog} />
+  {/if}
+
 </div>
 
 <style>

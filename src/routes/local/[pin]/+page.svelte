@@ -20,7 +20,8 @@
   const { room, team } = data;
 
   const eventBus = new EventBus();
-  const { game } = setGameContext(new GameModel(eventBus));
+  const gameContext = setGameContext(new GameModel(eventBus), "local");
+  const { game } = gameContext;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -50,7 +51,7 @@
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
     const message = {
       move: event.detail.move.toString(),
-      color: "Both"
+      color: "Both",
     };
     $room.send("move", message);
   }
@@ -58,7 +59,8 @@
   function updateGameState(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     const newMove = parsedPgn.moves.at(-1);
-    if (newMove?.turn !== $team) {
+    const color = newMove?.turn === "w" ? "White" : "Black";
+    if (color !== $team) {
       consumeToken(newMove!, $game);
     }
     $game = $game;
@@ -75,6 +77,31 @@
   function createPgn(strMoves: string[]) {
     const pgn = derivePgnFromMoveStrings(strMoves);
     return parsePgn(pgn);
+  }
+
+  function handleDraw() {
+    $game.terminate({
+      result: "1/2-1/2",
+      reason: "draw agreed",
+    });
+
+    $game = $game;
+  }
+
+  function handleResign() {
+    $game.terminate({
+      result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
+      reason: "resignation",
+    });
+
+    $game = $game;
+  }
+
+  function handleUndo() {
+    game.update(($game) => {
+      $game.undoMove();
+      return $game;
+    });
   }
 </script>
 
@@ -98,7 +125,11 @@
 
   <Game on:move={handleMove} />
   <MoveList />
-  <GameButtons {data} isMultiPlayer={false} isAccepted={null}/>
+  <GameButtons
+    on:draw={handleDraw}
+    on:undo={handleUndo}
+    on:resign={handleResign}
+  />
 </div>
 
 <style>

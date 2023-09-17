@@ -1,9 +1,9 @@
 import { Room, Client } from "@colyseus/core";
-import GameState from "../models/game-state";
+import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
-import { PlayerMap } from "../models/game-state";
+import { Player } from "../models/online-game-state";
 
-export class MyRoom extends Room<GameState> {
+export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
 
   onCreate() {
@@ -43,16 +43,40 @@ export class MyRoom extends Room<GameState> {
 
     this.onMessage("undoMove", () => {
       this.state.strMoves.pop();
-
     });
 
     this.onMessage("request", (client, message) => {
-      this.broadcast("request", message, { except: client });
+      const stateUpdate = {
+        ...message,
+        hasRequest: true,
+        playerColor: this.state.players.get(client.sessionId).color,
+      };
+      Object.assign(this.state.requestState, stateUpdate);
     });
 
     this.onMessage("response", (client, message) => {
-      console.log(message);
       this.broadcast("response", message);
+
+      const requestStateReset = {
+        hasRequest: false,
+        type: "",
+        title: "",
+        content: "",
+        playerColor: "",
+      };
+      Object.assign(this.state.requestState, requestStateReset);
+    });
+
+    this.onMessage("resign", (client) => {
+      const resignResult =
+        this.state.players.get(client.sessionId).color === "White"
+          ? "0-1"
+          : "1-0";
+      const resignMsg = {
+        result: resignResult,
+        reason: "resignation",
+      };
+      this.broadcast("resign", resignMsg);
     });
   }
 
@@ -72,7 +96,7 @@ export class MyRoom extends Room<GameState> {
         }
       });
     }
-    this.state.players.set(client.sessionId, new PlayerMap(type));
+    this.state.players.set(client.sessionId, new Player(type));
   }
 
   async onLeave(client: Client, consented: boolean) {
@@ -93,6 +117,12 @@ export class MyRoom extends Room<GameState> {
       console.log("no reconnect", error);
       this.state.players.delete(client.sessionId);
     }
+  }
+
+  private getOtherClient(client: Client) {
+    const currentIndex = this.clients.indexOf(client);
+    const otherIndex = +!currentIndex;
+    return this.clients[otherIndex];
   }
 
   onDispose() {

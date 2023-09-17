@@ -15,3 +15,7 @@ export const ghostMoves = derived(selectedPiece, ($selectedPiece) => {
     return [];
   }
 });
+
+export const dialogsStates = writable({
+  isOpen: false,
+});

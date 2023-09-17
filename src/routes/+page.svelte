@@ -78,6 +78,7 @@
     color: white;
   }
 
+  a,
   button {
     cursor: pointer;
   }
