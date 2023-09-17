@@ -40,6 +40,20 @@ export class MyRoom extends Room<GameState> {
           }
         }
       });
+
+    this.onMessage("undoMove", () => {
+      this.state.strMoves.pop();
+
+    });
+
+    this.onMessage("request", (client, message) => {
+      this.broadcast("request", message, { except: client });
+    });
+
+    this.onMessage("response", (client, message) => {
+      console.log(message);
+      this.broadcast("response", message);
+    });
   }
 
   onJoin(client: Client, options: any) {
@@ -68,15 +82,15 @@ export class MyRoom extends Room<GameState> {
 
     try {
       if (consented) {
-        console.log("consented leave")
+        console.log("consented leave");
         throw new Error("consented leave");
       }
 
       await this.allowReconnection(client, 20);
-      console.log(client.sessionId, player.color, "reconnected!")
+      console.log(client.sessionId, player.color, "reconnected!");
       player.connected = true;
     } catch (error) {
-      console.log("no reconnect", error)
+      console.log("no reconnect", error);
       this.state.players.delete(client.sessionId);
     }
   }

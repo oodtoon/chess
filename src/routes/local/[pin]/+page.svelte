@@ -98,7 +98,7 @@
 
   <Game on:move={handleMove} />
   <MoveList />
-  <GameButtons />
+  <GameButtons {data} isMultiPlayer={false} isAccepted={null}/>
 </div>
 
 <style>

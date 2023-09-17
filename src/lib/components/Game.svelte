@@ -10,7 +10,6 @@
     displayPromotionDialog,
   } from "$lib/controllers/utils/dialog-utils";
   import type { Piece } from "$lib/models/pieces";
-  import { isUndoMove } from "$lib/store";
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
 
@@ -23,7 +22,7 @@
 
   $: eventBus = $game.eventBus;
   $: Object.assign(window, { game: $game });
-
+  
   let rotate: boolean = false;
 
   let turn: HTMLElement;
@@ -40,6 +39,7 @@
 
   onMount(() => {
     eventBus.addEventListener("move", handleMove);
+
     turn = document.getElementById("turn") as HTMLElement;
 
     whitePieces = document.getElementById("White-pieces")!;
@@ -77,19 +77,9 @@
     }
   }
 
-
-
-  $: if ($isUndoMove) {
-    const activePlayer = $game.getActivePlayer();
-    updatePlayerTurnAndText(activePlayer);
-
-    $isUndoMove = false;
-  }
-
   function handleMove(event: CustomEvent<BaseMove>) {
     const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
-    updatePlayerTurnAndText(activePlayer);
     dispatch("move", event.detail);
   }
 
@@ -111,10 +101,6 @@
         displayEndGameDialog(gameContext);
       }, 500);
     }
-  }
-
-  function updatePlayerTurnAndText(activePlayer: Player) {
-    turn.textContent = `${activePlayer.opponent.color}'s Turn`;
   }
 
   function rotateBoard(_: BaseMove[]) {

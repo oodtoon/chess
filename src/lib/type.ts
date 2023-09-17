@@ -40,3 +40,29 @@ export type ComponentEventPayload<
   EventType extends keyof GetEvents<CMP>,
 > = CustomEventPayload<GetEvents<CMP>[EventType]>;
 export type Square = [number, number]
+
+export type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
+export type GameTerminationReason =
+  | "checkmate"
+  | "stalemate"
+  | "three-fold repitition"
+  | "resignation"
+  | "draw agreed"
+  | null
+  
+export type GameTerminationOptions = {
+  result: GameResult;
+  reason: GameTerminationReason;
+};
+
+export type Request = {
+  type: string,
+  title: string,
+  content?: string
+}
+
+export type Response = {
+  type: string,
+  result: GameResult,
+  reason: GameTerminationReason
+}

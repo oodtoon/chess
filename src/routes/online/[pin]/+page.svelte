@@ -12,15 +12,24 @@
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
-  import Welcome from "$lib/components/dialogs/Welcome.svelte";
+  import Waiting from "$lib/components/dialogs/Waiting.svelte";
+  import {
+    closeDialog,
+    displayEndGameDialog,
+    displayReviewDialog,
+  } from "$lib/controllers/utils/dialog-utils.js";
+  import type { Request, Response } from "$lib/type.js";
 
   export let data;
   let isRoomFull: boolean = false;
+  let isAccepted: boolean;
+  let oldMovesLength: number = 0;
   const { room, team } = data;
 
   const eventBus = new EventBus();
 
-  const { game } = setGameContext(new GameModel(eventBus));
+  const gameCtx = setGameContext(new GameModel(eventBus));
+  const { game } = gameCtx;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -29,6 +38,10 @@
   onMount(() => {
     setupRoom();
   });
+
+  $: if (isRoomFull) {
+    closeDialog("waiting");
+  }
 
   async function setupRoom() {
     if (!$room) {
@@ -41,15 +54,46 @@
         $team = player.color;
       }
       if ($room.state.strMoves.length > 0) {
-        resetGameBoard([...$room.state.strMoves]);
+        setAllPieces([...$room.state.strMoves]);
       }
 
       if ($room.state.players.size === 2) {
         isRoomFull = true;
       }
     });
+
     $room.state.strMoves.onChange(() => {
-      updateGameState([...$room.state.strMoves]);
+      if (
+        oldMovesLength > $room.state.strMoves.length &&
+        $room.state.strMoves.length !== 0
+      ) {
+        game.update(($game) => {
+          $game.undoMove();
+          return $game;
+        });
+        setAllPieces([...$room.state.strMoves]);
+      } else {
+        updateGameState([...$room.state.strMoves]);
+      }
+      oldMovesLength = $room.state.strMoves.length;
+    });
+
+    $room.onMessage("request", (message: Request) => {
+      const { type, title, content } = message;
+      if (content) {
+        handleReviewDialog(type, title, content);
+      } else {
+        handleReviewDialog(type, title);
+      }
+    });
+
+    $room.onMessage("response", (message: Response) => {
+      if (message.type === "draw") {
+        $game.terminate({ result: message.result, reason: message.reason });
+        displayEndGameDialog(gameCtx);
+      }
+      closeDialog("waiting");
+      $game=$game
     });
   }
 
@@ -72,7 +116,7 @@
     $game = $game;
   }
 
-  function resetGameBoard(strMoves: string[]) {
+  function setAllPieces(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     parsedPgn.moves.forEach((move) => {
       consumeToken(move, $game);
@@ -84,6 +128,30 @@
     const pgn = derivePgnFromMoveStrings(strMoves);
     return parsePgn(pgn);
   }
+
+  async function handleReviewDialog(type: string, title: string, msg?: string) {
+    const accepted = await displayReviewDialog(title, msg);
+    isAccepted = accepted.accepted;
+    if (isAccepted) {
+      if (type === "draw") {
+        $room.send("response", {
+          type,
+          result: "1/2-1/2",
+          reason: "draw agreed",
+        });
+      } else {
+        $room.send("response", {
+          type,
+        });
+        $room.send("undoMove");
+      }
+      $game = $game;
+    } else {
+      $room.send("response", {
+        type: "close",
+      });
+    }
+  }
 </script>
 
 <svelte:head>
@@ -91,9 +159,7 @@
 </svelte:head>
 
 <div class="container">
-  {#if !isRoomFull}
-    <Welcome />
-  {/if}
+  <Waiting {isRoomFull} />
 
   <h2 class="turn" id="turn">{getTurnText($game)}</h2>
 
@@ -110,7 +176,7 @@
 
   <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
   <MoveList />
-  <GameButtons />
+  <GameButtons {data} isMultiPlayer={true} {isAccepted} />
 </div>
 
 <style>
@@ -123,12 +189,6 @@
 
   * {
     user-select: none;
-  }
-
-  .welcomeMessage {
-    color: white;
-    font-weight: 800;
-    font-size: xx-large;
   }
   .container {
     display: grid;

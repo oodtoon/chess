@@ -1,25 +1,35 @@
 <script lang="ts">
+  import Dots from "../Dots.svelte";
   import Dialog from "./Dialog.svelte";
 
+  export let isRoomFull: boolean
 </script>
 
-<Dialog id="welcome" class="welcome-dialog">
-  <h1 id="welcome-msg" class="msg">
-    Waiting on opponent...
+<Dialog id="waiting" class="waiting-dialog">
+  <h1 id="waiting-msg" class="msg">
+    Waiting on opponent<span class="dots"><Dots /></span>
   </h1>
 
+  {#if !isRoomFull}
   <div class="btn-container">
     <a class="decline btn" href="/">Leave</a>
   </div>
+  {/if}
 </Dialog>
 
 <style>
-  :global(.welcome-dialog > form) {
+  :global(.waiting-dialog > form) {
     display: grid;
     grid-template-areas:
       "msg"
       "btns";
     justify-items: center;
+  }
+
+  .dots {
+    padding: 0;
+    position: relative;
+    top: .4em;
   }
 
   .msg {
@@ -50,9 +60,10 @@
     color: brown;
   }
 
-
   .decline:hover {
     color: white;
     background-color: brown;
   }
+
+
 </style>

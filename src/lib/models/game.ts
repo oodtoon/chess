@@ -12,19 +12,11 @@ import type EventBus from "$lib/event-bus.js";
 import { CompoundMove, type BaseMove } from "./move.js";
 import type { PgnMove } from "@mliebelt/pgn-types";
 import type { ParseTree } from "@mliebelt/pgn-parser";
-
-type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
-type GameTerminationReason =
-  | "checkmate"
-  | "stalemate"
-  | "three-fold repitition"
-  | "resignation"
-  | "draw agreed"
-  | null;
-type GameTerminationOptions = {
-  result: GameResult;
-  reason: GameTerminationReason;
-};
+import type {
+  GameResult,
+  GameTerminationReason,
+  GameTerminationOptions,
+} from "$lib/type.js";
 
 export default class Game {
   #initialMoveId = Symbol(crypto.randomUUID());

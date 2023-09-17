@@ -39,11 +39,13 @@
   .title {
     grid-area: title;
     justify-self: center;
+    white-space: pre-wrap;
   }
 
   .msg {
     grid-area: msg;
     place-self: center;
+    white-space: pre-wrap;
   }
 
   .btn-container {
