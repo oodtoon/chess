@@ -1,8 +1,9 @@
 import { Room, Client } from "colyseus.js";
 import { get } from "svelte/store";
 import { dev } from "$app/environment";
+import { PUBLIC_GAME_SERVER_BASE_URL } from "$env/static/public";
 
-let client = new Client(`ws://${import.meta.env.VITE_GAME_SERVER_BASE_URL}`);
+let client = new Client(`ws://${import.meta.env.PUBLIC_GAME_SERVER_BASE_URL}`);
 
 export async function createRoom() {
   const room = (await client.create("online_room")) as Room;
@@ -48,8 +49,8 @@ export async function joinPrivateRoom(id: string) {
       } catch {}
     }
   }
-  window.alert("connection failed")
-  throw new Error("connection error")
+  window.alert("connection failed");
+  throw new Error("connection error");
 }
 
 type ReconnectionTokenUpdater = (str: string | null) => string;
