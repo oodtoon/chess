@@ -7,20 +7,21 @@ import { LocalRoom } from "./rooms/LocalRoom";
 import { RedisDriver, RedisPresence, Server } from "colyseus";
 import { createServer } from "http";
 import express from "express";
+import cors from "cors"
 
 const port = Number(process.env.port) || 2567;
 
 const app = express();
+
 app.use(express.json());
+app.use(cors())
 
 const gameServer = new Server({
   server: createServer(app),
-
-  // use a unique public address for each process
-  publicAddress: "chess-game-server-ten.vercel.app",
 });
 
 gameServer.define("online_room", OnlineRoom);
 gameServer.define("local_room", LocalRoom);
 
 gameServer.listen(port);
+
