@@ -241,7 +241,6 @@
   {#if isUndoDialog}
     <Undo on:close={closeUndoDialog} />
   {/if}
-
 </div>
 
 <style>

@@ -4,24 +4,34 @@
 import { OnlineRoom } from "./rooms/OnlineRoom";
 import { LocalRoom } from "./rooms/LocalRoom";
 
-import { RedisDriver, RedisPresence, Server } from "colyseus";
+import { Server } from "colyseus";
+import { RedisPresence } from "@colyseus/redis-presence";
+import { RedisDriver } from "@colyseus/redis-driver";
 import { createServer } from "http";
 import express from "express";
-import cors from "cors"
+import cors from "cors";
+
+type Constructor<K> = K extends { new: infer T } ? T : any;
+type RedisArg = Parameters<Constructor<RedisDriver>>[0];
 
 const port = Number(process.env.port) || 2567;
 
 const app = express();
 
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 
 const gameServer = new Server({
   server: createServer(app),
+  presence: new RedisPresence(
+    "redis://default:LT6BZdAEPc6oUzK266CFozVlw8SUhc8k@redis-18304.c82.us-east-1-2.ec2.cloud.redislabs.com:18304" as RedisArg
+  ),
+  driver: new RedisDriver(
+    "redis://default:LT6BZdAEPc6oUzK266CFozVlw8SUhc8k@redis-18304.c82.us-east-1-2.ec2.cloud.redislabs.com:18304" as RedisArg
+  ),
 });
 
 gameServer.define("online_room", OnlineRoom);
 gameServer.define("local_room", LocalRoom);
 
 gameServer.listen(port);
-

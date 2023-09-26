@@ -2,6 +2,7 @@
   import Board from "./Board.svelte";
   import ChessPiece from "./ChessPiece.svelte";
   import GhostMove from "./GhostMove.svelte";
+  import BoardNotation from "./BoardNotation.svelte";
   import { createEventDispatcher, onMount } from "svelte";
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
@@ -10,9 +11,12 @@
   import type { BaseMove } from "$lib/models/move";
   import Promotion from "./dialogs/Promotion.svelte";
   import End from "./dialogs/End.svelte";
+  import SquareButton from "./SquareButton.svelte";
 
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
+
+  let pieceRect: DOMRect | null | undefined
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
@@ -24,10 +28,6 @@
   let rotate: boolean = false;
 
   let turn: HTMLElement;
-  let endGameDialog: HTMLDialogElement;
-  let promotionDialog: HTMLDialogElement;
-  let undoDialog: HTMLDialogElement;
-  let reviewDialog: HTMLDialogElement;
 
   let whitePieces: HTMLElement;
   let blackPieces: HTMLElement;
@@ -46,18 +46,6 @@
     whitePieces = document.getElementById("White-pieces")!;
     blackPieces = document.getElementById("Black-pieces")!;
 
-    endGameDialog = document.querySelector(
-      "end-game-dialog"
-    ) as HTMLDialogElement;
-
-    promotionDialog = document.querySelector(
-      "promotion-dialog"
-    ) as HTMLDialogElement;
-
-    undoDialog = document.querySelector("undo-dialog") as HTMLDialogElement;
-
-    reviewDialog = document.querySelector("review-dialog") as HTMLDialogElement;
-
     return () => {
       eventBus.removeEventListener("move", handleMove);
     };
@@ -75,6 +63,12 @@
       } else {
         selectedPiece = piece;
       }
+    }
+  }
+
+  function handleSquareClick() {
+    if (selectedPiece) {
+      selectedPiece = null;
     }
   }
 
@@ -123,6 +117,7 @@
   }
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
+    
     const move = event.detail;
 
     if (move.isPromotion) {
@@ -130,6 +125,7 @@
       return;
     }
 
+    const rect = pieceRect
     $game.doMove(move);
     selectedPiece = null;
     $game = $game;
@@ -144,9 +140,17 @@
   function handleEndGameClose() {
     isClosed = true;
   }
+
+  function flip() {
+    const first = pieceRect?.top
+    const last = pieceRect?.top
+  }
+  
 </script>
 
 <Board {rotate} let:row let:file>
+  <BoardNotation {rotate} {row} {file} />
+
   {@const piece = $game.board.get(row, file)}
   {#if piece}
     <ChessPiece
@@ -154,6 +158,7 @@
       active={piece === selectedPiece}
       on:click={() => handlePieceClick(piece)}
       captured={false}
+      bind:contentRect={pieceRect}
     />
   {/if}
 
@@ -165,6 +170,8 @@
         move={ghostMove}
         on:click={handleGhostMove}
       />
+    {:else if !piece && ghostMove.row !== row && ghostMove.file !== file}
+      <SquareButton on:click={handleSquareClick} />
     {/if}
   {/each}
 </Board>

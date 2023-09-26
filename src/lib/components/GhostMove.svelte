@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { selectedPiece } from "../store"; 
+ // import { selectedPiece } from "../store"; 
   import type { BaseMove } from "$lib/models/move";
 
   export let isCapturedPiece: boolean = false;
@@ -11,7 +11,7 @@
 
   
   function handleGhostMoveClick(event: MouseEvent) {
-    selectedPiece.set(null)
+    //selectedPiece.set(null)
     dispatch("click", move)
   }
 </script>

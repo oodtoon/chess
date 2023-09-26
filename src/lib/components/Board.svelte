@@ -1,5 +1,10 @@
 <script lang="ts">
+  // import { selectedPiece } from "../store";
   export let rotate: boolean;
+
+  // function handleClick() {
+  //   console.log($selectedPiece)
+  // }
 
 </script>
 

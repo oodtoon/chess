@@ -1,19 +1,19 @@
 <script lang="ts">
   import type { Piece } from "$lib/models/pieces";
 
-
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;
+  export let contentRect = null
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <button
   class="piece"
   class:active
   class:captured
   style:background-image="url({piece?.img})"
   on:click
+  bind:contentRect
 >
   {piece?.icon}
 </button>

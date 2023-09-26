@@ -10,6 +10,7 @@ class Pawn extends Piece {
 
   name = "Pawn";
   hasMoved = false;
+  value = 1
 
   canEnPassant(row: number, file: number) {
     const squareContent = this.getSquareContent(row, file);

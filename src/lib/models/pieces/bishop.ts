@@ -5,8 +5,11 @@ class Bishop extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [2, 5];
   static notation = "B";
+ 
+  
 
   name = "Bishop";
+  value = 3
 
   computeMoves() {
     const directions = [

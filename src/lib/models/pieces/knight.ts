@@ -7,6 +7,7 @@ class Knight extends Piece {
   static notation = "N";
 
   name = "Knight";
+  value = 3
 
   computeMoves() {
     const directions = [

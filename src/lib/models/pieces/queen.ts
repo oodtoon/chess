@@ -7,6 +7,7 @@ class Queen extends Piece {
   static notation = "Q";
 
   name = "Queen";
+  value = 9
 
   computeMoves() {
     const directions = [

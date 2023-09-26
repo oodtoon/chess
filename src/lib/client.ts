@@ -20,6 +20,8 @@ export async function createLocalRoom() {
   reconnectionToken.set(room.reconnectionToken);
   console.log("local room", room, "created");
 
+  room.onError(console.log)
+
   return room;
 }
 
