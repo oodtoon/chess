@@ -24,10 +24,10 @@ app.use(cors());
 const gameServer = new Server({
   server: createServer(app),
   presence: new RedisPresence(
-    "redis://default:LT6BZdAEPc6oUzK266CFozVlw8SUhc8k@redis-18304.c82.us-east-1-2.ec2.cloud.redislabs.com:18304" as RedisArg
+    process.env.REDIS_SECRET as RedisArg
   ),
   driver: new RedisDriver(
-    "redis://default:LT6BZdAEPc6oUzK266CFozVlw8SUhc8k@redis-18304.c82.us-east-1-2.ec2.cloud.redislabs.com:18304" as RedisArg
+    process.env.REDIS_SECRET as RedisArg
   ),
 });
 

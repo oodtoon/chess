@@ -58,6 +58,7 @@
     background-color: transparent;
     border: transparent;
     cursor: pointer;
+    z-index: 2;
   }
 
   .ghost-move-container:hover > .ghost-move {

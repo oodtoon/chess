@@ -30,21 +30,23 @@
 {/if}
 
 <style>
-    .notation {
-    font-size: 1.5rem;
+  .notation {
+    /* font-size: 1rem; */
+    font-size: 1rem;
     font-weight: 800;
     position: absolute;
     color: white;
+    margin: 0;
   }
 
   .letter {
-    top: 1.8rem;
-    left: 4.1rem;
+    bottom: 0;
+    right: 0.25rem;
   }
 
   .number {
-    bottom: 1.8rem;
-    left: 0.1rem;
+    top: 0;
+    left: 0.25rem;
   }
 
   .brown {

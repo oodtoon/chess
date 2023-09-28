@@ -1,10 +1,13 @@
 <script lang="ts">
-  // import { selectedPiece } from "../store";
+  import { getGameContext } from "$lib/context";
+
+  const gameCtx = getGameContext();
+  const { game } = gameCtx;
+
   export let rotate: boolean;
 
-  // function handleClick() {
-  //   console.log($selectedPiece)
-  // }
+  $: executedMove = $game.moves.at(-1);
+
 
 </script>
 
@@ -19,6 +22,11 @@
       class:white={(index + offset) % 2 === 1}
       class:rotate
     >
+    {#if (executedMove?.sourceRow === row &&
+      executedMove?.sourceFile === file) ||
+      (executedMove?.row === row && executedMove?.file === file)}
+      <div class="executed-move"></div>
+    {/if}
       <slot {row} {file} />
     </div>
   {/each}
@@ -37,15 +45,17 @@
     grid-area: board;
     box-shadow: 0px 0px 20px 10px rgb(185, 184, 184);
     place-self: start;
+    border-radius: 4px;
   }
 
   .square {
+    position: relative;
     width: var(--responsive-size);
     min-width: var(--min-size);
     aspect-ratio: 1;
     font-size: calc(var(--responsive-size) * 0.75);
     text-align: center;
-    position: relative;
+    z-index: 0;
     display: flex;
   }
 
@@ -75,5 +85,18 @@
       min-width: 75px;
       min-height: 75px;
     }
+  }
+
+  .executed-move {
+    background-color: #f39a6d;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .75;
+  }
+  :global(.square:has(> .flipping)) {
+    z-index: 1;
   }
 </style>

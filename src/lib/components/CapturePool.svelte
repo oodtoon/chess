@@ -4,7 +4,14 @@
   import ChessPiece from "./ChessPiece.svelte";
 
   export let color: Color;
-  export let capturedPieces: Piece[] | null[];
+  export let capturedPieces: Piece[];
+
+  $: sortedCapturedPieces =
+    capturedPieces.length > 1
+      ? capturedPieces.sort((a, b) => {
+          return a?.value - b?.value;
+        })
+      : capturedPieces;
 
   $: playersCapturedValue = capturedPieces.reduce((acc, piece) => {
     acc = piece?.value! + acc;
@@ -27,7 +34,7 @@
 
   <div class="pieces">
     {#if capturedPieces.length > 0 && color !== capturedPieces[0]?.color}
-      {#each capturedPieces as piece}
+      {#each sortedCapturedPieces as piece}
         <ChessPiece {piece} active={false} captured />
       {/each}
     {/if}

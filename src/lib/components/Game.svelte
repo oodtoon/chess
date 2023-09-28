@@ -3,7 +3,7 @@
   import ChessPiece from "./ChessPiece.svelte";
   import GhostMove from "./GhostMove.svelte";
   import BoardNotation from "./BoardNotation.svelte";
-  import { createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
   import type { Piece } from "$lib/models/pieces";
@@ -11,12 +11,12 @@
   import type { BaseMove } from "$lib/models/move";
   import Promotion from "./dialogs/Promotion.svelte";
   import End from "./dialogs/End.svelte";
-  import SquareButton from "./SquareButton.svelte";
+
+  import { gsap } from "gsap/dist/gsap";
+  import { Flip } from "gsap/dist/Flip";
 
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
-
-  let pieceRect: DOMRect | null | undefined
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
@@ -66,9 +66,11 @@
     }
   }
 
-  function handleSquareClick() {
+  function handleDocumentClick(event: MouseEvent) {
     if (selectedPiece) {
-      selectedPiece = null;
+      const target = event.target as HTMLElement;
+      const activePiece = document.querySelector(".piece.active");
+      if (!activePiece?.contains(target)) selectedPiece = null;
     }
   }
 
@@ -117,7 +119,6 @@
   }
 
   async function handleGhostMove(event: CustomEvent<BaseMove>) {
-    
     const move = event.detail;
 
     if (move.isPromotion) {
@@ -125,7 +126,6 @@
       return;
     }
 
-    const rect = pieceRect
     $game.doMove(move);
     selectedPiece = null;
     $game = $game;
@@ -133,6 +133,8 @@
 
   $: if (isMultiPlayer) {
     rotate = team === "White" ? false : true;
+    $moveList;
+    animatePieceMove();
   } else {
     rotateBoard($moveList);
   }
@@ -141,12 +143,24 @@
     isClosed = true;
   }
 
-  function flip() {
-    const first = pieceRect?.top
-    const last = pieceRect?.top
+  gsap.registerPlugin(Flip);
+
+  async function animatePieceMove() {
+    const lastMove = $moveList.at(-1);
+    if (!lastMove) return;
+    const { initiatingPiece, capturedPiece } = lastMove;
+    const state = Flip.getState(`[data-flip-id=piece-${initiatingPiece?.id}]`);
+    await tick();
+
+    Flip.from(state, {
+      targets: ".livePiece",
+      duration: .3,
+      toggleClass: "flipping",
+    });
   }
-  
 </script>
+
+<svelte:document on:click={handleDocumentClick} />
 
 <Board {rotate} let:row let:file>
   <BoardNotation {rotate} {row} {file} />
@@ -158,7 +172,6 @@
       active={piece === selectedPiece}
       on:click={() => handlePieceClick(piece)}
       captured={false}
-      bind:contentRect={pieceRect}
     />
   {/if}
 
@@ -170,8 +183,6 @@
         move={ghostMove}
         on:click={handleGhostMove}
       />
-    {:else if !piece && ghostMove.row !== row && ghostMove.file !== file}
-      <SquareButton on:click={handleSquareClick} />
     {/if}
   {/each}
 </Board>
