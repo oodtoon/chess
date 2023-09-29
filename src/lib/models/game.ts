@@ -1,6 +1,6 @@
 import Board from "./board.js";
 import Player from "./player.js";
-import { fileToInt } from "../util.js";
+import { fileToInt, intToFile } from "../util.js";
 import {
   PIECE_NAME_MAPPING,
   Piece,
@@ -59,6 +59,9 @@ export default class Game {
     if (move instanceof CompoundMove) {
       moves = [move.kingMove, move.rookMove];
     } else {
+      if (shouldCommitMove) {
+        this.disambiguatePiece(move);
+      }
       moves = [move as Move];
     }
 
@@ -95,6 +98,33 @@ export default class Game {
         move.kingMove.initiatingPiece!.onMove(move);
       } else {
         move.initiatingPiece!.onMove(move);
+      }
+    }
+  }
+
+  disambiguatePiece(move: BaseMove) {
+    const pieceType = move.initiatingPiece!.name;
+    const allPiecesofType = move.player.livePieceMap[pieceType];
+    let piecesFromFile = 0;
+    let piecesThatCanMakeMove = 0;
+
+    for (const piece of allPiecesofType) {
+      for (const pieceMove of piece.moves) {
+        if (move.row === pieceMove.row && move.file === pieceMove.file) {
+          piecesThatCanMakeMove++;
+        }
+      }
+      if (move.sourceFile === piece.file) {
+        piecesFromFile++;
+      }
+    }
+
+    if (piecesThatCanMakeMove > 1) {
+      if (piecesFromFile > 1) {
+        let row = move.sourceRow! + 1
+        move.disc = row.toString();
+      } else {
+        move.disc = intToFile(move.sourceFile!);
       }
     }
   }
@@ -199,7 +229,6 @@ export default class Game {
 }
 
 export const consumeToken = (token: PgnMove, game: Game) => {
-  console.log(token)
   if (
     token.notation.notation === "O-O" ||
     token.notation.notation === "O-O-O"
@@ -233,6 +262,7 @@ const consumeCastleToken = (token: PgnMove, game: Game) => {
 };
 
 const consumeStandardToken = (token: PgnMove, game: Game) => {
+  console.log("discriminate!", token.notation.disc);
   const row = parseInt(token.notation.row!) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);

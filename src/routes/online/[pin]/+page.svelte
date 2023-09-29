@@ -58,15 +58,12 @@
         $team = player.color;
       }
 
-      // if ($room.state.strMoves.length > 0) {
-      //   setAllPieces([...$room.state.strMoves]);
-      // }
 
       roomSize = $room.state.players.size;
     });
 
-    $room.state.strMoves.onChange((change) => {
-      console.log(change);
+    $room.state.strMoves.onChange(() => {
+
 
       if (
         oldMovesLength > $room.state.strMoves.length &&

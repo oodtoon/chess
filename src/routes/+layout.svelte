@@ -4,12 +4,6 @@
   import "./styles.css";
 
   $: if ($navigating) {
-    console.log(
-      "to:",
-      $navigating.to?.url.href,
-      "from:",
-      $navigating.from?.url.href
-    );
     abort("page navigating");
   }
 </script>

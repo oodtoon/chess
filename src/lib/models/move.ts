@@ -10,12 +10,13 @@ export abstract class BaseMove {
   pieceToPromoteTo: Piece | null = null;
   sourceRow: number | null = null;
   sourceFile: number | null = null;
+  disc: string | null = "";
 
   abstract get row(): number;
   abstract get file(): number;
   abstract get isCompoundMove(): boolean;
 
-  abstract get isCapture(): boolean
+  abstract get isCapture(): boolean;
   abstract get isPawnDoubleMove(): boolean;
 
   id = Symbol(crypto.randomUUID());
@@ -81,6 +82,8 @@ export abstract class BaseMove {
         : ""
       : this.initiatingPiece!.notation;
 
+    const disc = this.disc;
+
     const capture = this.isCapture ? "x" : "";
     const checkMate = this.isCheckmate ? "#" : "";
     const check = this.isCheck && !this.isCheckmate ? "+" : "";
@@ -89,12 +92,11 @@ export abstract class BaseMove {
       : "";
 
     const square = coordToAlgebraic([this.row, this.file]);
-    return letter + capture + square + promotion + check + checkMate;
+    return letter + disc + capture + square + promotion + check + checkMate;
   }
 }
 
 export default class Move extends BaseMove {
-
   static fromSquare(
     square: [number, number],
     initiatingPiece: Piece,
@@ -105,6 +107,7 @@ export default class Move extends BaseMove {
 
   sourceRow: number | null;
   sourceFile: number | null;
+  disc: string | null
 
   constructor(
     readonly row: number,
@@ -116,6 +119,7 @@ export default class Move extends BaseMove {
 
     this.sourceRow = initiatingPiece!.row;
     this.sourceFile = initiatingPiece!.file;
+    this.disc = ""
   }
 
   get isPawnDoubleMove() {
@@ -172,10 +176,10 @@ export class CompoundMove extends BaseMove {
   }
 
   get isPawnDoubleMove() {
-    return false
+    return false;
   }
 
   get isCapture() {
-    return false
+    return false;
   }
 }
