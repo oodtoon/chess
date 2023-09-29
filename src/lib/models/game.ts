@@ -262,7 +262,6 @@ const consumeCastleToken = (token: PgnMove, game: Game) => {
 };
 
 const consumeStandardToken = (token: PgnMove, game: Game) => {
-  console.log("discriminate!", token.notation.disc);
   const row = parseInt(token.notation.row!) - 1;
   const stringFile = token.notation.col;
   const file = fileToInt(stringFile);
