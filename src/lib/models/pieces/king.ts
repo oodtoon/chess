@@ -1,6 +1,7 @@
 import Piece from "./piece";
 import Move, { BaseMove, CompoundMove } from "../move";
 import type { Square } from "$lib/type";
+import type Player from "../player";
 
 class King extends Piece {
   static startingRows = [0, 7];
@@ -28,14 +29,39 @@ class King extends Piece {
     return count;
   }
 
+  isCastleThroughCheck(player: Player, isShort: boolean) {
+    const travelSquares = isShort ? [5, 6] : [2, 3];
+    const isMovesThroughCheck = [];
+
+    const { livePieces } = player;
+    for (const targetPlayerPiece of livePieces) {
+      if (targetPlayerPiece.name !== "King") {
+        for (const move of targetPlayerPiece.moves) {
+          if (
+            move.row === this.row &&
+            (move.file === travelSquares[0] || move.file === travelSquares[1])
+          ) {
+            isMovesThroughCheck.push(true);
+          } else {
+            isMovesThroughCheck.push(false);
+          }
+        }
+      }
+    }
+    return isMovesThroughCheck.some((b) => b === true);
+  }
+
   getAvailableCastlingMoves(): CompoundMove[] {
-    if (this.hasMoved) return [];
+    if (this.hasMoved || this.isChecked) return [];
 
     const leftSquareCount = this.countEmptySquares(this.row, 1, 4);
     const rightSquareCount = this.countEmptySquares(this.row, 5, 7);
 
     const leftRook = this.getSquareContent(this.row, 0);
     const rightRook = this.getSquareContent(this.row, 7);
+
+    const shortSide = this.isCastleThroughCheck(this.opponent, true);
+    const longSide = this.isCastleThroughCheck(this.opponent, false);
 
     const castleOptions = [
       {
@@ -45,6 +71,7 @@ class King extends Piece {
         targetSquare: [this.row, 2],
         rookTargetSquare: [this.row, 3],
         isShort: false,
+        isSeen: longSide,
       },
       {
         rook: rightRook,
@@ -53,15 +80,17 @@ class King extends Piece {
         targetSquare: [this.row, 6],
         rookTargetSquare: [this.row, 5],
         isShort: true,
+        isSeen: shortSide,
       },
     ];
 
     return castleOptions
       .filter(
-        ({ rook, expectedSquares, actualSquares }) =>
+        ({ rook, expectedSquares, actualSquares, isSeen }) =>
           actualSquares === expectedSquares &&
           rook?.name === "Rook" &&
-          !rook.hasMoved
+          !rook.hasMoved &&
+          !isSeen
       )
       .map(
         ({ rook, targetSquare, rookTargetSquare, isShort }) =>
@@ -86,7 +115,7 @@ class King extends Piece {
     ];
     const available = directions.flatMap((dir) =>
       this.getLegalDirectionalMoves(dir, 1)
-    )
+    );
 
     available.push(...this.getAvailableCastlingMoves());
 

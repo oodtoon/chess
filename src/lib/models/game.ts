@@ -199,6 +199,7 @@ export default class Game {
 }
 
 export const consumeToken = (token: PgnMove, game: Game) => {
+  console.log(token)
   if (
     token.notation.notation === "O-O" ||
     token.notation.notation === "O-O-O"
@@ -221,6 +222,7 @@ const consumeCastleToken = (token: PgnMove, game: Game) => {
   } else {
     castlingKing = game.blackPlayer.livePieceMap.King[0];
   }
+
   castleMove = game
     .getMoves(castlingKing)
     .find(

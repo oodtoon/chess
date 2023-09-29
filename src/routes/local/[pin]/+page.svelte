@@ -17,7 +17,7 @@
   import { joinPrivateRoom } from "$lib/client.js";
 
   export let data;
-  const { room, team } = data;
+  const { room } = data;
 
   const eventBus = new EventBus();
   const gameContext = setGameContext(new GameModel(eventBus), "local");
@@ -43,9 +43,6 @@
         resetGameBoard([...$room.state.strMoves]);
       }
     });
-    $room.state.strMoves.onChange(() => {
-      updateGameState([...$room.state.strMoves]);
-    });
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
@@ -56,22 +53,14 @@
     $room.send("move", message);
   }
 
-  function updateGameState(strMoves: string[]) {
-    const parsedPgn = createPgn(strMoves);
-    const newMove = parsedPgn.moves.at(-1);
-    const color = newMove?.turn === "w" ? "White" : "Black";
-    if (color !== $team) {
-      consumeToken(newMove!, $game);
-    }
-    $game = $game;
-  }
-
   function resetGameBoard(strMoves: string[]) {
+    $game.eventBus.muted = true;
     const parsedPgn = createPgn(strMoves);
     parsedPgn.moves.forEach((move) => {
       consumeToken(move, $game);
     });
     $game = $game;
+    $game.eventBus.muted = false;
   }
 
   function createPgn(strMoves: string[]) {

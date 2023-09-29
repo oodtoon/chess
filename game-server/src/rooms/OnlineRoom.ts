@@ -9,37 +9,37 @@ export class OnlineRoom extends Room<GameState> {
   onCreate() {
     this.setState(new GameState());
 
-    if (this.state.players)
-      this.onMessage("move", (client, message) => {
-        if (message) {
-          console.log(
-            message.color,
-            this.state.players.get(client.sessionId).color
-          );
-          if (message.shouldCommit) {
-            return;
-          }
+    this.onMessage("move", (client, message) => {
+      if (message) {
 
-          if (
-            message.color === this.state.players.get(client.sessionId).color
-          ) {
-            const nextState = [...this.state.strMoves, message.move];
-            console.log(nextState);
-            const pgn = formatAsPgnString(nextState);
-
-            try {
-              parsePgn(pgn);
-              this.state.strMoves.push(message.move);
-            } catch (e) {
-              message.send(client, "error", e);
-              console.log(`${client} sent invalid move`);
-            }
-          } else {
-            this.send(client, "warning", { message: "not your turn" });
-            console.log("not your turn!");
-          }
+        if (!message.shouldCommitMove) {
+          console.log("refresh")
         }
-      });
+        
+        console.log(
+          message,
+          message.color,
+          this.state.players.get(client.sessionId).color
+        );
+
+        if (message.color === this.state.players.get(client.sessionId).color) {
+          const nextState = [...this.state.strMoves, message.move];
+          console.log(nextState);
+          const pgn = formatAsPgnString(nextState);
+
+          try {
+            parsePgn(pgn);
+            this.state.strMoves.push(message.move);
+          } catch (e) {
+            message.send(client, "error", e);
+            console.log(`${client} sent invalid move`);
+          }
+        } else {
+          this.send(client, "warning", { message: "not your turn" });
+          console.log("not your turn!");
+        }
+      }
+    });
 
     this.onMessage("undoMove", () => {
       this.state.strMoves.pop();
@@ -112,6 +112,9 @@ export class OnlineRoom extends Room<GameState> {
 
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
+      const message = {moves: [...this.state.strMoves], clientId: client.sessionId}
+      console.log([...this.state.strMoves])
+      client.send("rejoin", message)
       player.connected = true;
     } catch (error) {
       console.log("no reconnect", error);
