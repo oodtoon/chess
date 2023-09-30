@@ -5,19 +5,21 @@ import { PUBLIC_GAME_SERVER_BASE_URL } from "$env/static/public";
 
 let client = new Client(PUBLIC_GAME_SERVER_BASE_URL);
 
-export async function createRoom() {
-  const room = (await client.create("online_room")) as Room;
+export async function createRoom(time: string) {
+  const room = (await client.create("online_room", { minutes: time })) as Room;
 
   reconnectionToken.set(room.reconnectionToken);
+
   console.log(room, "created");
 
   return room;
 }
 
-export async function createLocalRoom() {
-  const room = (await client.create("local_room")) as Room;
+export async function createLocalRoom(time: string) {
+  const room = (await client.create("local_room", { minutes: time })) as Room;
 
   reconnectionToken.set(room.reconnectionToken);
+
   console.log("local room", room, "created");
 
   return room;

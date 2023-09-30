@@ -15,13 +15,17 @@
 
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io.js";
   import { joinPrivateRoom } from "$lib/client.js";
+  import ClockDisplay from "$lib/components/ClockDisplay.svelte";
+  import type { GameMinutes } from "$lib/type.js";
 
   export let data;
-  const { room, team } = data;
+  const { room, team, pin } = data;
 
   const eventBus = new EventBus();
   const gameContext = setGameContext(new GameModel(eventBus), "local");
   const { game } = gameContext;
+
+  let time: GameMinutes;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -33,7 +37,7 @@
 
   async function setupRoom() {
     if (!$room) {
-      $room = await joinPrivateRoom(data.pin);
+      $room = await joinPrivateRoom(pin!);
     }
 
     $room.state.players.onAdd((player: any, sessionId: string) => {
@@ -46,6 +50,12 @@
     $room.state.strMoves.onChange(() => {
       updateGameState([...$room.state.strMoves]);
     });
+
+    if ($room.state.minutes !== "Unlimited") {
+      time = parseInt($room.state.minutes) as GameMinutes;
+    } else {
+      time = $room.state.minutes;
+    }
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
@@ -130,6 +140,7 @@
     on:undo={handleUndo}
     on:resign={handleResign}
   />
+  <ClockDisplay minutes={time} game={$game} />
 </div>
 
 <style>
@@ -148,7 +159,7 @@
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "turn" "board" "btns" "moves-list";
+    grid-template-areas: "turn" "board" "btns" "moves-list" "time";
     margin: auto;
     max-width: 1400px;
     justify-items: center;
@@ -183,7 +194,8 @@
         "captured-black board"
         "captured-white board"
         "btns board"
-        ". moves-list";
+        ". moves-list"
+        "time time";
     }
 
     .capture-container {
@@ -209,7 +221,8 @@
         " turn board moves-list"
         "captured-black board moves-list"
         "btns board ."
-        ". board  .";
+        ". board  ."
+        ". time .";
     }
 
     .capture-container {

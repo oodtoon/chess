@@ -14,4 +14,5 @@ export default class GameState extends Schema {
   @type({ array: "string" }) strMoves = new ArraySchema<string>();
 
   @type({ map: Player }) players = new MapSchema<Player>();
+  @type("string") minutes: string = "";
 }

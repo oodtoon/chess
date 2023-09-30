@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import type { Room } from "colyseus.js";
 import { abort } from "$lib/components/dialogs";
+import type { GameMinutes } from "$lib/type";
 
 export const prerender = false;
 export const ssr = false;

@@ -13,15 +13,17 @@
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
   import { getUndoTitle } from "$lib/controllers/utils/dialog-utils.js";
-  import type { Response } from "$lib/type.js";
+  import type { GameMinutes, Response } from "$lib/type.js";
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
   import Review from "$lib/components/dialogs/Review.svelte";
   import Undo from "$lib/components/dialogs/Undo.svelte";
+  import ClockDisplay from "$lib/components/ClockDisplay.svelte";
 
   export let data;
 
   let roomSize = 0;
   let isUndoDialog = false;
+  let time: GameMinutes = "Unlimited";
   const { room, team, pin } = data;
 
   $: dialogState = $room
@@ -60,6 +62,14 @@
       }
 
       roomSize = $room.state.players.size;
+
+      if ($room.state.minutes !== "Unlimited") {
+        time = parseInt($room.state.minutes) as GameMinutes;
+        console.log({ time });
+        console.log($room);
+      } else {
+        time = $room.state.minutes;
+      }
     });
 
     $room.state.strMoves.onChange(() => {
@@ -214,7 +224,7 @@
     />
   </section>
 
-  <Game on:move={handleMove} team={$team} isMultiPlayer />
+  <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
   <MoveList />
   <GameButtons
     on:draw={handleDraw}
@@ -242,6 +252,7 @@
     <Undo on:close={closeUndoDialog} />
   {/if}
 
+  <ClockDisplay minutes={time} game={$game} isMultiPlayer={true} {roomSize} />
 </div>
 
 <style>
@@ -259,7 +270,7 @@
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "turn" "board" "btns" "moves-list";
+    grid-template-areas: "turn" "board" "btns" "moves-list" "time";
     margin: auto;
     max-width: 1400px;
     justify-items: center;
@@ -294,7 +305,8 @@
         "captured-black board"
         "captured-white board"
         "btns board"
-        ". moves-list";
+        ". moves-list"
+        "time time";
     }
 
     .capture-container {
@@ -320,7 +332,8 @@
         " turn board moves-list"
         "captured-black board moves-list"
         "btns board ."
-        ". board  .";
+        ". board  ."
+        "time time time";
     }
 
     .capture-container {

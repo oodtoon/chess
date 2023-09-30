@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { createLocalRoom, createRoom } from "$lib/client";
   import boardImg from "$lib/images/board.png";
+  import type { GameMinutes } from "$lib/type.js";
   import type { Room } from "colyseus.js";
 
   export let data;
@@ -9,11 +10,14 @@
   let room: Room;
   let roomId: string;
 
+  let timeOptions = ["Unlimited", 1, 2, 3, 5, 10, 30, 60];
+  let chosenTime: GameMinutes = "Unlimited";
+
   async function setUpRoom(isMultiPlayer: boolean) {
     if (isMultiPlayer) {
-      room = await createRoom();
+      room = await createRoom(chosenTime.toString());
     } else {
-      room = await createLocalRoom();
+      room = await createLocalRoom(chosenTime.toString());
     }
 
     roomId = room.roomId;
@@ -45,6 +49,21 @@
     <button on:click={() => createRoomPin(false)} class="board-btn">
       <img src={boardImg} alt="chess board" class="board" />
     </button>
+
+    <div class="time-select">
+      <h2>Select minutes each player gets:</h2>
+      {#each timeOptions as time}
+        <label class="input"
+          ><input
+            type="radio"
+            name="minutes"
+            value={time}
+            bind:group={chosenTime}
+          />
+          {time}
+        </label>
+      {/each}
+    </div>
 
     <button on:click={() => createRoomPin(false)} class="btn local"
       >Play On Same Computer</button
@@ -87,7 +106,7 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "board local" "board online";
+    grid-template-areas: "board time-select" "board local" "board online";
     gap: 1em;
   }
 
@@ -115,6 +134,15 @@
   .board {
     width: calc(var(--responsive-size) * 8);
     height: calc(var(--responsive-size) * 8);
+  }
+
+  .time-select {
+    grid-area: time-select;
+    color: white;
+  }
+
+  .input {
+    display: block;
   }
 
   .local {

@@ -3,17 +3,16 @@ import GameState from "../models/game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/game-state";
 
+type TimeOptions = { minutes: string}
 export class LocalRoom extends Room<GameState> {
   maxClients = 1;
 
-  onCreate() {
+  onCreate(options: TimeOptions) {
     this.setState(new GameState());
+    this.state.minutes = options.minutes
 
     this.onMessage("move", (client, message) => {
       if (message) {
-        // if (message.shouldCommit) {
-        //   return;
-        // }
 
         const nextState = [...this.state.strMoves, message.move];
         console.log(nextState);

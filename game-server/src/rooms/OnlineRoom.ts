@@ -3,11 +3,14 @@ import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/online-game-state";
 
+type TimeOptions = { minutes: string }
+
 export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
 
-  onCreate() {
+  onCreate(options: TimeOptions) {
     this.setState(new GameState());
+    this.state.minutes = options.minutes
 
     if (this.state.players)
       this.onMessage("move", (client, message) => {
@@ -119,11 +122,6 @@ export class OnlineRoom extends Room<GameState> {
     }
   }
 
-  private getOtherClient(client: Client) {
-    const currentIndex = this.clients.indexOf(client);
-    const otherIndex = +!currentIndex;
-    return this.clients[otherIndex];
-  }
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
