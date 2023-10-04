@@ -15,17 +15,18 @@
 
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io.js";
   import { joinPrivateRoom } from "$lib/client.js";
-  import ClockDisplay from "$lib/components/ClockDisplay.svelte";
-  import type { GameMinutes } from "$lib/type.js";
+  import GameClock from "$lib/components/GameClock.svelte";
 
   export let data;
+  let roomSize: number = 0;
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
   const gameContext = setGameContext(new GameModel(eventBus), "local");
   const { game } = gameContext;
 
-  let time: GameMinutes;
+  let whiteClock: number;
+  let blackClock: number;
 
   function getTurnText(game: GameModel) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -51,17 +52,16 @@
       updateGameState([...$room.state.strMoves]);
     });
 
-    if ($room.state.minutes !== "Unlimited") {
-      time = parseInt($room.state.minutes) as GameMinutes;
-    } else {
-      time = $room.state.minutes;
-    }
+    roomSize = $room.state.players.size;
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
+      moveTime: Math.round(Date.now() / 1000),
+      whiteClock,
+      blackClock,
     };
     $room.send("move", message);
   }
@@ -140,7 +140,23 @@
     on:undo={handleUndo}
     on:resign={handleResign}
   />
-  <ClockDisplay minutes={time} game={$game} />
+
+  {#if $room && $room.state.minutes !== "Unlimited"}
+    <div class="clock-display">
+      <GameClock
+        seconds={$room.state.whiteClock}
+        bind:time={whiteClock}
+        {roomSize}
+        color={"White"}
+      />
+      <GameClock
+        seconds={$room.state.blackClock}
+        bind:time={blackClock}
+        {roomSize}
+        color={"Black"}
+      />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -179,6 +195,9 @@
     place-self: center;
   }
 
+  .clock-display {
+    grid-area: time;
+  }
   @media (min-width: 700px) {
     :root {
       --responsive-size: 4rem;

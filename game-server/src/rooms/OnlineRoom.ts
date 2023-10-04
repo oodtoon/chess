@@ -3,14 +3,19 @@ import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/online-game-state";
 
-type TimeOptions = { minutes: string }
+type TimeOptions = { minutes: string };
 
 export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
 
   onCreate(options: TimeOptions) {
     this.setState(new GameState());
-    this.state.minutes = options.minutes
+    this.state.minutes = options.minutes;
+    if (options.minutes !== "Unlimited") {
+      const numMins = parseInt(options.minutes) * 60;
+      this.state.whiteClock = numMins;
+      this.state.blackClock = numMins;
+    }
 
     if (this.state.players)
       this.onMessage("move", (client, message) => {
@@ -33,6 +38,12 @@ export class OnlineRoom extends Room<GameState> {
             try {
               parsePgn(pgn);
               this.state.strMoves.push(message.move);
+
+              if (options.minutes !== "Unlimited") {
+                this.state.moveTime = message.moveTime;
+                this.state.whiteClock = message.whiteClock;
+                this.state.blackClock = message.blackClock;
+              }
             } catch (e) {
               message.send(client, "error", e);
               console.log(`${client} sent invalid move`);
@@ -115,13 +126,22 @@ export class OnlineRoom extends Room<GameState> {
 
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
+
+      const rejoinTime = Math.round(Date.now() / 1000);
+      const timeDifference = rejoinTime - this.state.moveTime;
+      console.log("rejoin", rejoinTime, timeDifference)
+      if (this.state.strMoves.length % 2 === 0) {
+        this.state.whiteClock -= timeDifference;
+      } else {
+        this.state.blackClock -= timeDifference;
+      }
+
       player.connected = true;
     } catch (error) {
       console.log("no reconnect", error);
       this.state.players.delete(client.sessionId);
     }
   }
-
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");

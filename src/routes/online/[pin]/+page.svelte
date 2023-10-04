@@ -17,14 +17,17 @@
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
   import Review from "$lib/components/dialogs/Review.svelte";
   import Undo from "$lib/components/dialogs/Undo.svelte";
-  import ClockDisplay from "$lib/components/ClockDisplay.svelte";
+  import GameClock from "$lib/components/GameClock.svelte";
 
   export let data;
 
   let roomSize = 0;
   let isUndoDialog = false;
-  let time: GameMinutes = "Unlimited";
+  let minutes: GameMinutes = "Unlimited";
   const { room, team, pin } = data;
+
+  let whiteClock: number = 0
+  let blackClock: number = 0
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -64,11 +67,10 @@
       roomSize = $room.state.players.size;
 
       if ($room.state.minutes !== "Unlimited") {
-        time = parseInt($room.state.minutes) as GameMinutes;
-        console.log({ time });
+        minutes = parseInt($room.state.minutes) as GameMinutes;
         console.log($room);
       } else {
-        time = $room.state.minutes;
+        minutes = $room.state.minutes;
       }
     });
 
@@ -109,6 +111,9 @@
       const message = {
         move: event.detail.move.toString(),
         color: event.detail.move.player.color,
+        moveTime: Math.round(Date.now() / 1000),
+        whiteClock,
+        blackClock
       };
       $room.send("move", message);
     }
@@ -204,6 +209,7 @@
       isUndoDialog = true;
     }
   }
+
 </script>
 
 <svelte:head>
@@ -252,7 +258,24 @@
     <Undo on:close={closeUndoDialog} />
   {/if}
 
-  <ClockDisplay minutes={time} game={$game} isMultiPlayer={true} {roomSize} />
+  {#if minutes !== "Unlimited"}
+  <div class="clock-display">
+    <GameClock
+      seconds={$room.state.whiteClock}
+      bind:time={whiteClock}
+      {roomSize}
+      isMultiPlayer={true}
+      color={"White"}
+    />
+    <GameClock
+    seconds={$room.state.blackClock}
+      bind:time={blackClock}
+      {roomSize}
+      isMultiPlayer={true}
+      color={"Black"}
+    />
+  </div>
+{/if}
 </div>
 
 <style>
@@ -288,6 +311,10 @@
     color: #49a6e9;
     grid-area: turn;
     place-self: center;
+  }
+
+  .clock-display {
+    grid-area: time;
   }
 
   @media (min-width: 700px) {

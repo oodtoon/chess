@@ -15,4 +15,7 @@ export default class GameState extends Schema {
 
   @type({ map: Player }) players = new MapSchema<Player>();
   @type("string") minutes: string = "";
+  @type("number") moveTime: number = 0;
+  @type("number") whiteClock: number = 0;
+  @type("number") blackClock: number = 0;
 }
