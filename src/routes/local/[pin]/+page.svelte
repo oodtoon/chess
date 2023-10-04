@@ -16,9 +16,13 @@
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io.js";
   import { joinPrivateRoom } from "$lib/client.js";
   import GameClock from "$lib/components/GameClock.svelte";
+  import type { GameMinutes } from "$lib/type.js";
 
   export let data;
   let roomSize: number = 0;
+  let minutes: GameMinutes
+  let ws: number
+  let bs: number
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
@@ -43,6 +47,12 @@
 
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
+
+      if ($room.state.minutes !== "Unlimited") {
+        minutes = $room.state.minutes
+        ws = $room.state.whiteClock
+        bs = $room.state.blackClock
+      }
 
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
@@ -141,16 +151,16 @@
     on:resign={handleResign}
   />
 
-  {#if $room && $room.state.minutes !== "Unlimited"}
+  {#if minutes !== "Unlimited"}
     <div class="clock-display">
       <GameClock
-        seconds={$room.state.whiteClock}
+        seconds={ws}
         bind:time={whiteClock}
         {roomSize}
         color={"White"}
       />
       <GameClock
-        seconds={$room.state.blackClock}
+        seconds={bs}
         bind:time={blackClock}
         {roomSize}
         color={"Black"}
