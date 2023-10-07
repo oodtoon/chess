@@ -151,7 +151,7 @@
     on:resign={handleResign}
   />
 
-  {#if minutes !== "Unlimited"}
+  {#if minutes && minutes !== "Unlimited"}
     <div class="clock-display">
       <GameClock
         seconds={ws}
