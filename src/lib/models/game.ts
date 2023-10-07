@@ -104,11 +104,11 @@ export default class Game {
 
   disambiguatePiece(move: BaseMove) {
     const pieceType = move.initiatingPiece!.name;
-    const allPiecesofType = move.player.livePieceMap[pieceType];
+    const allPiecesOfType = move.player.livePieceMap[pieceType];
     let piecesFromFile = 0;
     let piecesThatCanMakeMove = 0;
 
-    for (const piece of allPiecesofType) {
+    for (const piece of allPiecesOfType) {
       for (const pieceMove of piece.moves) {
         if (move.row === pieceMove.row && move.file === pieceMove.file) {
           piecesThatCanMakeMove++;

@@ -107,7 +107,6 @@ export default class Move extends BaseMove {
 
   sourceRow: number | null;
   sourceFile: number | null;
-  disc: string | null
 
   constructor(
     readonly row: number,
@@ -119,7 +118,6 @@ export default class Move extends BaseMove {
 
     this.sourceRow = initiatingPiece!.row;
     this.sourceFile = initiatingPiece!.file;
-    this.disc = ""
   }
 
   get isPawnDoubleMove() {

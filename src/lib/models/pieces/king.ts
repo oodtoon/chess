@@ -29,11 +29,10 @@ class King extends Piece {
     return count;
   }
 
-  isCastleThroughCheck(player: Player, isShort: boolean) {
+  isCastleThroughCheck(isShort: boolean) {
     const travelSquares = isShort ? [5, 6] : [2, 3];
-    const isMovesThroughCheck = [];
 
-    const { livePieces } = player;
+    const { livePieces } = this.opponent;
     for (const targetPlayerPiece of livePieces) {
       if (targetPlayerPiece.name !== "King") {
         for (const move of targetPlayerPiece.moves) {
@@ -41,14 +40,12 @@ class King extends Piece {
             move.row === this.row &&
             (move.file === travelSquares[0] || move.file === travelSquares[1])
           ) {
-            isMovesThroughCheck.push(true);
-          } else {
-            isMovesThroughCheck.push(false);
-          }
+            return true
+          } 
         }
       }
     }
-    return isMovesThroughCheck.some((b) => b === true);
+    return false
   }
 
   getAvailableCastlingMoves(): CompoundMove[] {
@@ -60,8 +57,8 @@ class King extends Piece {
     const leftRook = this.getSquareContent(this.row, 0);
     const rightRook = this.getSquareContent(this.row, 7);
 
-    const shortSide = this.isCastleThroughCheck(this.opponent, true);
-    const longSide = this.isCastleThroughCheck(this.opponent, false);
+    const shortSide = this.isCastleThroughCheck(true);
+    const longSide = this.isCastleThroughCheck(false);
 
     const castleOptions = [
       {

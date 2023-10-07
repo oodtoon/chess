@@ -58,13 +58,10 @@
         $team = player.color;
       }
 
-
       roomSize = $room.state.players.size;
     });
 
     $room.state.strMoves.onChange(() => {
-
-
       if (
         oldMovesLength > $room.state.strMoves.length &&
         $room.state.strMoves.length !== 0
@@ -84,9 +81,7 @@
     $room.onMessage("rejoin", (message) => {
       shouldCommitMove = false;
 
-      if ($room.sessionId === message.clientId) {
-        setAllPieces(message.moves);
-      }
+      setAllPieces(message.moves);
 
       shouldCommitMove = true;
     });
