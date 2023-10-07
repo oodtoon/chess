@@ -2,7 +2,6 @@ import type { Piece } from "$lib/models/pieces";
 import { writable, derived } from "svelte/store";
 import type Move from "./models/move";
 
-
 export const selectedPiece = writable<Piece | null>();
 
 export const capturedPiece = writable<Piece>();

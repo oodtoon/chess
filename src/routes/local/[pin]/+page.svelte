@@ -20,7 +20,7 @@
 
   export let data;
   let roomSize: number = 0;
-  let minutes: GameMinutes
+  let minutes: GameMinutes = Infinity
   let ws: number
   let bs: number
   const { room, team, pin } = data;
@@ -48,7 +48,7 @@
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
-      if ($room.state.minutes !== "Unlimited") {
+      if ($room.state.minutes !== Infinity) {
         minutes = $room.state.minutes
         ws = $room.state.whiteClock
         bs = $room.state.blackClock
@@ -151,7 +151,7 @@
     on:resign={handleResign}
   />
 
-  {#if minutes && minutes !== "Unlimited"}
+  {#if minutes && minutes !== Infinity}
     <div class="clock-display">
       <GameClock
         seconds={ws}

@@ -3,7 +3,6 @@
 
   export let seconds: number;
   export let time: number;
-  // export let isPaused: boolean;
   export let color: string;
   export let isMultiPlayer: boolean = false;
   export let roomSize: number;
@@ -38,7 +37,7 @@
   const formatSecond = (t: string) =>
     (parseInt(t) % 60).toString().padStart(2, "0");
 
-  const formatMili = (t: string) => t.toString().padStart(2, "0").padEnd(2);
+  const formatMili = (t: string) => t.toString().padStart(2, "0")
 
   $: if (!isPaused) {
     clockInt = setInterval(countDown, 100);

@@ -22,7 +22,7 @@ export default class GameState extends Schema {
   @type({ array: "string" }) strMoves = new ArraySchema<string>();
   @type({ map: Player }) players = new MapSchema<Player>();
   @type(RequestState) requestState: RequestState = new RequestState();
-  @type("string") minutes: string = ""
+  @type("number") minutes: number = 0
   @type("number") moveTime: number = 0
   @type("number") whiteClock: number = 0
   @type("number") blackClock: number = 0

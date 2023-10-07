@@ -3,7 +3,7 @@ import GameState from "../models/game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/game-state";
 
-type TimeOptions = { minutes: string };
+type TimeOptions = { minutes: number };
 export class LocalRoom extends Room<GameState> {
   maxClients = 1;
 
@@ -11,10 +11,10 @@ export class LocalRoom extends Room<GameState> {
     this.setState(new GameState());
     this.state.minutes = options.minutes
     
-    if (options.minutes !== "Unlimited") {
-      const numMins = parseInt(options.minutes) * 60;
-      this.state.whiteClock = numMins;
-      this.state.blackClock = numMins;
+    if (options.minutes !== Infinity) {
+      const seconds = options.minutes * 60;
+      this.state.whiteClock = seconds;
+      this.state.blackClock = seconds;
     }
 
     this.onMessage("move", (client, message) => {
@@ -27,7 +27,7 @@ export class LocalRoom extends Room<GameState> {
           parsePgn(pgn);
           this.state.strMoves.push(message.move);
 
-          if (options.minutes !== "Unlimited") {
+          if (options.minutes !== Infinity) {
             this.state.moveTime = message.moveTime;
             this.state.whiteClock = message.whiteClock;
             this.state.blackClock = message.blackClock;
@@ -66,6 +66,8 @@ export class LocalRoom extends Room<GameState> {
       const rejoinTime = Math.round(Date.now() / 1000);
       const timeDifference = rejoinTime - this.state.moveTime;
       console.log("rejoin", rejoinTime, timeDifference)
+
+      this.state.moveTime = rejoinTime
       if (this.state.strMoves.length % 2 === 0) {
         this.state.whiteClock -= timeDifference;
       } else {

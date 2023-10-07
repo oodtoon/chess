@@ -23,7 +23,7 @@
 
   let roomSize = 0;
   let isUndoDialog = false;
-  let minutes: GameMinutes = "Unlimited";
+  let minutes: GameMinutes = Infinity;
   const { room, team, pin } = data;
 
   let whiteClock: number = 0
@@ -66,8 +66,8 @@
 
       roomSize = $room.state.players.size;
 
-      if ($room.state.minutes !== "Unlimited") {
-        minutes = parseInt($room.state.minutes) as GameMinutes;
+      if ($room.state.minutes !== Infinity) {
+        minutes = $room.state.minutes as GameMinutes;
         console.log($room);
       } else {
         minutes = $room.state.minutes;
@@ -258,7 +258,7 @@
     <Undo on:close={closeUndoDialog} />
   {/if}
 
-  {#if minutes !== "Unlimited"}
+  {#if minutes !== Infinity}
   <div class="clock-display">
     <GameClock
       seconds={$room.state.whiteClock}

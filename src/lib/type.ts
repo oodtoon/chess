@@ -72,5 +72,5 @@ export type GameMode = "local" | "online";
 
 export type Scope = { controller: null | AbortController };
 
-export type GameMinutes = "Unlimited" | 1 | 2 | 3 | 5 | 10 | 30 | 60;
+export type GameMinutes = typeof Infinity | 1 | 2 | 3 | 5 | 10 | 30 | 60;
 

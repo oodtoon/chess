@@ -10,14 +10,14 @@
   let room: Room;
   let roomId: string;
 
-  let timeOptions = ["Unlimited", 1, 2, 3, 5, 10, 30, 60];
-  let chosenTime: GameMinutes = "Unlimited";
+  let timeOptions = [typeof Infinity, 1, 2, 3, 5, 10, 30, 60];
+  let chosenTime: GameMinutes = Infinity;
 
   async function setUpRoom(isMultiPlayer: boolean) {
     if (isMultiPlayer) {
-      room = await createRoom(chosenTime.toString());
+      room = await createRoom(chosenTime);
     } else {
-      room = await createLocalRoom(chosenTime.toString());
+      room = await createLocalRoom(chosenTime);
     }
 
     roomId = room.roomId;
