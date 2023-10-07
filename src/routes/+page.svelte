@@ -1,8 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { createLocalRoom, createRoom } from "$lib/client";
-  import Board from "$lib/components/Board.svelte";
-  import BoardNotation from "$lib/components/BoardNotation.svelte";
   import boardImg from "$lib/images/board.png";
   import type { Room } from "colyseus.js";
 

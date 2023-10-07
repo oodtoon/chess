@@ -1,39 +1,26 @@
 <script lang="ts">
-  import type { Piece } from "$lib/models/pieces";
-  import type { Color } from "$lib/type";
+  import type Player from "$lib/models/player";
   import ChessPiece from "./ChessPiece.svelte";
 
-  export let color: Color;
-  export let capturedPieces: Piece[];
+  export let player: Player
+  $: opponent = player.opponent
 
-  $: sortedCapturedPieces =
-    capturedPieces.length > 1
-      ? capturedPieces.sort((a, b) => {
+  $: sortedCapturedPieces = opponent.capturedPieces.sort((a, b) => {
           return a?.value - b?.value;
         })
-      : capturedPieces;
 
-  $: playersCapturedValue = capturedPieces.reduce((acc, piece) => {
-    acc = piece?.value! + acc;
-    return acc;
-  }, 0);
-  $: opponentsCapturedValue = capturedPieces[0]
-    ? capturedPieces[0].opponent.capturedPieces.reduce((acc, piece) => {
-        acc = piece?.value! + acc;
-        return acc;
-      }, 0)
-    : 0;
-  $: totalValue = playersCapturedValue - opponentsCapturedValue;
+  $: totalValue = player.capturedPiecesValue - opponent.capturedPiecesValue;
 </script>
 
-<div class="capture-pool {color}">
-  <h2>{color}'s Pieces Taken</h2>
+<div class="capture-pool {player.color}">
+  <p>{player.color}'s Pieces Taken</p>
   {#if totalValue > 0}
-    <h3>Adv: +{totalValue}</h3>
+    <p>Adv: +{totalValue}</p>
   {/if}
 
+
   <div class="pieces">
-    {#if capturedPieces.length > 0 && color !== capturedPieces[0]?.color}
+    {#if opponent.capturedPieces.length > 0}
       {#each sortedCapturedPieces as piece}
         <ChessPiece {piece} active={false} captured />
       {/each}
@@ -47,7 +34,7 @@
     color: #49a6e9;
   }
 
-  .Black > h2 {
+  .Black > p {
     color: #49a6e9;
     font-size: 25px;
     font-weight: 800;
@@ -58,7 +45,7 @@
     color: brown;
   }
 
-  .White > h2 {
+  .White > p {
     color: brown;
     font-size: 25px;
     font-weight: 800;

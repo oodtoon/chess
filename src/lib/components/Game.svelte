@@ -18,6 +18,8 @@
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
 
+  let isMounted = false;
+
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
   const dispatch = createEventDispatcher();
@@ -46,6 +48,7 @@
     whitePieces = document.getElementById("White-pieces")!;
     blackPieces = document.getElementById("Black-pieces")!;
 
+    isMounted = true;
     return () => {
       eventBus.removeEventListener("move", handleMove);
     };
@@ -134,7 +137,9 @@
   $: if (isMultiPlayer) {
     rotate = team === "White" ? false : true;
     $moveList;
-    animatePieceMove();
+    if (isMounted) {
+      animatePieceMove();
+    }
   } else {
     rotateBoard($moveList);
   }
@@ -148,13 +153,13 @@
   async function animatePieceMove() {
     const lastMove = $moveList.at(-1);
     if (!lastMove) return;
-    const { initiatingPiece, capturedPiece } = lastMove;
+    const { initiatingPiece } = lastMove;
     const state = Flip.getState(`[data-flip-id=piece-${initiatingPiece?.id}]`);
     await tick();
 
     Flip.from(state, {
       targets: ".livePiece",
-      duration: .3,
+      duration: 0.3,
       toggleClass: "flipping",
     });
   }

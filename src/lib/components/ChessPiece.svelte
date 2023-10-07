@@ -1,16 +1,12 @@
 <script lang="ts">
   import type { Piece } from "$lib/models/pieces";
-  import type { TransitionConfig } from "svelte/transition";
 
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;
 
   let livePiece = !captured;
-  type AnimateParams = { duration: number};
-  function animate(node: HTMLElement, args: AnimateParams): TransitionConfig {
-    return { };
-  }
+
 </script>
 
 <button

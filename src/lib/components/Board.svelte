@@ -6,7 +6,7 @@
 
   export let rotate: boolean;
 
-  $: executedMove = $game.moves.at(-1);
+  $: lastMove = $game.moves.at(-1);
 
 
 </script>
@@ -22,10 +22,10 @@
       class:white={(index + offset) % 2 === 1}
       class:rotate
     >
-    {#if (executedMove?.sourceRow === row &&
-      executedMove?.sourceFile === file) ||
-      (executedMove?.row === row && executedMove?.file === file)}
-      <div class="executed-move"></div>
+    {#if (lastMove?.sourceRow === row &&
+      lastMove?.sourceFile === file) ||
+      (lastMove?.row === row && lastMove?.file === file)}
+      <div class="last-move-square-overlay"></div>
     {/if}
       <slot {row} {file} />
     </div>
@@ -87,7 +87,7 @@
     }
   }
 
-  .executed-move {
+  .last-move-square-overlay {
     background-color: #f39a6d;
     position: absolute;
     top: 0;
