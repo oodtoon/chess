@@ -1,19 +1,28 @@
 <script lang="ts">
-  import type { Piece } from "$lib/models/pieces";
-  import type { Color } from "$lib/type";
+  import type Player from "$lib/models/player";
   import ChessPiece from "./ChessPiece.svelte";
 
+  export let player: Player
+  $: opponent = player.opponent
 
-  export let color: Color;
-  export let capturedPieces: Piece[] | null[];
+  $: sortedCapturedPieces = opponent.capturedPieces.sort((a, b) => {
+          return a?.value - b?.value;
+        })
+
+  $: totalValue = player.capturedPiecesValue - opponent.capturedPiecesValue;
 </script>
 
-<div class="capture-pool {color}">
-  <h2>{color}'s Pieces Taken</h2>
+<div class="capture-pool {player.color}">
+  <p>{player.color}'s Pieces Taken</p>
+  {#if totalValue > 0}
+    <p>Adv: +{totalValue}</p>
+  {/if}
+
+
   <div class="pieces">
-    {#if capturedPieces.length > 0 && color !== capturedPieces[0]?.color}
-      {#each capturedPieces as piece}
-        <ChessPiece {piece} active={false} captured/>
+    {#if opponent.capturedPieces.length > 0}
+      {#each sortedCapturedPieces as piece}
+        <ChessPiece {piece} active={false} captured />
       {/each}
     {/if}
   </div>
@@ -25,7 +34,7 @@
     color: #49a6e9;
   }
 
-  .Black > h2 {
+  .Black > p {
     color: #49a6e9;
     font-size: 25px;
     font-weight: 800;
@@ -33,9 +42,10 @@
 
   .White {
     grid-area: captured-white;
+    color: brown;
   }
 
-  .White > h2 {
+  .White > p {
     color: brown;
     font-size: 25px;
     font-weight: 800;

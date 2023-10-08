@@ -7,6 +7,7 @@ export class LocalRoom extends Room<GameState> {
   maxClients = 1;
 
   onCreate() {
+    console.log("local created")
     this.setState(new GameState());
 
     this.onMessage("move", (client, message) => {

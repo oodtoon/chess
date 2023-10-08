@@ -214,12 +214,10 @@
 
   <section class="capture-container">
     <CapturePool
-      color="White"
-      capturedPieces={$game.blackPlayer.capturedPieces}
+      player={$game.whitePlayer}
     />
     <CapturePool
-      color="Black"
-      capturedPieces={$game.whitePlayer.capturedPieces}
+      player={$game.blackPlayer}
     />
   </section>
 

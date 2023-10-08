@@ -26,5 +26,7 @@ COPY --from=builder /app /app
 WORKDIR /app
 ENV NODE_ENV production
 ENV PATH /usr/local/node/bin:$PATH
+ENV DEBUG colyseus:*
+ENV COLYSEUS_SEAT_RESERVATION_TIME 15
 
 CMD [ "npm", "run", "start" ]

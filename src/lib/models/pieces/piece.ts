@@ -9,6 +9,7 @@ abstract class Piece {
   static startingFiles: number[] = [];
   static notation = "";
   name: string = "";
+  value: number  =0
   #moveCache = new WeakMap();
   id = crypto.randomUUID();
   hasMoved = false;

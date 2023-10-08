@@ -47,6 +47,13 @@ export default class Player {
     return Object.values(this.capturedPieceMap).flat();
   }
 
+  get capturedPiecesValue() {
+    return this.capturedPieces.reduce((acc, piece) => {
+      acc = piece?.value! + acc;
+      return acc;
+    }, 0);
+  }
+
   addCapturedPiece(piece: Piece) {
     const pieceType = piece.name;
     if (!(pieceType in this.capturedPieceMap)) {
