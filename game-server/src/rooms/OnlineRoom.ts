@@ -25,9 +25,6 @@ export class OnlineRoom extends Room<GameState> {
             message.color,
             this.state.players.get(client.sessionId).color
           );
-          if (message.shouldCommit) {
-            return;
-          }
 
           if (
             message.color === this.state.players.get(client.sessionId).color

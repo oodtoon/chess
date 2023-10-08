@@ -20,9 +20,10 @@
 
   export let data;
   let roomSize: number = 0;
-  let minutes: GameMinutes = Infinity
-  let ws: number
-  let bs: number
+  let minutes: GameMinutes = Infinity;
+  let ws: number;
+  let bs: number;
+  let oldMovesLength: number;
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
@@ -49,17 +50,22 @@
       console.log("player:", sessionId, player.color, "has joined");
 
       if ($room.state.minutes !== Infinity) {
-        minutes = $room.state.minutes
-        ws = $room.state.whiteClock
-        bs = $room.state.blackClock
+        minutes = $room.state.minutes;
+        ws = $room.state.whiteClock;
+        bs = $room.state.blackClock;
       }
 
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
       }
     });
+
     $room.state.strMoves.onChange(() => {
-      updateGameState([...$room.state.strMoves]);
+      if ($room.state.strMoves > oldMovesLength) {
+        updateGameState([...$room.state.strMoves]);
+      }
+
+      oldMovesLength = $room.state.strMoves.length;
     });
 
     roomSize = $room.state.players.size;
@@ -88,9 +94,11 @@
 
   function resetGameBoard(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
+    $game.eventBus.muted = true;
     parsedPgn.moves.forEach((move) => {
       consumeToken(move, $game);
     });
+    $game.eventBus.muted = false;
     $game = $game;
   }
 

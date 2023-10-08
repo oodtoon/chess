@@ -61,7 +61,7 @@
         $team = player.color;
       }
       if ($room.state.strMoves.length > 0) {
-        setAllPieces([...$room.state.strMoves]);
+        resetGameBoard([...$room.state.strMoves]);
       }
 
       roomSize = $room.state.players.size;
@@ -83,7 +83,6 @@
           $game.undoMove();
           return $game;
         });
-        setAllPieces([...$room.state.strMoves]);
       } else {
         updateGameState([...$room.state.strMoves]);
       }
@@ -128,7 +127,7 @@
     $game = $game;
   }
 
-  function setAllPieces(strMoves: string[]) {
+  function resetGameBoard(strMoves: string[]) {
     const parsedPgn = createPgn(strMoves);
     $game.eventBus.muted = true;
     $game.fromParsedToken(parsedPgn);
