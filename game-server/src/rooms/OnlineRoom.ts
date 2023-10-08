@@ -7,6 +7,7 @@ export class OnlineRoom extends Room<GameState> {
   maxClients = 2;
 
   onCreate() {
+    console.log("created", this)
     this.setState(new GameState());
 
     if (this.state.players)
@@ -126,6 +127,7 @@ export class OnlineRoom extends Room<GameState> {
   }
 
   onDispose() {
+    console.log("right now")
     console.log("room", this.roomId, "disposing...");
   }
 }

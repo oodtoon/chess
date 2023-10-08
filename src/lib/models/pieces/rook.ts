@@ -7,6 +7,7 @@ class Rook extends Piece {
   static notation = "R";
 
   name = "Rook";
+  value = 5
   hasMoved = false;
 
   get icon() {

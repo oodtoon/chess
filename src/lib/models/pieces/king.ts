@@ -6,8 +6,10 @@ class King extends Piece {
   static startingRows = [0, 7];
   static startingFiles = [4];
   static notation = "K";
+  
 
   name = "King";
+  value = Infinity
   isChecked = false;
 
   setChecked() {

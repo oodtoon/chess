@@ -205,12 +205,10 @@
 
   <section class="capture-container">
     <CapturePool
-      color="White"
-      capturedPieces={$game.blackPlayer.capturedPieces}
+      player={$game.whitePlayer}
     />
     <CapturePool
-      color="Black"
-      capturedPieces={$game.whitePlayer.capturedPieces}
+      player={$game.blackPlayer}
     />
   </section>
 
@@ -241,7 +239,6 @@
   {#if isUndoDialog}
     <Undo on:close={closeUndoDialog} />
   {/if}
-
 </div>
 
 <style>

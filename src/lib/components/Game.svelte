@@ -2,7 +2,8 @@
   import Board from "./Board.svelte";
   import ChessPiece from "./ChessPiece.svelte";
   import GhostMove from "./GhostMove.svelte";
-  import { createEventDispatcher, onMount } from "svelte";
+  import BoardNotation from "./BoardNotation.svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
   import { getGameContext } from "../context";
   import type Player from "$lib/models/player";
   import type { Piece } from "$lib/models/pieces";
@@ -11,8 +12,13 @@
   import Promotion from "./dialogs/Promotion.svelte";
   import End from "./dialogs/End.svelte";
 
+  import { gsap } from "gsap/dist/gsap";
+  import { Flip } from "gsap/dist/Flip";
+
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
+
+  let isMounted = false;
 
   const gameContext = getGameContext();
   let { game, moveList } = gameContext;
@@ -24,10 +30,6 @@
   let rotate: boolean = false;
 
   let turn: HTMLElement;
-  let endGameDialog: HTMLDialogElement;
-  let promotionDialog: HTMLDialogElement;
-  let undoDialog: HTMLDialogElement;
-  let reviewDialog: HTMLDialogElement;
 
   let whitePieces: HTMLElement;
   let blackPieces: HTMLElement;
@@ -46,18 +48,7 @@
     whitePieces = document.getElementById("White-pieces")!;
     blackPieces = document.getElementById("Black-pieces")!;
 
-    endGameDialog = document.querySelector(
-      "end-game-dialog"
-    ) as HTMLDialogElement;
-
-    promotionDialog = document.querySelector(
-      "promotion-dialog"
-    ) as HTMLDialogElement;
-
-    undoDialog = document.querySelector("undo-dialog") as HTMLDialogElement;
-
-    reviewDialog = document.querySelector("review-dialog") as HTMLDialogElement;
-
+    isMounted = true;
     return () => {
       eventBus.removeEventListener("move", handleMove);
     };
@@ -75,6 +66,14 @@
       } else {
         selectedPiece = piece;
       }
+    }
+  }
+
+  function handleDocumentClick(event: MouseEvent) {
+    if (selectedPiece) {
+      const target = event.target as HTMLElement;
+      const activePiece = document.querySelector(".piece.active");
+      if (!activePiece?.contains(target)) selectedPiece = null;
     }
   }
 
@@ -137,6 +136,10 @@
 
   $: if (isMultiPlayer) {
     rotate = team === "White" ? false : true;
+    $moveList;
+    if (isMounted) {
+      animatePieceMove();
+    }
   } else {
     rotateBoard($moveList);
   }
@@ -144,9 +147,29 @@
   function handleEndGameClose() {
     isClosed = true;
   }
+
+  gsap.registerPlugin(Flip);
+
+  async function animatePieceMove() {
+    const lastMove = $moveList.at(-1);
+    if (!lastMove) return;
+    const { initiatingPiece } = lastMove;
+    const state = Flip.getState(`[data-flip-id=piece-${initiatingPiece?.id}]`);
+    await tick();
+
+    Flip.from(state, {
+      targets: ".livePiece",
+      duration: 0.3,
+      toggleClass: "flipping",
+    });
+  }
 </script>
 
+<svelte:document on:click={handleDocumentClick} />
+
 <Board {rotate} let:row let:file>
+  <BoardNotation {rotate} {row} {file} />
+
   {@const piece = $game.board.get(row, file)}
   {#if piece}
     <ChessPiece
