@@ -12,9 +12,6 @@ export class LocalRoom extends Room<GameState> {
 
     this.onMessage("move", (client, message) => {
       if (message) {
-        // if (message.shouldCommit) {
-        //   return;
-        // }
 
         const nextState = [...this.state.strMoves, message.move];
         console.log(nextState);

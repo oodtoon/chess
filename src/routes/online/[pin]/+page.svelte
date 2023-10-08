@@ -24,6 +24,8 @@
   let isUndoDialog = false;
   const { room, team, pin } = data;
 
+  let shouldCommitMove = true;
+
   $: dialogState = $room
     ? $room?.state.requestState
     : { hasRequest: false, type: "", title: "", content: "", playerColor: "" };
@@ -55,9 +57,6 @@
       if (sessionId === $room.sessionId) {
         $team = player.color;
       }
-      if ($room.state.strMoves.length > 0) {
-        setAllPieces([...$room.state.strMoves]);
-      }
 
       roomSize = $room.state.players.size;
     });
@@ -71,11 +70,20 @@
           $game.undoMove();
           return $game;
         });
-        setAllPieces([...$room.state.strMoves]);
       } else {
-        updateGameState([...$room.state.strMoves]);
+        if ($room.state.strMoves.length !== $game.moves.length) {
+          updateGameState([...$room.state.strMoves]);
+        }
       }
       oldMovesLength = $room.state.strMoves.length;
+    });
+
+    $room.onMessage("rejoin", (message) => {
+      shouldCommitMove = false;
+
+      setAllPieces(message.moves);
+
+      shouldCommitMove = true;
     });
 
     $room.onMessage("resign", (message: Response) => {
@@ -99,6 +107,7 @@
       const message = {
         move: event.detail.move.toString(),
         color: event.detail.move.player.color,
+        shouldCommitMove,
       };
       $room.send("move", message);
     }
