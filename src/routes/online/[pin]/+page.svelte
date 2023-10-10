@@ -8,7 +8,7 @@
   import { setGameContext } from "$lib/context";
 
   import { joinPrivateRoom } from "$lib/client";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import type { BaseMove } from "$lib/models/move";
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
@@ -18,6 +18,7 @@
   import Review from "$lib/components/dialogs/Review.svelte";
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
+  import { invalidateAll } from "$app/navigation";
 
   export let data;
 
@@ -26,8 +27,10 @@
   let minutes: GameMinutes = Infinity;
   const { room, team, pin } = data;
 
-  let whiteClock: number = 0
-  let blackClock: number = 0
+  let whiteClock: number = 0;
+  let blackClock: number = 0;
+  let ws: number;
+  let bs: number;
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -46,7 +49,13 @@
   }
 
   onMount(() => {
+    invalidateAll()
     setupRoom();
+  });
+
+  onDestroy(() => {
+    console.log("leaving");
+    $room.leave(false);
   });
 
   async function setupRoom() {
@@ -67,10 +76,9 @@
       roomSize = $room.state.players.size;
 
       if ($room.state.minutes !== Infinity) {
-        minutes = $room.state.minutes as GameMinutes;
-        console.log($room);
-      } else {
         minutes = $room.state.minutes;
+        ws = $room.state.whiteClock;
+        bs = $room.state.blackClock;
       }
     });
 
@@ -103,6 +111,11 @@
         drawGame();
       }
     });
+
+    $room.onMessage("timeUpdate", (message => {
+      ws = message.whiteClock
+      bs = message.blackClock
+    }))
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
@@ -110,9 +123,8 @@
       const message = {
         move: event.detail.move.toString(),
         color: event.detail.move.player.color,
-        moveTime: Math.round(Date.now() / 1000),
         whiteClock,
-        blackClock
+        blackClock,
       };
       $room.send("move", message);
     }
@@ -208,7 +220,6 @@
       isUndoDialog = true;
     }
   }
-
 </script>
 
 <svelte:head>
@@ -258,23 +269,23 @@
   {/if}
 
   {#if minutes !== Infinity}
-  <div class="clock-display">
-    <GameClock
-      seconds={$room.state.whiteClock}
-      bind:time={whiteClock}
-      {roomSize}
-      isMultiPlayer={true}
-      color={"White"}
-    />
-    <GameClock
-    seconds={$room.state.blackClock}
-      bind:time={blackClock}
-      {roomSize}
-      isMultiPlayer={true}
-      color={"Black"}
-    />
-  </div>
-{/if}
+    <div class="clock-display">
+      <GameClock
+        seconds={ws}
+        bind:time={whiteClock}
+        {roomSize}
+        isMultiPlayer={true}
+        color={"White"}
+      />
+      <GameClock
+        seconds={bs}
+        bind:time={blackClock}
+        {roomSize}
+        isMultiPlayer={true}
+        color={"Black"}
+      />
+    </div>
+  {/if}
 </div>
 
 <style>

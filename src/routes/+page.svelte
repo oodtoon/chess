@@ -10,7 +10,7 @@
   let room: Room;
   let roomId: string;
 
-  let timeOptions = [typeof Infinity, 1, 2, 3, 5, 10, 30, 60];
+  let timeOptions: number[] = [Infinity, 1, 2, 3, 5, 10, 30, 60];
   let chosenTime: GameMinutes = Infinity;
 
   async function setUpRoom(isMultiPlayer: boolean) {
@@ -60,7 +60,11 @@
             value={time}
             bind:group={chosenTime}
           />
-          {time}
+          {#if time !== Infinity}
+            {time}
+          {:else}
+            Unlimited
+          {/if}
         </label>
       {/each}
     </div>

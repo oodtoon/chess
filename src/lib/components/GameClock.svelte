@@ -52,6 +52,10 @@
     });
     $game = $game;
   }
+
+  $: if (time <=0) {
+    clearInterval(clockInt)
+  }
 </script>
 
 <span

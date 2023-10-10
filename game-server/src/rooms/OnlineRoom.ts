@@ -1,4 +1,4 @@
-import { Room, Client } from "@colyseus/core";
+import { Room, Client, Delayed } from "@colyseus/core";
 import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/online-game-state";
@@ -6,11 +6,14 @@ import { Player } from "../models/online-game-state";
 type TimeOptions = { minutes: number };
 
 export class OnlineRoom extends Room<GameState> {
+  public whiteInt!: Delayed;
+  public blackInt!: Delayed;
   maxClients = 2;
 
   onCreate(options: TimeOptions) {
     this.setState(new GameState());
-    this.state.minutes = options.minutes
+
+    this.state.minutes = options.minutes;
 
     if (options.minutes !== Infinity) {
       const seconds = options.minutes * 60;
@@ -18,40 +21,59 @@ export class OnlineRoom extends Room<GameState> {
       this.state.blackClock = seconds;
     }
 
-    if (this.state.players)
-      this.onMessage("move", (client, message) => {
-        if (message) {
-          console.log(
-            message.color,
-            this.state.players.get(client.sessionId).color
-          );
+    this.whiteInt = this.clock.setInterval(() => {
+      this.state.whiteClock -= 0.1;
+    }, 100);
 
-          if (
-            message.color === this.state.players.get(client.sessionId).color
-          ) {
-            const nextState = [...this.state.strMoves, message.move];
-            console.log(nextState);
-            const pgn = formatAsPgnString(nextState);
+    this.blackInt = this.clock.setInterval(() => {
+      this.state.blackClock -= 0.1;
+    }, 100);
 
-            try {
-              parsePgn(pgn);
-              this.state.strMoves.push(message.move);
+    if (this.state.players.size < 2) {
+      this.whiteInt.pause();
+      this.blackInt.pause();
+    } 
 
-              if (options.minutes !== Infinity) {
-                this.state.moveTime = message.moveTime;
-                this.state.whiteClock = message.whiteClock;
-                this.state.blackClock = message.blackClock;
-              }
-            } catch (e) {
-              message.send(client, "error", e);
-              console.log(`${client} sent invalid move`);
+    this.onMessage("move", (client, message) => {
+      if (message) {
+        console.log(
+          message.color,
+          this.state.players.get(client.sessionId).color
+        );
+
+        if (message.color === this.state.players.get(client.sessionId).color) {
+          const nextState = [...this.state.strMoves, message.move];
+          console.log(nextState);
+          const pgn = formatAsPgnString(nextState);
+
+          try {
+            parsePgn(pgn);
+            this.state.strMoves.push(message.move);
+
+            if (this.state.strMoves.length % 2 === 0) {
+              this.blackInt.pause();
+              this.whiteInt.resume();
+            } else {
+              this.whiteInt.pause();
+              this.blackInt.resume();
             }
-          } else {
-            this.send(client, "warning", { message: "not your turn" });
-            console.log("not your turn!");
+
+            if (options.minutes !== Infinity) {
+              this.broadcast("timeUpdate", {
+                whiteClock: this.state.whiteClock,
+                blackClock: this.state.blackClock,
+              });
+            }
+          } catch (e) {
+            message.send(client, "error", e);
+            console.log(`${client} sent invalid move`);
           }
+        } else {
+          this.send(client, "warning", { message: "not your turn" });
+          console.log("not your turn!");
         }
-      });
+      }
+    });
 
     this.onMessage("undoMove", () => {
       this.state.strMoves.pop();
@@ -107,8 +129,10 @@ export class OnlineRoom extends Room<GameState> {
           type = "White";
         }
       });
+      this.whiteInt.resume()
     }
     this.state.players.set(client.sessionId, new Player(type));
+    
   }
 
   async onLeave(client: Client, consented: boolean) {
@@ -125,16 +149,10 @@ export class OnlineRoom extends Room<GameState> {
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
 
-      const rejoinTime = Math.round(Date.now() / 1000);
-      const timeDifference = rejoinTime - this.state.moveTime;
-      console.log("rejoin", rejoinTime, timeDifference);
-
-      this.state.moveTime = rejoinTime
-      if (this.state.strMoves.length % 2 === 0) {
-        this.state.whiteClock -= timeDifference;
-      } else {
-        this.state.blackClock -= timeDifference;
-      }
+      this.broadcast("timeUpdate", {
+        whiteClock: this.state.whiteClock,
+        blackClock: this.state.blackClock,
+      });
 
       player.connected = true;
     } catch (error) {

@@ -8,7 +8,7 @@
   import MoveList from "$lib/components/MoveList.svelte";
   import { setGameContext } from "$lib/context";
 
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import type { BaseMove } from "$lib/models/move.js";
 
   import { consumeToken } from "$lib/models/game";
@@ -17,6 +17,7 @@
   import { joinPrivateRoom } from "$lib/client.js";
   import GameClock from "$lib/components/GameClock.svelte";
   import type { GameMinutes } from "$lib/type.js";
+  import { invalidateAll } from "$app/navigation";
 
   export let data;
   let roomSize: number = 0;
@@ -38,7 +39,13 @@
   }
 
   onMount(() => {
+    invalidateAll()
     setupRoom();
+  });
+
+  onDestroy(() => {
+    console.log("leaving");
+    $room.leave(false);
   });
 
   async function setupRoom() {
@@ -58,6 +65,7 @@
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
       }
+
     });
 
     $room.state.strMoves.onChange(() => {
@@ -68,6 +76,11 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
+    $room.onMessage("timeUpdate", (message => {
+      ws = message.whiteClock
+      bs = message.blackClock
+    }))
+
     roomSize = $room.state.players.size;
   }
 
@@ -75,7 +88,6 @@
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
-      moveTime: Math.round(Date.now() / 1000),
       whiteClock,
       blackClock,
     };
