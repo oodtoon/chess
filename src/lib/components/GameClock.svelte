@@ -122,4 +122,10 @@
     color: white;
     border: solid 3px white;
   }
+
+  @media (min-width: 1000px) {
+    .clock-container {
+      margin-bottom: 2em;
+    }
+  }
 </style>

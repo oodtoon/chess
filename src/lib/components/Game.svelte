@@ -146,28 +146,30 @@
   }
 </script>
 
-<Board {rotate} let:row let:file>
-  {@const piece = $game.board.get(row, file)}
-  {#if piece}
-    <ChessPiece
-      {piece}
-      active={piece === selectedPiece}
-      on:click={() => handlePieceClick(piece)}
-      captured={false}
-    />
-  {/if}
-
-  {#each ghostMoves as ghostMove}
-    {@const piece = $game.board.getSquareContent(row, file)}
-    {#if ghostMove.row === row && ghostMove.file === file}
-      <GhostMove
-        isCapturedPiece={!!piece}
-        move={ghostMove}
-        on:click={handleGhostMove}
+<section class="board">
+  <Board {rotate} let:row let:file>
+    {@const piece = $game.board.get(row, file)}
+    {#if piece}
+      <ChessPiece
+        {piece}
+        active={piece === selectedPiece}
+        on:click={() => handlePieceClick(piece)}
+        captured={false}
       />
     {/if}
-  {/each}
-</Board>
+  
+    {#each ghostMoves as ghostMove}
+      {@const piece = $game.board.getSquareContent(row, file)}
+      {#if ghostMove.row === row && ghostMove.file === file}
+        <GhostMove
+          isCapturedPiece={!!piece}
+          move={ghostMove}
+          on:click={handleGhostMove}
+        />
+      {/if}
+    {/each}
+  </Board>
+</section>
 
 {#if promotionMove}
   <Promotion {gameContext} on:close={handlePromotion} />
@@ -178,4 +180,8 @@
 {/if}
 
 <style>
+  .board {
+    grid-area: board;
+    place-self: center;
+  }
 </style>

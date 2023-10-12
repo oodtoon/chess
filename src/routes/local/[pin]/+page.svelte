@@ -18,7 +18,6 @@
   import GameClock from "$lib/components/GameClock.svelte";
   import type { GameMinutes } from "$lib/type.js";
   import { invalidateAll } from "$app/navigation";
-  import PlayAgainIcon from "$lib/components/icons/PlayAgainIcon.svelte";
   import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
 
   export let data;
@@ -283,25 +282,42 @@
 
   @media (min-width: 1000px) {
     :root {
-      --responsive-size: 4.6rem;
+      --responsive-size: 5.5rem;
+    }
+
+    .player-info-container {
+      display: grid;
+      grid-template-areas: "clock clock" "icon name" "icon pieces";
+      gap: 0px 1rem;
+      border-radius: 2rem;
     }
 
     .container {
-      margin: auto 1em;
-      grid-template-columns: 1fr 1fr;
+      margin: 1em 1em;
+      grid-template-columns: 2fr 1fr;
       grid-template-areas: "board info";
     }
 
     .board-container {
       display: grid;
-      grid-template-columns: auto;
-      grid-template-rows: 50px auto 50px;
-      grid-template-areas: "non-active" "board" "active";
-      gap: 2rem;
+      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr 2fr;
+      grid-template-areas: "non-active board" "active board";
+      width: fit-content;
+      height: fit-content;
+      gap: 0em;
+    }
+
+    .active-player {
+      place-self: start;
+    }
+
+    .non-active-player {
+      place-self: end;
     }
 
     .game-info-container {
-      margin: 5em auto;
+      margin: auto;
     }
   }
 </style>
