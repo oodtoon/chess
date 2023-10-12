@@ -92,6 +92,7 @@
     grid-area: btn;
     justify-self: center;
     margin: 0em 1em 1em 1em;
+    display: flex;
   }
 
   .btn-container > button {

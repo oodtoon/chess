@@ -318,12 +318,13 @@
   }
   .container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto;
     grid-template-rows: auto;
     grid-template-areas: "board" "info";
-    margin: auto;
+    margin: 0 auto;
     max-width: 1400px;
     justify-items: center;
+    gap: 2rem;
   }
 
   .board-container {
@@ -331,6 +332,8 @@
     display: grid;
     grid-template-columns: auto;
     grid-template-areas: "opponent" "board" "user";
+    width: calc(var(--responsive-size) * 8 + 10px);
+    gap: 2rem;
   }
 
   .game-info-container {
@@ -344,7 +347,6 @@
     grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
     gap: 0px 1rem;
-    font-family: courier;
     border-radius: 2rem;
   }
 
@@ -364,8 +366,7 @@
     .container {
       gap: 1em;
       margin: auto;
-      margin-top: 2em;
-      grid-template-columns: 1fr 2fr;
+      place-self: center;
       grid-template-areas:
         "board"
         "info";

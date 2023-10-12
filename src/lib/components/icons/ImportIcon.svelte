@@ -5,10 +5,16 @@
   width="32"
   height="32"
   viewBox="0 0 24 24"
-  ><path fill="#currentcolor" d="m12 18l4-5h-3V2h-2v11H8z" /><path
-    fill="#currentcolor"
-    d="M19 9h-4v2h4v9H5v-9h4V9H5c-1.103 0-2 .897-2 2v9c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-9c0-1.103-.897-2-2-2z"
-  /></svg
+  ><g
+    fill="none"
+    stroke="currentcolor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    ><path d="M12 3v12m-4-4l4 4l4-4" /><path
+      d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"
+    /></g
+  ></svg
 >
 
 <style></style>

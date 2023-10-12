@@ -93,8 +93,9 @@
     cursor: pointer;
   }
   .container {
+    display: grid;
     max-width: 1200px;
-    margin: 1em;
+    margin: auto;
   }
   .interface-container {
     display: grid;

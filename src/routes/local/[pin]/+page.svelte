@@ -223,7 +223,7 @@
 
   .container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto;
     grid-template-rows: auto;
     grid-template-areas: "board" "info";
     margin: auto;
@@ -237,12 +237,16 @@
     display: grid;
     grid-template-columns: auto;
     grid-template-areas: "non-active" "board" "active";
+    width: calc(var(--responsive-size) * 8 + 10px);
     gap: 2rem;
   }
 
   .game-info-container {
     grid-area: info;
     background-color: rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .player-info-container {

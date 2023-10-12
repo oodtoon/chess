@@ -25,31 +25,29 @@
   }
 </script>
 
-<div>
-  <section class="btns-container dual">
-    <button class="draw" type="button" on:click={handleDraw}
-      ><span class="word">Draw</span> <span><HandShakeIcon /></span></button
-    >
-    <button class="resign" type="button" on:click={handleResign}
-      ><span class="word">Resign</span> <span><FlagIcon /></span></button
-    >
-    <button class="undo" type="button" on:click={handleUndo}>
-      <span class="word">Undo Move</span>
-      <span>
-        <UndoIcon />
-      </span>
-    </button>
-  </section>
-</div>
+<section class="btns-container dual">
+  <button class="draw" type="button" on:click={handleDraw}
+    ><span class="word">Draw</span> <span><HandShakeIcon /></span></button
+  >
+  <button class="resign" type="button" on:click={handleResign}
+    ><span class="word">Resign</span> <span><FlagIcon /></span></button
+  >
+  <button class="undo" type="button" on:click={handleUndo}>
+    <span class="word">Undo Move</span>
+    <span>
+      <UndoIcon />
+    </span>
+  </button>
+</section>
 
 <style>
   .btns-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-around;
     gap: 1em;
     width: 100%;
-    
+    margin: 1em;
   }
 
   .btns-container > button {
@@ -93,21 +91,9 @@
   .undo {
     border: 3px solid black;
     color: black;
-    margin: 0;
   }
 
   .undo:hover {
     background-color: black;
   }
-
-  .play-again-btn {
-    border: 3px solid #49a6e9;
-    color: #49a6e9;
-  }
-
-  .play-again-btn:hover {
-    color: white;
-    background-color: #49a6e9;
-  }
-
 </style>

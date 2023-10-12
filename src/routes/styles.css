@@ -1,14 +1,9 @@
 html {
   background-color: rgb(32, 32, 32);
-  width: fit-content;
 }
 
 body, button {
   font-family: courier;
-}
-
-body {
-  width: fit-content;
 }
 
 :root {

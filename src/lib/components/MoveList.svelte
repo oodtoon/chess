@@ -109,11 +109,6 @@
     width: 100%;
   }
 
-  /* span {
-    margin-left: 1em;
-    display: inline-block;
-  } */
-
   .number {
     width: 10%;
   }
