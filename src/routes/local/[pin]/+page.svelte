@@ -18,6 +18,8 @@
   import GameClock from "$lib/components/GameClock.svelte";
   import type { GameMinutes } from "$lib/type.js";
   import { invalidateAll } from "$app/navigation";
+  import PlayAgainIcon from "$lib/components/icons/PlayAgainIcon.svelte";
+  import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
 
   export let data;
   let roomSize: number = 0;
@@ -34,12 +36,8 @@
   let whiteClock: number;
   let blackClock: number;
 
-  function getTurnText(game: GameModel) {
-    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
-  }
-
   onMount(() => {
-    invalidateAll()
+    invalidateAll();
     setupRoom();
   });
 
@@ -56,16 +54,17 @@
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
-      if ($room.state.minutes !== Infinity) {
+      if ($room.state.minutes !== 999999999) {
         minutes = $room.state.minutes;
         ws = $room.state.whiteClock;
         bs = $room.state.blackClock;
+      } else {
+        minutes = Infinity;
       }
 
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
       }
-
     });
 
     $room.state.strMoves.onChange(() => {
@@ -76,10 +75,10 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("timeUpdate", (message => {
-      ws = message.whiteClock
-      bs = message.blackClock
-    }))
+    $room.onMessage("timeUpdate", (message) => {
+      ws = message.whiteClock;
+      bs = message.blackClock;
+    });
 
     roomSize = $room.state.players.size;
   }
@@ -150,48 +149,69 @@
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">{getTurnText($game)}</h2>
+  <section class="board-container">
+    <section
+      class="player-info-container"
+      class:active-player={$game.getActivePlayer().color === "White"}
+      class:non-active-player={$game.getActivePlayer().color !== "White"}
+    >
+      <CapturePool
+        color="White"
+        capturedPieces={$game.blackPlayer.capturedPieces}
+      />
+      {#if minutes}
+        <GameClock
+          {minutes}
+          seconds={ws}
+          bind:time={whiteClock}
+          {roomSize}
+          color={"White"}
+        />
+      {/if}
+    </section>
 
-  <section class="capture-container">
-    <CapturePool
-      color="White"
-      capturedPieces={$game.blackPlayer.capturedPieces}
-    />
-    <CapturePool
-      color="Black"
-      capturedPieces={$game.whitePlayer.capturedPieces}
-    />
+    <Game on:move={handleMove} />
+
+    <section
+      class="player-info-container"
+      class:active-player={$game.getActivePlayer().color === "Black"}
+      class:non-active-player={$game.getActivePlayer().color !== "Black"}
+    >
+      <CapturePool
+        color="Black"
+        capturedPieces={$game.whitePlayer.capturedPieces}
+      />
+      {#if minutes}
+        <GameClock
+          {minutes}
+          seconds={bs}
+          bind:time={blackClock}
+          {roomSize}
+          color={"Black"}
+        />
+      {/if}
+    </section>
   </section>
 
-  <Game on:move={handleMove} />
-  <MoveList />
-  <GameButtons
-    on:draw={handleDraw}
-    on:undo={handleUndo}
-    on:resign={handleResign}
-  />
+  <section class="game-info-container">
+    <GameButtons
+      on:draw={handleDraw}
+      on:undo={handleUndo}
+      on:resign={handleResign}
+    />
+    {#if minutes}
+      <MoveList {minutes} />
+    {/if}
 
-  {#if minutes && minutes !== Infinity}
-    <div class="clock-display">
-      <GameClock
-        seconds={ws}
-        bind:time={whiteClock}
-        {roomSize}
-        color={"White"}
-      />
-      <GameClock
-        seconds={bs}
-        bind:time={blackClock}
-        {roomSize}
-        color={"Black"}
-      />
-    </div>
-  {/if}
+    {#if $game.result}
+      <PlayAgainButton />
+    {/if}
+  </section>
 </div>
 
 <style>
   :root {
-    --responsive-size: 5rem;
+    --responsive-size: 4rem;
     --min-size: 3rem;
     --captured-piece-size: 3rem;
     --element-size: 1rem;
@@ -205,29 +225,43 @@
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "turn" "board" "btns" "moves-list" "time";
+    grid-template-areas: "board" "info";
     margin: auto;
     max-width: 1400px;
     justify-items: center;
+    gap: 2rem;
   }
 
-  .capture-container {
-    display: flex;
-    margin: auto;
-    justify-content: space-evenly;
-    gap: 1em;
-    width: 100%;
+  .board-container {
+    grid-area: board;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-areas: "non-active" "board" "active";
+    gap: 2rem;
   }
 
-  .turn {
-    color: #49a6e9;
-    grid-area: turn;
-    place-self: center;
+  .game-info-container {
+    grid-area: info;
+    background-color: rgba(255, 255, 255, 0.08);
   }
 
-  .clock-display {
-    grid-area: time;
+  .player-info-container {
+    display: grid;
+    grid-template-columns: 50px 5fr 3fr;
+    grid-template-rows: 1fr 2fr;
+    grid-template-areas: "icon name clock" "icon pieces clock";
+    gap: 0px 1rem;
+    border-radius: 2rem;
   }
+
+  .active-player {
+    grid-area: active;
+  }
+
+  .non-active-player {
+    grid-area: non-active;
+  }
+
   @media (min-width: 700px) {
     :root {
       --responsive-size: 4rem;
@@ -236,47 +270,34 @@
     .container {
       gap: 1em;
       margin: auto;
-      margin-top: 2em;
-      grid-template-columns: 1fr 2fr;
-      grid-template-areas:
-        "turn board"
-        "captured-black board"
-        "captured-white board"
-        "btns board"
-        ". moves-list"
-        "time time";
-    }
-
-    .capture-container {
-      display: block;
-      width: 100%;
-    }
-
-    .turn {
-      margin: auto;
       place-self: center;
+      grid-template-areas:
+        "board"
+        "info";
     }
   }
 
   @media (min-width: 1000px) {
     :root {
-      --responsive-size: 5rem;
+      --responsive-size: 4.6rem;
     }
 
     .container {
       margin: auto 1em;
-      grid-template-columns: 1fr 3fr 1fr;
-      grid-template-areas:
-        " turn board moves-list"
-        "captured-black board moves-list"
-        "btns board ."
-        ". board  ."
-        ". time .";
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "board info";
     }
 
-    .capture-container {
-      display: block;
-      margin: 0;
+    .board-container {
+      display: grid;
+      grid-template-columns: auto;
+      grid-template-rows: 50px auto 50px;
+      grid-template-areas: "non-active" "board" "active";
+      gap: 2rem;
+    }
+
+    .game-info-container {
+      margin: 5em auto;
     }
   }
 </style>

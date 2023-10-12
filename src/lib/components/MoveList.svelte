@@ -4,6 +4,10 @@
   import type { ParseTree } from "@mliebelt/pgn-parser";
   import GameModel from "$lib/models/game";
   import CopyIcon from "./CopyIcon.svelte";
+  import ExportIcon from "./icons/ExportIcon.svelte";
+  import ImportIcon from "./icons/ImportIcon.svelte";
+
+  export let minutes: number
 
   let copied = false;
 
@@ -42,7 +46,7 @@
 </script>
 
 <div class="moves-list">
-  <h3>moves list</h3>
+  <h3>Game Notation</h3>
   <ol>
     {#each $moveList as move, i}
       {#if i % 2 === 0}
@@ -67,17 +71,19 @@
 
   <section class="btns-container">
     <button class="export" type="button" on:click={handleExport}
-      >export pgn</button
+      ><span class="word">export pgn</span> <span><ExportIcon /></span></button
     >
     <button class="copy" type="button" on:click={handleCopy}
-      >copy pgn <span class="copy-icon">
+      ><span class="word">copy pgn</span>
+      <span class="copy-icon">
         <CopyIcon {copied} />
       </span>
     </button>
     <input type="file" id="file-input" style="display: none" />
-    {#if ctx.mode === "local"}
+    {#if ctx.mode === "local" && minutes === Infinity}
       <button class="import" type="button" on:click={handleImport}
-        >import pgn</button
+        ><span class="word">import pgn</span>
+        <span><ImportIcon /></span></button
       >
     {/if}
   </section>
@@ -103,10 +109,10 @@
     width: 100%;
   }
 
-  span {
+  /* span {
     margin-left: 1em;
     display: inline-block;
-  }
+  } */
 
   .number {
     width: 10%;
@@ -117,11 +123,11 @@
   }
 
   li:nth-child(even) {
-    background-color: white;
+    background-color: #3a3737;
   }
 
   li:nth-child(even)::marker {
-    background-color: white;
+    background-color: #3a3737;
   }
 
   .game-result {
@@ -134,10 +140,8 @@
   .moves-list {
     grid-area: moves-list;
     display: block;
-    border: 3px solid black;
-    background-color: aliceblue;
-    border-radius: 1em;
-    margin-top: 3em;
+    background-color: #292727;
+    color: white;
     margin-bottom: auto;
     width: 100%;
   }
@@ -160,6 +164,13 @@
     padding: 0.5em 1em;
     margin: auto 0.5em 1em 0.5em;
     background-color: white;
+    border-radius: 1px;
+    display: flex;
+    gap: 1em;
+  }
+
+  .word {
+    align-self: flex-end;
   }
 
   .export {

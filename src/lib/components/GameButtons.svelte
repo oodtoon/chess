@@ -1,8 +1,11 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
   import UndoIcon from "./UndoIcon.svelte";
+  import FlagIcon from "./icons/FlagIcon.svelte";
+  import HandShakeIcon from "./icons/HandShakeIcon.svelte";
 
   import { createEventDispatcher } from "svelte";
+  import PlayAgainIcon from "./icons/PlayAgainIcon.svelte";
 
   const gameContext = getGameContext();
   const { game } = gameContext;
@@ -20,29 +23,22 @@
   async function handleUndo() {
     dispatch("undo");
   }
-
-  function handlePlayAgain() {
-    gameContext.reset();
-  }
 </script>
 
 <div>
   <section class="btns-container dual">
-    <button class="draw" type="button" on:click={handleDraw}>Draw</button>
-    <button class="resign" type="button" on:click={handleResign}>Resign</button>
-  </section>
-  <section class="btns-container">
+    <button class="draw" type="button" on:click={handleDraw}
+      ><span class="word">Draw</span> <span><HandShakeIcon /></span></button
+    >
+    <button class="resign" type="button" on:click={handleResign}
+      ><span class="word">Resign</span> <span><FlagIcon /></span></button
+    >
     <button class="undo" type="button" on:click={handleUndo}>
-      Undo Move
+      <span class="word">Undo Move</span>
       <span>
         <UndoIcon />
       </span>
     </button>
-    {#if $game.result}
-      <button class="play-again-btn" on:click={handlePlayAgain}
-        >Play Again</button
-      >
-    {/if}
   </section>
 </div>
 
@@ -51,21 +47,29 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 1em;
     width: 100%;
+    
   }
 
   .btns-container > button {
     font-size: 1rem;
     font-weight: 800;
     padding: 0.5em 1em;
-    margin: auto 0.5em 1em 0.5em;
     background-color: white;
+    border-radius: 1px;
+    display: flex;
+    gap: 1em;
   }
 
   .btns-container > button:hover {
     color: white;
     cursor: pointer;
     box-shadow: 0em 0em 0em 0.1em white;
+  }
+
+  .word {
+    align-self: flex-end;
   }
 
   .draw {
@@ -89,6 +93,7 @@
   .undo {
     border: 3px solid black;
     color: black;
+    margin: 0;
   }
 
   .undo:hover {
@@ -104,4 +109,5 @@
     color: white;
     background-color: #49a6e9;
   }
+
 </style>

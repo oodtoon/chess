@@ -1,12 +1,22 @@
 html {
   background-color: rgb(32, 32, 32);
+  width: fit-content;
+}
+
+body, button {
+  font-family: courier;
+}
+
+body {
+  width: fit-content;
 }
 
 :root {
-  --responsive-size: 5rem;
+  --responsive-size: 4rem;
   --min-size: 3rem;
-  --captured-piece-size: 3rem;
+  --captured-piece-size: 1rem;
   --element-size: 1rem;
+  --icon-size: 1.5rem;
 }
 
 .ghost-move {

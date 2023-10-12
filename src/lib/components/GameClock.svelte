@@ -1,6 +1,9 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
+  import type Game from "$lib/models/game";
+  import ClockIcon from "./ClockIcon.svelte";
 
+  export let minutes: number;
   export let seconds: number;
   export let time: number;
   export let color: string;
@@ -28,6 +31,10 @@
   const gameCtx = getGameContext();
   const { game } = gameCtx;
 
+  function getTurnText(game: Game) {
+    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
+  }
+
   function countDown() {
     time -= 0.1;
   }
@@ -37,7 +44,7 @@
   const formatSecond = (t: string) =>
     (parseInt(t) % 60).toString().padStart(2, "0");
 
-  const formatMili = (t: string) => t.toString().padStart(2, "0")
+  const formatMili = (t: string) => t.toString().padStart(2, "0");
 
   $: if (!isPaused) {
     clockInt = setInterval(countDown, 100);
@@ -53,50 +60,66 @@
     $game = $game;
   }
 
-  $: if (time <=0) {
-    clearInterval(clockInt)
+  $: if (time <= 0) {
+    clearInterval(clockInt);
   }
 </script>
 
-<span
-  class="time"
-  class:white={!isPaused && color === "White"}
-  class:black={!isPaused && color === "Black"}
->
-  {#if color === "White"}
-    <span>White </span>
-  {:else}
-    <span class="vs">vs. </span>
-    <span>Black </span>
-  {/if}
-
-  {#if time}
-    <span>{formatMinute(time.toFixed(0))} :</span>
-
-    {#if time <= 59 && time > 0}
-      <span>{formatMili(time.toFixed(1))}</span>
-    {:else}
-      <span>{formatSecond(time.toFixed(0))}</span>
+{#if minutes !== Infinity}
+  <span
+    class="clock-container"
+    class:White={color === "White"}
+    class:Black={color === "Black"}
+  >
+    <span class="clock-icon">
+      <ClockIcon {color} />
+    </span>
+    {#if time}
+      <span>{formatMinute(time.toFixed(0))}:</span>
+      {#if time <= 59 && time > 0}
+        <span>{formatMili(time.toFixed(1))}</span>
+      {:else}
+        <span>{formatSecond(time.toFixed(0))}</span>
+      {/if}
     {/if}
-  {/if}
-</span>
+  </span>
+{:else if minutes === Infinity && $game.getActivePlayer().color !== color}
+  <span
+    class="clock-container"
+    class:White={color !== "White"}
+    class:Black={color !== "Black"}
+  >
+    {getTurnText($game)}
+  </span>
+{/if}
 
 <style>
-  .time {
-    color: white;
-  }
-  .white {
-    background-color: green;
-    color: brown;
+  .clock-container {
+    grid-area: clock;
+    display: flex;
+    border-radius: 8px;
+    margin: 0;
+    color: black;
+    font-weight: 800;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    padding: 0 1rem;
   }
 
-  .black {
-    background-color: green;
-    color: #49a6e9;
+  .clock-icon {
+    margin: auto;
   }
 
-  .vs {
-    background-color: rgb(32, 32, 32);
+  .White {
+    background-color: white;
+    color: black;
+    border: solid 3px black;
+  }
+
+  .Black {
+    background-color: black;
     color: white;
+    border: solid 3px white;
   }
 </style>

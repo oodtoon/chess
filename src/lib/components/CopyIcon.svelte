@@ -24,7 +24,7 @@
 
 <style>
   .icon {
-    height: var(--element-size);
-    width: var(--element-size);
+    height: var(--icon-size);
+    width: var(--icon-size);
   }
 </style>

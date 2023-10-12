@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { createLocalRoom, createRoom } from "$lib/client";
+  import InfinityIcon from "$lib/components/icons/InfinityIcon.svelte";
   import boardImg from "$lib/images/board.png";
   import type { GameMinutes } from "$lib/type.js";
   import type { Room } from "colyseus.js";
@@ -42,31 +43,33 @@
   }
 </script>
 
-<main>
+<div class="container">
   <h1>Welcome to some guy's chess website</h1>
 
-  <div class="container">
+  <div class="interface-container">
     <button on:click={() => createRoomPin(false)} class="board-btn">
-      <img src={boardImg} alt="chess board" class="board" />
+      <img src={boardImg} alt="chess board" class="board-img" />
     </button>
 
     <div class="time-select">
-      <h2>Select minutes each player gets:</h2>
-      {#each timeOptions as time}
-        <label class="input"
-          ><input
-            type="radio"
-            name="minutes"
-            value={time}
-            bind:group={chosenTime}
-          />
-          {#if time !== Infinity}
-            {time}
-          {:else}
-            Unlimited
-          {/if}
-        </label>
-      {/each}
+      <p class="time-title">Select minutes per player:</p>
+      <div class="radio-container">
+        {#each timeOptions as time}
+          <label class="radio-input" class:selected-time={chosenTime === time} class:edge-radio={time === 60}
+            ><input
+              type="radio"
+              name="minutes"
+              value={time}
+              bind:group={chosenTime}
+            />
+            {#if time !== Infinity}
+              {time.toString()}
+            {:else}
+              <InfinityIcon />
+            {/if}
+          </label>
+        {/each}
+      </div>
     </div>
 
     <button on:click={() => createRoomPin(false)} class="btn local"
@@ -76,44 +79,30 @@
       >Create Game To Share</button
     >
   </div>
-</main>
+</div>
 
 <style>
   :root {
-    --responsive-size: 5rem;
-    --min-size: 3rem;
-    --captured-piece-size: 3rem;
-    --element-size: 1rem;
+    --responsive-size: 3rem;
+    --min-size: 1rem;
   }
-
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    width: 100%;
-    max-width: 64rem;
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
-
   h1 {
     color: white;
   }
-
-  a,
   button {
     cursor: pointer;
   }
-
   .container {
+    max-width: 1200px;
+    margin: 1em;
+  }
+  .interface-container {
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto;
-    grid-template-areas: "board time-select" "board local" "board online";
+    grid-template-areas: "local time-select" "online time-select" "board board";
     gap: 1em;
   }
-
   .btn {
     font-size: 1.5rem;
     font-weight: 700;
@@ -133,9 +122,10 @@
     padding: 0;
     box-sizing: content-box;
     border: 6px solid black;
+    place-self: center;
   }
 
-  .board {
+  .board-img {
     width: calc(var(--responsive-size) * 8);
     height: calc(var(--responsive-size) * 8);
   }
@@ -145,10 +135,35 @@
     color: white;
   }
 
-  .input {
-    display: block;
+  .time-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+  }
+  .radio-container {
+    display: flex;
   }
 
+  .radio-input input[type="radio"] {
+    display: none;
+  }
+
+  .radio-input {
+    display: flex;
+    align-items: center;
+    padding: 1em;
+    border-right: 1px solid grey;
+  }
+
+  .edge-radio {
+    border: none;
+  }
+  .radio-input:hover {
+    cursor: pointer;
+  }
+
+  .selected-time {
+    background-color:green;
+  }
   .local {
     grid-area: local;
     align-self: end;
@@ -174,5 +189,28 @@
   .online:hover {
     color: white;
     background-color: #49a6e9;
+  }
+
+  @media (min-width: 700px) {
+    :root {
+      --responsive-size: 8vw;
+    }
+
+    .board-btn {
+      place-self: center;
+    }
+
+    .container {
+      margin: 5em;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    :root {
+      --responsive-size: 5rem;
+    }
+    .interface-container {
+      grid-template-areas: "board time-select" "board local" "board online";
+    }
   }
 </style>

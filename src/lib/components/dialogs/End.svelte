@@ -1,17 +1,19 @@
 <script lang="ts">
   import { copyPgn, exportToPgn } from "$lib/io";
   import Dialog from "./Dialog.svelte";
-  import ExitButton from "../ExitButton.svelte"
+  import ExitButton from "../ExitButton.svelte";
   import CopyIcon from "../CopyIcon.svelte";
   import { createEventDispatcher } from "svelte";
   import type { GameContext } from "$lib/context";
   import Trophy from "../Trophy.svelte";
+  import ExportIcon from "../icons/ExportIcon.svelte";
+  import PlayAgainIcon from "../icons/PlayAgainIcon.svelte";
 
   const dispatch = createEventDispatcher();
 
   export let gameContext: GameContext;
-  
-  $: ({ game } = gameContext)
+
+  $: ({ game } = gameContext);
 
   let copied: boolean = false;
 
@@ -37,26 +39,28 @@
 </script>
 
 <Dialog class="end-dialog" on:submit={close}>
-  <ExitButton/>
+  <ExitButton />
 
   <h1 class="title" id="end-title">
-
     <span class="reason">{$game.terminationReason}!</span>
-    <span class="result">{$game.resultText}</span>    
+    <span class="result">{$game.resultText}</span>
   </h1>
 
-  <div class="trophy"><Trophy winner={$game.result}/></div>
+  <div class="trophy"><Trophy winner={$game.result} /></div>
 
   <span class="btn-container">
     <button class="play-again-btn" on:click={handlePlayAgain}
-      >play again!</button
+      ><span class="word">play again</span><span><PlayAgainIcon /></span
+      ></button
     >
+
     <button class="export-btn" type="button" on:click={handleExport}
-      >export pgn</button
+      ><span class="word">export pgn</span> <span><ExportIcon /></span></button
     >
     <button class="copy-btn" type="button" on:click={handleCopy}
-      >copy pgn <span class="copy-icon">
-        <CopyIcon {copied}/>
+      ><span class="word">copy pgn</span>
+      <span class="copy-icon">
+        <CopyIcon {copied} />
       </span></button
     >
   </span>
@@ -97,15 +101,26 @@
     padding: 0.5em 1em;
     cursor: pointer;
     background-color: white;
+    display: flex;
+    gap: 1em;
   }
 
   .btn-container > button:hover {
     box-shadow: 0.2em 0.2em 0.2em black;
   }
 
+  .word {
+    align-self: flex-end;
+  }
+
   .play-again-btn {
     border: 3px solid #49a6e9;
     color: #49a6e9;
+  }
+
+  .play-again-btn:hover {
+    color: white;
+    background-color: #49a6e9;
   }
 
   .export-btn {
@@ -118,10 +133,7 @@
     color: black;
   }
 
-  .play-again-btn:hover {
-    color: white;
-    background-color: #49a6e9;
-  }
+
 
   .export-btn:hover {
     color: white;
@@ -136,6 +148,6 @@
   .trophy {
     grid-area: trophy;
     justify-self: center;
-    margin-bottom: .8rem;
+    margin-bottom: 0.8rem;
   }
 </style>
