@@ -63,7 +63,7 @@
   .btns-container > button:hover {
     color: white;
     cursor: pointer;
-    box-shadow: 0em 0em 0em 0.1em white;
+    box-shadow: 0.2em 0.2em 0.2em black;
   }
 
   .word {

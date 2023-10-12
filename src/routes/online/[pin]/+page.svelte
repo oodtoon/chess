@@ -30,8 +30,8 @@
 
   let whiteClock: number = 0;
   let blackClock: number = 0;
-  let ws: number;
-  let bs: number;
+  let ws: number = Infinity
+  let bs: number = Infinity 
 
   $: dialogState = $room
     ? $room?.state.requestState

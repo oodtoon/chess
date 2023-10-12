@@ -12,7 +12,11 @@
 
   let isPaused: boolean;
 
-  $: if (seconds) {
+  $: if (minutes === Infinity) {
+    isPaused = true
+  }
+
+  $: if (seconds && seconds !== Infinity) {
     time = seconds;
   }
 
@@ -52,7 +56,8 @@
     clearInterval(clockInt);
   }
 
-  $: if (time <= 0) {
+  $: if (time <= 0 && minutes !== Infinity) {
+    console.log(time)
     $game.terminate({
       result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
       reason: "time out",

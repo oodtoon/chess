@@ -23,8 +23,8 @@
   export let data;
   let roomSize: number = 0;
   let minutes: GameMinutes = Infinity;
-  let ws: number;
-  let bs: number;
+  let ws: number = Infinity
+  let bs: number = Infinity 
   let oldMovesLength: number;
   const { room, team, pin } = data;
 
@@ -317,7 +317,7 @@
     }
 
     .game-info-container {
-      margin: auto;
+      place-self: start;
     }
   }
 </style>
