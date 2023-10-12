@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
   import type Game from "$lib/models/game";
+  import type { Color } from "$lib/type";
   import ClockIcon from "./ClockIcon.svelte";
 
   export let minutes: number;
@@ -9,6 +10,7 @@
   export let color: string;
   export let isMultiPlayer: boolean = false;
   export let roomSize: number;
+  export let client: Color
 
   let isPaused: boolean;
 
@@ -88,11 +90,11 @@
       {/if}
     {/if}
   </span>
-{:else if minutes === Infinity && $game.getActivePlayer().color !== color}
+{:else if minutes === Infinity && client !== color}
   <span
     class="clock-container"
-    class:White={color !== "White"}
-    class:Black={color !== "Black"}
+    class:White={color === "White"}
+    class:Black={color === "Black"}
   >
     {getTurnText($game)}
   </span>

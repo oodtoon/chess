@@ -243,6 +243,7 @@
             bind:time={whiteClock}
             {roomSize}
             color={$team}
+            client={$team}
           />
         {/if}
       {/if}
@@ -263,6 +264,7 @@
           bind:time={blackClock}
           {roomSize}
           color={opponentColor}
+          client={$team}
         />
       {/if}
       {/if}
@@ -347,7 +349,6 @@
     grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
     gap: 0px 1rem;
-    border-radius: 2rem;
   }
 
   .user {
@@ -373,20 +374,23 @@
     }
   }
 
-  @media (min-width: 1000px) {
+  @media (min-width: 1000px) and (max-height: 750px) {
     :root {
       --responsive-size: 5.5rem;
     }
 
     .player-info-container {
       display: grid;
-      grid-template-areas: "clock clock" "icon name" "icon pieces";
+      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 1em;
+      min-width: 160px;
+      max-height: 200px;
       gap: 0px 1rem;
-      border-radius: 2rem;
     }
 
     .container {
-      margin: 1em 1em;
+      margin: 2em auto;
       grid-template-columns: 2fr 1fr;
       grid-template-areas: "board info";
     }
@@ -398,19 +402,46 @@
       grid-template-areas: "opponent board" "user board";
       width: fit-content;
       height: fit-content;
-      gap: 0em;
+      gap: 0em 1em;
     }
 
     .user {
       place-self: start;
+      padding-bottom: 3em;
     }
 
     .opponent {
       place-self: end;
+      padding-top: 5em;
     }
 
     .game-info-container {
       margin: auto;
     }
+  }
+
+  @media (min-width: 1000px) and (min-height: 750px) {
+
+    :root {
+      --responsive-size: 5.5rem;
+    }
+
+    .container {
+      margin: 2em auto;
+      grid-template-columns: 2fr 1fr;
+      grid-template-areas: "board info";
+    }
+    .board-container {
+      display: grid;
+      grid-template-areas: "opponent" "board" "user";
+      width: fit-content;
+      height: fit-content;
+      gap: 2em 1em;
+    }
+
+    .game-info-container {
+      margin: auto;
+    }
+
   }
 </style>

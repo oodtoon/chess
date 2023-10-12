@@ -23,8 +23,8 @@
   export let data;
   let roomSize: number = 0;
   let minutes: GameMinutes = Infinity;
-  let ws: number = Infinity
-  let bs: number = Infinity 
+  let ws: number = Infinity;
+  let bs: number = Infinity;
   let oldMovesLength: number;
   const { room, team, pin } = data;
 
@@ -254,7 +254,6 @@
     grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
     gap: 0px 1rem;
-    border-radius: 2rem;
   }
 
   .active-player {
@@ -280,16 +279,18 @@
     }
   }
 
-  @media (min-width: 1000px) {
+  @media (min-width: 1000px) and (max-height: 750px) {
     :root {
       --responsive-size: 5.5rem;
     }
 
     .player-info-container {
       display: grid;
-      grid-template-areas: "clock clock" "icon name" "icon pieces";
-      gap: 0px 1rem;
-      border-radius: 2rem;
+      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 1em;
+      min-width: 160px;
+      max-height: 200px;
     }
 
     .container {
@@ -305,19 +306,45 @@
       grid-template-areas: "non-active board" "active board";
       width: fit-content;
       height: fit-content;
-      gap: 0em;
+      gap: 0 1em;
     }
 
     .active-player {
       place-self: start;
+      padding-bottom: 3em;
     }
 
     .non-active-player {
       place-self: end;
+      padding-top: 5em;
     }
 
     .game-info-container {
       place-self: start;
+    }
+  }
+
+  @media (min-width: 1000px) and (min-height: 750px) {
+
+    :root {
+      --responsive-size: 5.5rem;
+    }
+
+    .container {
+      margin: 2em auto;
+      grid-template-columns: 2fr 1fr;
+      grid-template-areas: "board info";
+    }
+    .board-container {
+      display: grid;
+      grid-template-areas: "non-active" "board" "active";
+      width: fit-content;
+      height: fit-content;
+      gap: 2em 1em;
+    }
+
+    .game-info-container {
+      margin: auto;
     }
   }
 </style>
