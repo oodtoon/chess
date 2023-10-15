@@ -103,6 +103,7 @@
 <style>
   .clock-container {
     grid-area: clock;
+    align-self: center;
     display: flex;
     border-radius: 8px;
     margin: 0;
@@ -128,11 +129,5 @@
     background-color: black;
     color: white;
     border: solid 3px white;
-  }
-
-  @media (min-width: 1000px) {
-    .clock-container {
-      margin-bottom: 2em;
-    }
   }
 </style>

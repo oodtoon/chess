@@ -34,6 +34,7 @@
     grid-area: pieces;
     display: flex;
     flex-wrap: wrap;
+    align-items: start;
   }
   .team-icon {
     grid-area: icon;
@@ -50,6 +51,23 @@
     color: white;
     font-weight: 800;
     grid-area: name;
-    margin: 0;
+    margin: .2em 0;
+    align-self: end;
+  }
+
+  @media (min-width: 1000px) and (max-height: 800px) {
+    .pieces {
+      align-self: start;
+    }
+
+    .player-name {
+      align-self: start;
+    }
+
+  }
+  @media (min-width: 1000px) and (min-height: 800px) {
+    .pieces {
+      max-height: 3em;
+    }
   }
 </style>

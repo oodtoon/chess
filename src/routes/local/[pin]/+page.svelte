@@ -253,6 +253,7 @@
     grid-template-columns: 50px 5fr 3fr;
     grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
+    align-items: center;
     gap: 0px 1rem;
   }
 
@@ -279,7 +280,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (max-height: 750px) {
+  @media (min-width: 1000px) and (max-height: 800px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -324,8 +325,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (min-height: 750px) {
-
+  @media (min-width: 1000px) and (min-height: 800px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -334,17 +334,27 @@
       margin: 2em auto;
       grid-template-columns: 2fr 1fr;
       grid-template-areas: "board info";
+      height: fit-content;
     }
     .board-container {
       display: grid;
       grid-template-areas: "non-active" "board" "active";
       width: fit-content;
       height: fit-content;
-      gap: 2em 1em;
+      gap: 1em;
     }
 
     .game-info-container {
       margin: auto;
+    }
+
+    .player-info-container {
+      grid-template-rows: 1fr 1fr;
+      grid-template-areas: "icon name clock" "icon pieces clock";
+    }
+
+    .active-player {
+      margin-top: 1em;
     }
   }
 </style>
