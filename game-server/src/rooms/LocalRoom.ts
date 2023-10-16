@@ -21,7 +21,7 @@ export class LocalRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
-    if (options.minutes !== Infinity) {
+    if (options.minutes !== 999999999) {
       const seconds = options.minutes * 60;
       this.state.whiteClock = seconds;
       this.state.blackClock = seconds;
@@ -48,7 +48,7 @@ export class LocalRoom extends Room<GameState> {
             this.blackInt.resume();
           }
 
-          if (options.minutes !== Infinity) {
+          if (options.minutes !== 999999999) {
             this.broadcast("timeUpdate", {
               whiteClock: this.state.whiteClock,
               blackClock: this.state.blackClock,

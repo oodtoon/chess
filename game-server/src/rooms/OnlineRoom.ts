@@ -15,7 +15,7 @@ export class OnlineRoom extends Room<GameState> {
 
     this.state.minutes = options.minutes;
 
-    if (options.minutes !== Infinity) {
+    if (options.minutes !== 999999999) {
       const seconds = options.minutes * 60;
       this.state.whiteClock = seconds;
       this.state.blackClock = seconds;
@@ -32,7 +32,7 @@ export class OnlineRoom extends Room<GameState> {
     if (this.state.players.size < 2) {
       this.whiteInt.pause();
       this.blackInt.pause();
-    } 
+    }
 
     this.onMessage("move", (client, message) => {
       if (message) {
@@ -58,7 +58,7 @@ export class OnlineRoom extends Room<GameState> {
               this.blackInt.resume();
             }
 
-            if (options.minutes !== Infinity) {
+            if (options.minutes !== 999999999) {
               this.broadcast("timeUpdate", {
                 whiteClock: this.state.whiteClock,
                 blackClock: this.state.blackClock,
@@ -129,10 +129,9 @@ export class OnlineRoom extends Room<GameState> {
           type = "White";
         }
       });
-      this.whiteInt.resume()
+      this.whiteInt.resume();
     }
     this.state.players.set(client.sessionId, new Player(type));
-    
   }
 
   async onLeave(client: Client, consented: boolean) {

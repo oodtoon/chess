@@ -13,12 +13,13 @@
   import { derivePgnFromMoveStrings, parsePgn } from "$lib/io";
   import Game from "$lib/components/Game.svelte";
   import { getUndoTitle } from "$lib/controllers/utils/dialog-utils.js";
-  import type { GameMinutes, Response } from "$lib/type.js";
+  import type { Color, GameMinutes, Response } from "$lib/type.js";
   import Waiting from "$lib/components/dialogs/Waiting.svelte";
   import Review from "$lib/components/dialogs/Review.svelte";
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
   import { invalidateAll } from "$app/navigation";
+  import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
 
   export let data;
 
@@ -29,8 +30,8 @@
 
   let whiteClock: number = 0;
   let blackClock: number = 0;
-  let ws: number;
-  let bs: number;
+  let ws: number = Infinity
+  let bs: number = Infinity 
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -44,12 +45,10 @@
   const gameCtx = setGameContext(new GameModel(eventBus), "online");
   const { game } = gameCtx;
 
-  function getTurnText(game: GameModel) {
-    return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
-  }
+  let opponentColor: Color;
 
   onMount(() => {
-    invalidateAll()
+    invalidateAll();
     setupRoom();
   });
 
@@ -68,6 +67,7 @@
 
       if (sessionId === $room.sessionId) {
         $team = player.color;
+        opponentColor = player.color === "White" ? "Black" : "White";
       }
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
@@ -75,10 +75,12 @@
 
       roomSize = $room.state.players.size;
 
-      if ($room.state.minutes !== Infinity) {
+      if ($room.state.minutes !== 999999999) {
         minutes = $room.state.minutes;
         ws = $room.state.whiteClock;
         bs = $room.state.blackClock;
+      } else {
+        minutes = Infinity;
       }
     });
 
@@ -112,10 +114,10 @@
       }
     });
 
-    $room.onMessage("timeUpdate", (message => {
-      ws = message.whiteClock
-      bs = message.blackClock
-    }))
+    $room.onMessage("timeUpdate", (message) => {
+      ws = message.whiteClock;
+      bs = message.blackClock;
+    });
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
@@ -227,26 +229,62 @@
 </svelte:head>
 
 <div class="container">
-  <h2 class="turn" id="turn">{getTurnText($game)}</h2>
+  <section class="board-container">
+    <section class="player-info-container user">
+      {#if $team}
+        <CapturePool
+          color={$team}
+          capturedPieces={$game.blackPlayer.capturedPieces}
+        />
+        {#if minutes}
+          <GameClock
+            {minutes}
+            seconds={ws}
+            bind:time={whiteClock}
+            {roomSize}
+            color={$team}
+            client={$team}
+          />
+        {/if}
+      {/if}
+    </section>
 
-  <section class="capture-container">
-    <CapturePool
-      color="White"
-      capturedPieces={$game.blackPlayer.capturedPieces}
-    />
-    <CapturePool
-      color="Black"
-      capturedPieces={$game.whitePlayer.capturedPieces}
-    />
+    <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
+
+    <section class="player-info-container opponent">
+      {#if $team}
+        <CapturePool
+          color={opponentColor}
+          capturedPieces={$game.blackPlayer.capturedPieces}
+        />
+        {#if minutes}
+        <GameClock
+          {minutes}
+          seconds={bs}
+          bind:time={blackClock}
+          {roomSize}
+          color={opponentColor}
+          client={$team}
+        />
+      {/if}
+      {/if}
+    </section>
   </section>
 
-  <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
-  <MoveList />
-  <GameButtons
-    on:draw={handleDraw}
-    on:undo={handleUndo}
-    on:resign={handleResign}
-  />
+  <section class="game-info-container">
+    <GameButtons
+      on:draw={handleDraw}
+      on:undo={handleUndo}
+      on:resign={handleResign}
+    />
+    {#if minutes}
+      <MoveList {minutes} />
+    {/if}
+
+    {#if $game.result}
+      <PlayAgainButton />
+    {/if}
+  </section>
 
   {#if roomSize !== 2}
     <Waiting displayDeclineButton={true} />
@@ -267,30 +305,11 @@
   {#if isUndoDialog}
     <Undo on:close={closeUndoDialog} />
   {/if}
-
-  {#if minutes !== Infinity}
-    <div class="clock-display">
-      <GameClock
-        seconds={ws}
-        bind:time={whiteClock}
-        {roomSize}
-        isMultiPlayer={true}
-        color={"White"}
-      />
-      <GameClock
-        seconds={bs}
-        bind:time={blackClock}
-        {roomSize}
-        isMultiPlayer={true}
-        color={"Black"}
-      />
-    </div>
-  {/if}
 </div>
 
 <style>
   :root {
-    --responsive-size: 5rem;
+    --responsive-size: 4rem;
     --min-size: 3rem;
     --captured-piece-size: 3rem;
     --element-size: 1rem;
@@ -301,30 +320,43 @@
   }
   .container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto;
     grid-template-rows: auto;
-    grid-template-areas: "turn" "board" "btns" "moves-list" "time";
-    margin: auto;
+    grid-template-areas: "board" "info";
+    margin: 0 auto;
     max-width: 1400px;
     justify-items: center;
+    gap: 2rem;
   }
 
-  .capture-container {
-    display: flex;
-    margin: auto;
-    justify-content: space-evenly;
-    gap: 1em;
-    width: 100%;
+  .board-container {
+    grid-area: board;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-areas: "opponent" "board" "user";
+    width: calc(var(--responsive-size) * 8 + 10px);
+    gap: 2rem;
   }
 
-  .turn {
-    color: #49a6e9;
-    grid-area: turn;
-    place-self: center;
+  .game-info-container {
+    grid-area: info;
+    background-color: rgba(255, 255, 255, 0.08);
   }
 
-  .clock-display {
-    grid-area: time;
+  .player-info-container {
+    display: grid;
+    grid-template-columns: 50px 5fr 3fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas: "icon name clock" "icon pieces clock";
+    gap: 0px 1rem;
+  }
+
+  .user {
+    grid-area: user;
+  }
+
+  .opponent {
+    grid-area: opponent;
   }
 
   @media (min-width: 700px) {
@@ -335,47 +367,91 @@
     .container {
       gap: 1em;
       margin: auto;
-      margin-top: 2em;
-      grid-template-columns: 1fr 2fr;
-      grid-template-areas:
-        "turn board"
-        "captured-black board"
-        "captured-white board"
-        "btns board"
-        ". moves-list"
-        "time time";
-    }
-
-    .capture-container {
-      display: block;
-      width: 100%;
-    }
-
-    .turn {
-      margin: auto;
       place-self: center;
+      grid-template-areas:
+        "board"
+        "info";
     }
   }
 
-  @media (min-width: 1000px) {
+  @media (min-width: 1000px) and (max-height: 800px) {
     :root {
-      --responsive-size: 5rem;
+      --responsive-size: 5.5rem;
+    }
+
+    .player-info-container {
+      display: grid;
+      grid-template-rows: 1fr 1fr 1fr;
+      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 1em;
+      min-width: 160px;
+      max-height: 200px;
+      gap: 1rem;
     }
 
     .container {
-      margin: auto 1em;
-      grid-template-columns: 1fr 3fr 1fr;
-      grid-template-areas:
-        " turn board moves-list"
-        "captured-black board moves-list"
-        "btns board ."
-        ". board  ."
-        "time time time";
+      margin: 2em auto;
+      grid-template-columns: 2fr 1fr;
+      grid-template-areas: "board info";
     }
 
-    .capture-container {
-      display: block;
-      margin: 0;
+    .board-container {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr 2fr;
+      grid-template-areas: "opponent board" "user board";
+      width: fit-content;
+      height: fit-content;
+      gap: 0em 1em;
     }
+
+    .user {
+      place-self: start;
+      padding-bottom: 3em;
+    }
+
+    .opponent {
+      place-self: end;
+      padding-top: 5em;
+    }
+
+    .game-info-container {
+      margin: auto;
+    }
+  }
+
+  @media (min-width: 1000px) and (min-height: 800px) {
+
+    :root {
+      --responsive-size: 5.5rem;
+    }
+
+    .container {
+      margin: 2em auto;
+      grid-template-columns: 2fr 1fr;
+      grid-template-areas: "board info";
+    }
+    .board-container {
+      display: grid;
+      grid-template-areas: "opponent" "board" "user";
+      width: fit-content;
+      height: fit-content;
+      gap: 1em;
+    }
+
+    .game-info-container {
+      margin: auto;
+    }
+
+    .player-info-container {
+      grid-template-rows: 1fr 1fr;
+      grid-template-areas: "icon name clock" "icon pieces clock";
+    }
+
+    .user {
+      margin-top: 1em;
+    }
+
   }
 </style>
