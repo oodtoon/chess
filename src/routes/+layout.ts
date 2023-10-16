@@ -1,6 +1,5 @@
 import { writable } from "svelte/store";
 import type { Room } from "colyseus.js";
-import { abort } from "$lib/components/dialogs";
 
 export const prerender = false;
 export const ssr = false;
@@ -12,7 +11,3 @@ export function load() {
   };
 }
 
-
-if (import.meta.hot) {
-  abort("HMR")
-}

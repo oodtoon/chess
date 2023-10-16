@@ -44,7 +44,9 @@
 
 
   .captured {
-    width: var(--captured-piece-size);
-    height: var(--captured-piece-size);
+    width: 2rem;
+    height: 2rem;
+    cursor: auto;
+    padding: 0em;
   }
 </style>

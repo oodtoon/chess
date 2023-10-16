@@ -9,7 +9,7 @@
 
 <style>
     .icon {
-    height: var(--element-size);
+    height: var(--icon-size);
     font-weight: var(--font-weight);
   }
 </style>

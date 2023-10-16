@@ -39,7 +39,7 @@ export type ComponentEventPayload<
   CMP,
   EventType extends keyof GetEvents<CMP>,
 > = CustomEventPayload<GetEvents<CMP>[EventType]>;
-export type Square = [number, number]
+export type Square = [number, number];
 
 export type GameResult = "1-0" | "0-1" | "1/2-1/2" | null;
 export type GameTerminationReason =
@@ -48,25 +48,26 @@ export type GameTerminationReason =
   | "three-fold repitition"
   | "resignation"
   | "draw agreed"
-  | null
-  
+  | "time out"
+  | null;
+
 export type GameTerminationOptions = {
   result: GameResult;
   reason: GameTerminationReason;
 };
 
 export type Request = {
-  type: string,
-  title: string,
-  content?: string
-}
+  type: string;
+  title: string;
+  content?: string;
+};
 
 export type Response = {
-  type: string,
-  result: GameResult,
-  reason: GameTerminationReason
-}
+  type: string;
+  result: GameResult;
+  reason: GameTerminationReason;
+};
 
-export type GameMode = "local" | "online"
+export type GameMode = "local" | "online";
 
-export type Scope = { controller: null | AbortController };
+export type GameMinutes = typeof Infinity | 1 | 2 | 3 | 5 | 10 | 30 | 60;

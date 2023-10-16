@@ -2,68 +2,76 @@
   import type Player from "$lib/models/player";
   import ChessPiece from "./ChessPiece.svelte";
 
-  export let player: Player
-  $: opponent = player.opponent
+  export let player: Player;
+  $: opponent = player.opponent;
 
   $: sortedCapturedPieces = opponent.capturedPieces.sort((a, b) => {
-          return a?.value - b?.value;
-        })
+    return a?.value - b?.value;
+  });
 
   $: totalValue = player.capturedPiecesValue - opponent.capturedPiecesValue;
+
+  let pawnImgUrl =
+    player.color === "White"
+      ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
+      : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
 </script>
 
-<div class="capture-pool {player.color}">
-  <p>{player.color}'s Pieces Taken</p>
+<div class="team-icon" style:background-image="url({pawnImgUrl})">
+  {player.color} Pawn
+</div>
+<p class="player-name">
+  {player.color}
   {#if totalValue > 0}
-    <p>Adv: +{totalValue}</p>
+    <span>Adv: +{totalValue}</span>
   {/if}
-
-
-  <div class="pieces">
-    {#if opponent.capturedPieces.length > 0}
-      {#each sortedCapturedPieces as piece}
-        <ChessPiece {piece} active={false} captured />
-      {/each}
-    {/if}
-  </div>
+</p>
+<div class="pieces">
+  {#if opponent.capturedPieces.length > 0}
+    {#each sortedCapturedPieces as piece}
+      <ChessPiece {piece} active={false} captured />
+    {/each}
+  {/if}
 </div>
 
 <style>
-  .Black {
-    grid-area: captured-black;
-    color: #49a6e9;
-  }
-
-  .Black > p {
-    color: #49a6e9;
-    font-size: 25px;
-    font-weight: 800;
-  }
-
-  .White {
-    grid-area: captured-white;
-    color: brown;
-  }
-
-  .White > p {
-    color: brown;
-    font-size: 25px;
-    font-weight: 800;
-  }
-
-  .White > .pieces {
-    min-height: 100px;
-    border: solid rgb(23, 23, 23) 5px;
-    background-color: brown;
+  .pieces {
+    grid-area: pieces;
     display: flex;
     flex-wrap: wrap;
+    align-items: start;
+  }
+  .team-icon {
+    grid-area: icon;
+    color: transparent;
+    background-color: white;
+    border-radius: 8px;
+    background-size: cover;
+    height: var(--min-size);
+    width: var(--min-size);
+    aspect-ratio: 1;
   }
 
-  .Black > .pieces {
-    min-height: 100px;
-    border: solid rgb(23, 23, 23) 5px;
-    background-color: #49a6e9;
-    display: flex;
-    flex-wrap: wrap;
+  .player-name {
+    color: white;
+    font-weight: 800;
+    grid-area: name;
+    margin: 0.2em 0;
+    align-self: end;
+  }
+
+  @media (min-width: 1000px) and (max-height: 800px) {
+    .pieces {
+      align-self: start;
+    }
+
+    .player-name {
+      align-self: start;
+    }
+  }
+  @media (min-width: 1000px) and (min-height: 800px) {
+    .pieces {
+      max-height: 3em;
+    }
   }
 </style>

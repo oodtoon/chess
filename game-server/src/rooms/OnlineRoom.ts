@@ -1,30 +1,47 @@
-import { Room, Client } from "@colyseus/core";
+import { Room, Client, Delayed } from "@colyseus/core";
 import GameState from "../models/online-game-state";
 import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/online-game-state";
 
+type TimeOptions = { minutes: number };
+
 export class OnlineRoom extends Room<GameState> {
+  public whiteInt!: Delayed;
+  public blackInt!: Delayed;
   maxClients = 2;
 
-  onCreate() {
-    console.log("created", this)
+  onCreate(options: TimeOptions) {
     this.setState(new GameState());
+
+    this.state.minutes = options.minutes;
+
+    if (options.minutes !== 999999999) {
+      const seconds = options.minutes * 60;
+      this.state.whiteClock = seconds;
+      this.state.blackClock = seconds;
+    }
+
+    this.whiteInt = this.clock.setInterval(() => {
+      this.state.whiteClock -= 0.1;
+    }, 100);
+
+    this.blackInt = this.clock.setInterval(() => {
+      this.state.blackClock -= 0.1;
+    }, 100);
+
+    if (this.state.players.size < 2) {
+      this.whiteInt.pause();
+      this.blackInt.pause();
+    }
 
     this.onMessage("move", (client, message) => {
       if (message) {
-        const sender = this.state.players.get(client.sessionId)
-
-        if (!message.shouldCommitMove) {
-          console.log("refresh")
-        }
-        
         console.log(
-          message,
           message.color,
-          sender.color
+          this.state.players.get(client.sessionId).color
         );
 
-        if (message.color === sender.color) {
+        if (message.color === this.state.players.get(client.sessionId).color) {
           const nextState = [...this.state.strMoves, message.move];
           console.log(nextState);
           const pgn = formatAsPgnString(nextState);
@@ -32,6 +49,21 @@ export class OnlineRoom extends Room<GameState> {
           try {
             parsePgn(pgn);
             this.state.strMoves.push(message.move);
+
+            if (this.state.strMoves.length % 2 === 0) {
+              this.blackInt.pause();
+              this.whiteInt.resume();
+            } else {
+              this.whiteInt.pause();
+              this.blackInt.resume();
+            }
+
+            if (options.minutes !== 999999999) {
+              this.broadcast("timeUpdate", {
+                whiteClock: this.state.whiteClock,
+                blackClock: this.state.blackClock,
+              });
+            }
           } catch (e) {
             message.send(client, "error", e);
             console.log(`${client} sent invalid move`);
@@ -99,6 +131,7 @@ export class OnlineRoom extends Room<GameState> {
           type = "White";
         }
       });
+      this.whiteInt.resume();
     }
     this.state.players.set(client.sessionId, new Player(type));
   }
@@ -119,6 +152,12 @@ export class OnlineRoom extends Room<GameState> {
       const message = {moves: [...this.state.strMoves]}
       console.log([...this.state.strMoves])
       client.send("rejoin", message)
+
+      this.broadcast("timeUpdate", {
+        whiteClock: this.state.whiteClock,
+        blackClock: this.state.blackClock,
+      });
+
       player.connected = true;
     } catch (error) {
       console.log("no reconnect", error);
