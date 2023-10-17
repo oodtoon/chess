@@ -29,4 +29,4 @@ ENV PATH /usr/local/node/bin:$PATH
 ENV DEBUG colyseus:*
 ENV COLYSEUS_SEAT_RESERVATION_TIME 15
 
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "run", "production" ]
