@@ -55,7 +55,12 @@
       <p class="time-title">Select minutes per player:</p>
       <div class="radio-container">
         {#each timeOptions as time}
-          <label class="radio-input" class:selected-time={chosenTime === time} class:edge-radio={time === 60}
+          <label
+            class="radio-input"
+            class:selected-time={chosenTime === time}
+            class:edge-radio={time === 60}
+            tabindex={time === chosenTime ? 0 : -1}
+            style={"max-width: 1em"}
             ><input
               type="radio"
               name="minutes"
@@ -92,10 +97,14 @@
   button {
     cursor: pointer;
   }
+
+  button:hover {
+    box-shadow: 0.2em 0.2em 0.2em black;
+  }
   .container {
     display: grid;
     max-width: 1200px;
-    margin: auto;
+    margin: 0 auto;
   }
   .interface-container {
     display: grid;
@@ -134,6 +143,7 @@
   .time-select {
     grid-area: time-select;
     color: white;
+    align-self: center;
   }
 
   .time-title {
@@ -145,12 +155,14 @@
   }
 
   .radio-input input[type="radio"] {
-    display: none;
+    height: 0;
+    width: 0;
+    margin: 0;
   }
 
   .radio-input {
     display: flex;
-    align-items: center;
+    justify-content: center;
     padding: 1em;
     border-right: 1px solid grey;
   }
@@ -163,7 +175,8 @@
   }
 
   .selected-time {
-    background-color:green;
+    background-color: brown;
+    box-shadow: 4px 4px black;
   }
   .local {
     grid-area: local;
@@ -192,6 +205,7 @@
     background-color: #49a6e9;
   }
 
+
   @media (min-width: 700px) {
     :root {
       --responsive-size: 8vw;
@@ -201,9 +215,7 @@
       place-self: center;
     }
 
-    .container {
-      margin: 5em;
-    }
+
   }
 
   @media (min-width: 1000px) {

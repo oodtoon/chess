@@ -1,6 +1,6 @@
-# fly.toml file generated for game-server-chess on 2023-09-23T14:44:25-05:00
+# fly.toml file generated for chess-game-server on 2023-09-23T14:44:25-05:00
 
-app = "game-server-chess"
+app = "chess-game-server"
 kill_signal = "SIGINT"
 kill_timeout = 5
 mounts = []

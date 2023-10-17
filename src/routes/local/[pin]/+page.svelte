@@ -32,9 +32,6 @@
   const gameContext = setGameContext(new GameModel(eventBus), "local");
   const { game } = gameContext;
 
-  let whiteClock: number;
-  let blackClock: number;
-
   onMount(() => {
     invalidateAll();
     setupRoom();
@@ -86,8 +83,6 @@
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
-      whiteClock,
-      blackClock,
     };
     $room.send("move", message);
   }
@@ -163,7 +158,6 @@
         <GameClock
           {minutes}
           seconds={ws}
-          bind:time={whiteClock}
           {roomSize}
           color={"White"}
           client={activePlayer.color}
@@ -183,7 +177,6 @@
         <GameClock
           {minutes}
           seconds={bs}
-          bind:time={blackClock}
           {roomSize}
           color={"Black"}
           client={activePlayer.color}
