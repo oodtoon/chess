@@ -30,20 +30,9 @@
 
   let shouldCommitMove = true;
 
-  let whiteClock: number = 0;
-  let blackClock: number = 0;
   let ws: number = Infinity;
   let bs: number = Infinity;
-  let clientClock: number;
-  let oppClock: number;
 
-  $: if ($team === "White") {
-    clientClock = whiteClock;
-    oppClock = blackClock;
-  } else {
-    clientClock = blackClock;
-    oppClock = whiteClock;
-  }
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -260,7 +249,6 @@
           <GameClock
             {minutes}
             seconds={$team === "White" ? ws : bs}
-            bind:time={clientClock}
             {roomSize}
             color={$team}
             client={$team}
@@ -281,7 +269,6 @@
           <GameClock
             {minutes}
             seconds={$team === "White" ? bs : ws}
-            bind:time={oppClock}
             {roomSize}
             color={opponentColor}
             client={$team}

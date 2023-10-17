@@ -6,12 +6,12 @@
 
   export let minutes: number;
   export let seconds: number;
-  export let time: number;
   export let color: string;
   export let isMultiPlayer: boolean = false;
   export let roomSize: number;
   export let client: Color
 
+  let time: number
   let isPaused: boolean;
 
   $: if (minutes === Infinity) {
