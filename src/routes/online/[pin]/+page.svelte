@@ -34,6 +34,16 @@
   let blackClock: number = 0;
   let ws: number = Infinity;
   let bs: number = Infinity;
+  let clientClock: number;
+  let oppClock: number;
+
+  $: if ($team === "White") {
+    clientClock = whiteClock;
+    oppClock = blackClock;
+  } else {
+    clientClock = blackClock;
+    oppClock = whiteClock;
+  }
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -72,7 +82,7 @@
         opponentColor = player.color === "White" ? "Black" : "White";
       }
       if ($room.state.strMoves.length > 0) {
-        [...$room.state.strMoves];
+        resetGameBoard([...$room.state.strMoves]);
       }
 
       roomSize = $room.state.players.size;
@@ -249,11 +259,12 @@
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={ws}
-            bind:time={whiteClock}
+            seconds={$team === "White" ? ws : bs}
+            bind:time={clientClock}
             {roomSize}
             color={$team}
             client={$team}
+            isMultiPlayer
           />
         {/if}
       {/if}
@@ -264,16 +275,17 @@
     <section class="player-info-container opponent">
       {#if $team}
         <CapturePool
-        player={$team === "White" ? $game.blackPlayer : $game.whitePlayer}
+          player={$team === "White" ? $game.blackPlayer : $game.whitePlayer}
         />
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={bs}
-            bind:time={blackClock}
+            seconds={$team === "White" ? bs : ws}
+            bind:time={oppClock}
             {roomSize}
             color={opponentColor}
             client={$team}
+            isMultiPlayer
           />
         {/if}
       {/if}

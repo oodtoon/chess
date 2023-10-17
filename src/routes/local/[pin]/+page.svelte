@@ -143,6 +143,8 @@
       return $game;
     });
   }
+
+  $: activePlayer = $game.getActivePlayer()
 </script>
 
 <svelte:head>
@@ -153,12 +155,10 @@
   <section class="board-container">
     <section
       class="player-info-container"
-      class:active-player={$game.getActivePlayer().color === "White"}
-      class:non-active-player={$game.getActivePlayer().color !== "White"}
+      class:active-player={activePlayer.color === "White"}
+      class:non-active-player={activePlayer.color !== "White"}
     >
-      <CapturePool
-         player={$game.getActivePlayer()}
-      />
+      <CapturePool player={$game.whitePlayer} />
       {#if minutes}
         <GameClock
           {minutes}
@@ -166,6 +166,7 @@
           bind:time={whiteClock}
           {roomSize}
           color={"White"}
+          client={activePlayer.color}
         />
       {/if}
     </section>
@@ -174,12 +175,10 @@
 
     <section
       class="player-info-container"
-      class:active-player={$game.getActivePlayer().color === "Black"}
-      class:non-active-player={$game.getActivePlayer().color !== "Black"}
+      class:active-player={activePlayer.opponent.color !== "Black"}
+      class:non-active-player={activePlayer.opponent.color === "Black"}
     >
-      <CapturePool
-        player={$game.getActivePlayer().opponent}
-      />
+      <CapturePool player={$game.blackPlayer}/>
       {#if minutes}
         <GameClock
           {minutes}
@@ -187,6 +186,7 @@
           bind:time={blackClock}
           {roomSize}
           color={"Black"}
+          client={activePlayer.color}
         />
       {/if}
     </section>

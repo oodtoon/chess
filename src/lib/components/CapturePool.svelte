@@ -3,23 +3,29 @@
   import ChessPiece from "./ChessPiece.svelte";
 
   export let player: Player;
+  $: if (player) {
+    console.log("active", player)
+  }
   $: opponent = player.opponent;
 
   $: sortedCapturedPieces = opponent.capturedPieces.sort((a, b) => {
     return a?.value - b?.value;
   });
 
-  $: totalValue = player.capturedPiecesValue - opponent.capturedPiecesValue;
+  $: totalValue = opponent.capturedPiecesValue - player.capturedPiecesValue;
 
   let pawnImgUrl =
     player.color === "White"
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
+
+
 </script>
 
 <div class="team-icon" style:background-image="url({pawnImgUrl})">
   {player.color} Pawn
 </div>
+
 <p class="player-name">
   {player.color}
   {#if totalValue > 0}
