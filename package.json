@@ -32,7 +32,7 @@
   },
   "type": "module",
   "dependencies": {
-    "colyseus.js": "^0.15.13",
+    "colyseus.js": "^0.15.14",
     "gsap": "^3.12.2"
   }
 }

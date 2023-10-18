@@ -38,6 +38,7 @@
     "@colyseus/tools": "^0.15.0",
     "@mliebelt/pgn-parser": "^1.4.12",
     "colyseus": "^0.15.0",
+    "colyseus.js": "^0.15.14",
     "cors": "^2.8.5",
     "express": "^4.18.2"
   }
