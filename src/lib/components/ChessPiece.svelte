@@ -4,11 +4,10 @@
   export let active: boolean;
   export let captured: boolean;
   export let piece: Piece | null;
-  export let prevPiece: Piece | null
+  export let isSamePieceType = false
 
   let livePiece = !captured;
 
-  $: isSamePiece = piece!.name === prevPiece?.name
 
 </script>
 
@@ -17,7 +16,7 @@
   class:active
   class:captured
   class:livePiece
-  class:isSamePiece
+  class:isSamePieceType
   style:background-image="url({piece?.img})"
   on:click
   data-flip-id="piece-{piece?.id}"
@@ -52,7 +51,7 @@
     padding: 0em;
   }
 
-  .isSamePiece {
+  .isSamePieceType {
     margin-left: -1.65rem;
   }
 </style>

@@ -3,9 +3,7 @@
   import ChessPiece from "./ChessPiece.svelte";
 
   export let player: Player;
-  $: if (player) {
-    console.log("active", player);
-  }
+  
   $: opponent = player.opponent;
 
   $: alphabetiedCapturedPieces = opponent.capturedPieces.sort((a, b) =>
@@ -42,7 +40,8 @@
         {piece}
         active={false}
         captured
-        prevPiece={index > 0 ? sortedCapturedPieces[index - 1] : null}
+        isSamePieceType={index > 0 &&
+          piece.name === sortedCapturedPieces[index - 1].name}
       />
     {/each}
   {/if}
@@ -76,8 +75,6 @@
     align-self: start;
     max-height: 24px;
   }
-
-  
 
   @media (min-width: 1000px) and (max-height: 800px) {
     .pieces {

@@ -33,7 +33,6 @@
   let ws: number = Infinity;
   let bs: number = Infinity;
 
-
   $: dialogState = $room
     ? $room?.state.requestState
     : { hasRequest: false, type: "", title: "", content: "", playerColor: "" };
@@ -103,13 +102,13 @@
     });
 
     $room.onMessage("leave", () => {
-      roomSize = 1
+      roomSize = 1;
       // create auto-win if player has left for x amount of time
-    })
+    });
 
     $room.onMessage("back", () => {
-      roomSize = 2
-    })
+      roomSize = 2;
+    });
 
     $room.onMessage("rejoin", (message) => {
       shouldCommitMove = false;
@@ -358,6 +357,10 @@
   .game-info-container {
     grid-area: info;
     background-color: rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .player-info-container {

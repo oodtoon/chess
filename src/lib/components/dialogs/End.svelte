@@ -1,11 +1,11 @@
 <script lang="ts">
   import { copyPgn, exportToPgn } from "$lib/io";
   import Dialog from "./Dialog.svelte";
-  import ExitButton from "../ExitButton.svelte";
-  import CopyIcon from "../CopyIcon.svelte";
+  import ExitButton from "../icons/ExitButton.svelte";
+  import CopyIcon from "../icons/CopyIcon.svelte";
   import { createEventDispatcher } from "svelte";
   import type { GameContext } from "$lib/context";
-  import Trophy from "../Trophy.svelte";
+  import Trophy from "../icons/Trophy.svelte";
   import ExportIcon from "../icons/ExportIcon.svelte";
   import PlayAgainIcon from "../icons/PlayAgainIcon.svelte";
 

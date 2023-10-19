@@ -3,13 +3,16 @@
   import { getGameContext } from "$lib/context";
   import type { ParseTree } from "@mliebelt/pgn-parser";
   import GameModel from "$lib/models/game";
-  import CopyIcon from "./CopyIcon.svelte";
+  import CopyIcon from "./icons/CopyIcon.svelte";
   import ExportIcon from "./icons/ExportIcon.svelte";
   import ImportIcon from "./icons/ImportIcon.svelte";
+  import ToastError from "./dialogs/ToastError.svelte";
 
-  export let minutes: number
+  export let minutes: number;
 
   let copied = false;
+
+  let isError = false;
 
   let ctx = getGameContext();
   const { game, moveList } = ctx;
@@ -26,18 +29,31 @@
     }, 4000);
   };
 
-  const handleImport = () => {
+  function displayToast() {
+    isError = true;
+
+    setTimeout(() => {
+      isError = false;
+    }, 5000);
+  }
+
+  const handleImport = async () => {
     const fileInput = document.querySelector("#file-input") as HTMLInputElement;
     fileInput!.click();
 
     fileInput.addEventListener("change", (event) => {
       const reader = new FileReader();
+
       reader.onload = (event) => {
         $game = new GameModel($game.eventBus);
 
         const pgn = event.target?.result as string;
-        const parsedPgn = parsePgn(pgn) as ParseTree;
-        $game.fromParsedToken(parsedPgn);
+        try {
+          const parsedPgn = parsePgn(pgn) as ParseTree;
+          $game.fromParsedToken(parsedPgn);
+        } catch {
+          displayToast()
+        }
       };
       const files = (event.target as HTMLInputElement).files;
       reader.readAsText(files![0]);
@@ -88,6 +104,13 @@
     {/if}
   </section>
 </div>
+
+{#if isError}
+<div class="toast">
+  <ToastError />
+</div>
+
+{/if}
 
 <style>
   h3 {
@@ -199,5 +222,19 @@
 
   .import:hover {
     background-color: black;
+  }
+
+  .toast {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
+  
   }
 </style>

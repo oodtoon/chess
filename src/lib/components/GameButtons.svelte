@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
-  import UndoIcon from "./UndoIcon.svelte";
+  import UndoIcon from "./icons/UndoIcon.svelte";
   import FlagIcon from "./icons/FlagIcon.svelte";
   import HandShakeIcon from "./icons/HandShakeIcon.svelte";
 
