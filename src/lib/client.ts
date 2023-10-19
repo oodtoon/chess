@@ -66,6 +66,7 @@ export async function joinPrivateRoom(id: string) {
 type ReconnectionTokenUpdater = (str: string | null) => string;
 type ReconnectionTokenSubscribe = (str: string | null) => void;
 
+console.log("dev:", dev)
 const storage = dev ? sessionStorage : localStorage;
 
 export const reconnectionToken = (function () {

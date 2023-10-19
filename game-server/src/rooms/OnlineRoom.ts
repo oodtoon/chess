@@ -29,7 +29,7 @@ export class OnlineRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
-    if (this.state.players.size < 2) {
+    if (this.state.players.size < 2 || options.minutes === 999999999) {
       this.whiteInt.pause();
       this.blackInt.pause();
     }
@@ -50,12 +50,14 @@ export class OnlineRoom extends Room<GameState> {
             parsePgn(pgn);
             this.state.strMoves.push(message.move);
 
-            if (this.state.strMoves.length % 2 === 0) {
-              this.blackInt.pause();
-              this.whiteInt.resume();
-            } else {
-              this.whiteInt.pause();
-              this.blackInt.resume();
+            if (options.minutes !== 999999999) {
+              if (this.state.strMoves.length % 2 === 0) {
+                this.blackInt.pause();
+                this.whiteInt.resume();
+              } else {
+                this.whiteInt.pause();
+                this.blackInt.resume();
+              }
             }
 
             if (options.minutes !== 999999999) {
@@ -80,7 +82,7 @@ export class OnlineRoom extends Room<GameState> {
     });
 
     this.onMessage("request", (client, message) => {
-      const sender = this.state.players.get(client.sessionId)
+      const sender = this.state.players.get(client.sessionId);
       const stateUpdate = {
         ...message,
         hasRequest: true,
@@ -103,11 +105,8 @@ export class OnlineRoom extends Room<GameState> {
     });
 
     this.onMessage("resign", (client) => {
-      const sender = this.state.players.get(client.sessionId)
-      const resignResult =
-        sender.color === "White"
-          ? "0-1"
-          : "1-0";
+      const sender = this.state.players.get(client.sessionId);
+      const resignResult = sender.color === "White" ? "0-1" : "1-0";
       const resignMsg = {
         result: resignResult,
         reason: "resignation",
@@ -131,7 +130,10 @@ export class OnlineRoom extends Room<GameState> {
           type = "White";
         }
       });
-      this.whiteInt.resume();
+      if (this.state.minutes !== 999999999) {
+        this.whiteInt.resume();
+      }
+      
     }
     this.state.players.set(client.sessionId, new Player(type));
   }
@@ -149,9 +151,9 @@ export class OnlineRoom extends Room<GameState> {
 
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
-      const message = {moves: [...this.state.strMoves]}
-      console.log([...this.state.strMoves])
-      client.send("rejoin", message)
+      const message = { moves: [...this.state.strMoves] };
+      console.log([...this.state.strMoves]);
+      client.send("rejoin", message);
 
       this.broadcast("timeUpdate", {
         whiteClock: this.state.whiteClock,
@@ -166,7 +168,7 @@ export class OnlineRoom extends Room<GameState> {
   }
 
   onDispose() {
-    console.log("right now")
+    console.log("right now");
     console.log("room", this.roomId, "disposing...");
   }
 }

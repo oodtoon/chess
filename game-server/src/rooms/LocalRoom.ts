@@ -21,14 +21,14 @@ export class LocalRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
+    this.whiteInt.pause()
+    this.blackInt.pause()
+
     if (options.minutes !== 999999999) {
       const seconds = options.minutes * 60;
       this.state.whiteClock = seconds;
       this.state.blackClock = seconds;
     }
-
-    this.whiteInt.resume();
-    this.blackInt.pause();
 
     this.onMessage("move", (client, message) => {
       if (message) {
@@ -68,6 +68,11 @@ export class LocalRoom extends Room<GameState> {
       "I have arrived!",
       this.state.players.get(client.sessionId).color
     );
+
+    if (this.state.minutes !== 999999999) {
+      this.whiteInt.resume();
+      this.blackInt.pause();
+    }
   }
 
   async onLeave(client: Client, consented: boolean) {

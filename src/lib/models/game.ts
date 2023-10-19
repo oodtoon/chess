@@ -30,9 +30,6 @@ export default class Game {
   result: GameResult = null;
   terminationReason: GameTerminationReason = null;
 
-  whiteClock: number = 0
-  blackClock: number = 0
-
   constructor(readonly eventBus: EventBus) {
     this.wireUpOpposition();
     this.board.initialize();
