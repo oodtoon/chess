@@ -102,6 +102,15 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
+    $room.onMessage("leave", () => {
+      roomSize = 1
+      // create auto-win if player has left for x amount of time
+    })
+
+    $room.onMessage("back", () => {
+      roomSize = 2
+    })
+
     $room.onMessage("rejoin", (message) => {
       shouldCommitMove = false;
 
@@ -354,7 +363,7 @@
   .player-info-container {
     display: grid;
     grid-template-columns: 50px 5fr 3fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
     gap: 0px 1rem;
   }
@@ -390,12 +399,12 @@
     .player-info-container {
       display: grid;
       grid-template-rows: 1fr 1fr 1fr;
-      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      grid-template-columns: 2fr 1fr 2fr;
+      grid-template-areas: "clock clock clock" "icon name name" "pieces pieces pieces";
       background-color: rgba(255, 255, 255, 0.08);
       padding: 1em;
       min-width: 160px;
       max-height: 200px;
-      gap: 1rem;
     }
 
     .container {

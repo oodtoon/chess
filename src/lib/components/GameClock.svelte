@@ -93,8 +93,8 @@
 {:else if minutes === Infinity && client !== color}
   <span
     class="clock-container"
-    class:White={color === "White"}
-    class:Black={color === "Black"}
+    class:White={$game.getActivePlayer().color === "White"}
+    class:Black={$game.getActivePlayer().color === "Black"}
   >
     {getTurnText($game)}
   </span>

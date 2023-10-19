@@ -280,7 +280,7 @@
 
     .player-info-container {
       display: grid;
-      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      grid-template-areas: "clock clock clock" "icon name name" "pieces pieces pieces";
       background-color: rgba(255, 255, 255, 0.08);
       padding: 1em;
       min-width: 160px;

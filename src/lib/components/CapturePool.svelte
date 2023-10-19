@@ -4,11 +4,15 @@
 
   export let player: Player;
   $: if (player) {
-    console.log("active", player)
+    console.log("active", player);
   }
   $: opponent = player.opponent;
 
-  $: sortedCapturedPieces = opponent.capturedPieces.sort((a, b) => {
+  $: alphabetiedCapturedPieces = opponent.capturedPieces.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  $: sortedCapturedPieces = alphabetiedCapturedPieces.sort((a, b) => {
     return a?.value - b?.value;
   });
 
@@ -18,8 +22,6 @@
     player.color === "White"
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";
-
-
 </script>
 
 <div class="team-icon" style:background-image="url({pawnImgUrl})">
@@ -29,13 +31,19 @@
 <p class="player-name">
   {player.color}
   {#if totalValue > 0}
-    <span>Adv: +{totalValue}</span>
+    <span>+{totalValue}</span>
   {/if}
 </p>
+
 <div class="pieces">
   {#if opponent.capturedPieces.length > 0}
-    {#each sortedCapturedPieces as piece}
-      <ChessPiece {piece} active={false} captured />
+    {#each sortedCapturedPieces as piece, index}
+      <ChessPiece
+        {piece}
+        active={false}
+        captured
+        prevPiece={index > 0 ? sortedCapturedPieces[index - 1] : null}
+      />
     {/each}
   {/if}
 </div>
@@ -46,6 +54,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: start;
+    min-height: 32px;
   }
   .team-icon {
     grid-area: icon;
@@ -62,9 +71,13 @@
     color: white;
     font-weight: 800;
     grid-area: name;
-    margin: 0.2em 0;
-    align-self: end;
+    margin-top: 0.2em;
+    margin-bottom: 0;
+    align-self: start;
+    max-height: 24px;
   }
+
+  
 
   @media (min-width: 1000px) and (max-height: 800px) {
     .pieces {
@@ -72,7 +85,11 @@
     }
 
     .player-name {
-      align-self: start;
+      align-self: center;
+    }
+
+    .team-icon {
+      align-self: center;
     }
   }
   @media (min-width: 1000px) and (min-height: 800px) {
