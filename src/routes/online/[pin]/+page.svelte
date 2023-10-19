@@ -19,7 +19,6 @@
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
   import { invalidateAll } from "$app/navigation";
-  import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
 
   export let data;
 
@@ -32,7 +31,6 @@
 
   let ws: number = Infinity;
   let bs: number = Infinity;
-
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -100,6 +98,15 @@
         }
       }
       oldMovesLength = $room.state.strMoves.length;
+    });
+
+    $room.onMessage("leave", () => {
+      roomSize = 1;
+      // create auto-win if player has left for x amount of time
+    });
+
+    $room.onMessage("back", () => {
+      roomSize = 2;
     });
 
     $room.onMessage("rejoin", (message) => {
@@ -288,10 +295,6 @@
     {#if minutes}
       <MoveList {minutes} />
     {/if}
-
-    {#if $game.result}
-      <PlayAgainButton />
-    {/if}
   </section>
 
   {#if roomSize !== 2}
@@ -349,12 +352,16 @@
   .game-info-container {
     grid-area: info;
     background-color: rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .player-info-container {
     display: grid;
     grid-template-columns: 50px 5fr 3fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 2fr;
     grid-template-areas: "icon name clock" "icon pieces clock";
     gap: 0px 1rem;
   }
@@ -390,12 +397,12 @@
     .player-info-container {
       display: grid;
       grid-template-rows: 1fr 1fr 1fr;
-      grid-template-areas: "clock clock clock" "icon name ." "icon pieces pieces";
+      grid-template-columns: 2fr 1fr 2fr;
+      grid-template-areas: "clock clock clock" "icon name name" "pieces pieces pieces";
       background-color: rgba(255, 255, 255, 0.08);
       padding: 1em;
       min-width: 160px;
       max-height: 200px;
-      gap: 1rem;
     }
 
     .container {
@@ -404,6 +411,12 @@
       grid-template-areas: "board info";
     }
 
+    .user {
+      place-self: start;
+      padding-bottom: 3em;
+    }
+
+  
     .board-container {
       display: grid;
       grid-template-rows: 1fr 1fr;
@@ -414,10 +427,7 @@
       gap: 0em 1em;
     }
 
-    .user {
-      place-self: start;
-      padding-bottom: 3em;
-    }
+  
 
     .opponent {
       place-self: end;

@@ -2,7 +2,7 @@
   import { getGameContext } from "$lib/context";
   import type Game from "$lib/models/game";
   import type { Color } from "$lib/type";
-  import ClockIcon from "./ClockIcon.svelte";
+  import ClockIcon from "./icons/ClockIcon.svelte";
 
   export let minutes: number;
   export let seconds: number;
@@ -93,8 +93,8 @@
 {:else if minutes === Infinity && client !== color}
   <span
     class="clock-container"
-    class:White={color === "White"}
-    class:Black={color === "Black"}
+    class:White={$game.getActivePlayer().color === "White"}
+    class:Black={$game.getActivePlayer().color === "Black"}
   >
     {getTurnText($game)}
   </span>

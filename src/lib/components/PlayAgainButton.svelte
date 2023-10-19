@@ -23,7 +23,7 @@
     background-color: white;
     display: flex;
     gap: 1em;
-    margin: 2em auto;
+    margin: auto;
   }
 
   button:hover {

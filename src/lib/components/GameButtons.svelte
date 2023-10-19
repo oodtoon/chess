@@ -1,11 +1,10 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
-  import UndoIcon from "./UndoIcon.svelte";
+  import UndoIcon from "./icons/UndoIcon.svelte";
   import FlagIcon from "./icons/FlagIcon.svelte";
   import HandShakeIcon from "./icons/HandShakeIcon.svelte";
 
   import { createEventDispatcher } from "svelte";
-  import PlayAgainIcon from "./icons/PlayAgainIcon.svelte";
 
   const gameContext = getGameContext();
   const { game } = gameContext;
@@ -47,7 +46,8 @@
     justify-content: space-around;
     gap: 1em;
     width: 100%;
-    margin: 1em;
+    margin: 1em 0;
+    grid-area: btns;
   }
 
   .btns-container > button {

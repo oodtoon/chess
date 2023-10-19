@@ -3,13 +3,17 @@
   import { getGameContext } from "$lib/context";
   import type { ParseTree } from "@mliebelt/pgn-parser";
   import GameModel from "$lib/models/game";
-  import CopyIcon from "./CopyIcon.svelte";
+  import CopyIcon from "./icons/CopyIcon.svelte";
   import ExportIcon from "./icons/ExportIcon.svelte";
   import ImportIcon from "./icons/ImportIcon.svelte";
+  import ToastError from "./dialogs/ToastError.svelte";
+  import PlayAgainButton from "./PlayAgainButton.svelte";
 
-  export let minutes: number
+  export let minutes: number;
 
   let copied = false;
+
+  let isError = false;
 
   let ctx = getGameContext();
   const { game, moveList } = ctx;
@@ -26,18 +30,31 @@
     }, 4000);
   };
 
-  const handleImport = () => {
+  function displayToast() {
+    isError = true;
+
+    setTimeout(() => {
+      isError = false;
+    }, 5000);
+  }
+
+  const handleImport = async () => {
     const fileInput = document.querySelector("#file-input") as HTMLInputElement;
     fileInput!.click();
 
     fileInput.addEventListener("change", (event) => {
       const reader = new FileReader();
+
       reader.onload = (event) => {
         $game = new GameModel($game.eventBus);
 
         const pgn = event.target?.result as string;
-        const parsedPgn = parsePgn(pgn) as ParseTree;
-        $game.fromParsedToken(parsedPgn);
+        try {
+          const parsedPgn = parsePgn(pgn) as ParseTree;
+          $game.fromParsedToken(parsedPgn);
+        } catch {
+          displayToast();
+        }
       };
       const files = (event.target as HTMLInputElement).files;
       reader.readAsText(files![0]);
@@ -46,28 +63,29 @@
 </script>
 
 <div class="moves-list">
-  <h3>Game Notation</h3>
-  <ol>
-    {#each $moveList as move, i}
-      {#if i % 2 === 0}
-        <li>
-          {#if i === 0}
-            <span class="number">1.</span>
-          {:else}
-            <span class="number">{i / 2 + 1}.</span>
-          {/if}
-          <span class="move">{move}</span>
-          {#if $moveList[i + 1]}
-            <span class="move">{$moveList[i + 1]}</span>
-          {/if}
-        </li>
+  <section class="moves">
+    <h3>Game Notation</h3>
+    <ol>
+      {#each $moveList as move, i}
+        {#if i % 2 === 0}
+          <li>
+            {#if i === 0}
+              <span class="number">1.</span>
+            {:else}
+              <span class="number">{i / 2 + 1}.</span>
+            {/if}
+            <span class="move">{move}</span>
+            {#if $moveList[i + 1]}
+              <span class="move">{$moveList[i + 1]}</span>
+            {/if}
+          </li>
+        {/if}
+      {/each}
+      {#if $game.result}
+        <span class="game-result">Game Result: {$game.result}</span>
       {/if}
-    {/each}
-    <!-- svelte-ignore empty-block -->
-    {#if $game.result}
-      <span class="game-result">Game Result: {$game.result}</span>
-    {/if}
-  </ol>
+    </ol>
+  </section>
 
   <section class="btns-container">
     <button class="export" type="button" on:click={handleExport}
@@ -87,7 +105,18 @@
       >
     {/if}
   </section>
+  {#if $game.result}
+    <section class="player-again-container">
+      <PlayAgainButton />
+    </section>
+  {/if}
 </div>
+
+{#if isError}
+  <div class="toast">
+    <ToastError />
+  </div>
+{/if}
 
 <style>
   h3 {
@@ -132,13 +161,23 @@
     justify-content: center;
   }
 
+  .moves {
+    grid-area: moves;
+  }
+
+
+  .player-again-container {
+    grid-area: play-again;
+    align-self: start;
+  }
   .moves-list {
     grid-area: moves-list;
-    display: block;
+    display: grid;
     background-color: #292727;
     color: white;
     margin-bottom: auto;
     width: 100%;
+    grid-template-areas: "moves moves" "btns play-again";
   }
 
   .btns-container {
@@ -199,5 +238,18 @@
 
   .import:hover {
     background-color: black;
+  }
+
+  .toast {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
   }
 </style>

@@ -58,7 +58,7 @@ export class OnlineRoom extends Room<GameState> {
                 this.whiteInt.pause();
                 this.blackInt.resume();
               }
-              
+
               this.broadcast("timeUpdate", {
                 whiteClock: this.state.whiteClock,
                 blackClock: this.state.blackClock,
@@ -141,6 +141,9 @@ export class OnlineRoom extends Room<GameState> {
     console.log(client.sessionId, player.color, "left!");
     player.connected = false;
 
+    
+    this.getOtherClient(client).send("leave")
+
     try {
       if (consented) {
         console.log("consented leave");
@@ -152,6 +155,7 @@ export class OnlineRoom extends Room<GameState> {
       const message = { moves: [...this.state.strMoves] };
       console.log([...this.state.strMoves]);
       client.send("rejoin", message);
+      this.getOtherClient(client).send("back")
 
       this.broadcast("timeUpdate", {
         whiteClock: this.state.whiteClock,
@@ -163,6 +167,12 @@ export class OnlineRoom extends Room<GameState> {
       console.log("no reconnect", error);
       this.state.players.delete(client.sessionId);
     }
+  }
+
+  private getOtherClient(client: Client) {
+    const currentIndex = this.clients.indexOf(client);
+    const otherIndex = +!currentIndex;
+    return this.clients[otherIndex];
   }
 
   onDispose() {
