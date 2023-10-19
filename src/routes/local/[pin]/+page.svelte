@@ -139,7 +139,7 @@
     });
   }
 
-  $: activePlayer = $game.getActivePlayer()
+  $: activePlayer = $game.getActivePlayer();
 </script>
 
 <svelte:head>
@@ -172,7 +172,7 @@
       class:active-player={activePlayer.opponent.color !== "Black"}
       class:non-active-player={activePlayer.opponent.color === "Black"}
     >
-      <CapturePool player={$game.blackPlayer}/>
+      <CapturePool player={$game.blackPlayer} />
       {#if minutes}
         <GameClock
           {minutes}
@@ -277,6 +277,8 @@
 
     .player-info-container {
       display: grid;
+      grid-template-columns: auto;
+      grid-template-rows: 3fr 2fr 1fr;
       grid-template-areas: "clock clock clock" "icon name name" "pieces pieces pieces";
       background-color: rgba(255, 255, 255, 0.08);
       padding: 1em;
@@ -312,7 +314,6 @@
 
     .game-info-container {
       place-self: start;
-
     }
   }
 
