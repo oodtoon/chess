@@ -21,8 +21,8 @@ export class LocalRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
-    this.whiteInt.pause()
-    this.blackInt.pause()
+    this.whiteInt.pause();
+    this.blackInt.pause();
 
     if (options.minutes !== 999999999) {
       const seconds = options.minutes * 60;
@@ -40,15 +40,16 @@ export class LocalRoom extends Room<GameState> {
           parsePgn(pgn);
           this.state.strMoves.push(message.move);
 
-          if (this.state.strMoves.length % 2 === 0) {
-            this.blackInt.pause();
-            this.whiteInt.resume();
-          } else {
-            this.whiteInt.pause();
-            this.blackInt.resume();
-          }
-
+  
           if (options.minutes !== 999999999) {
+            if (this.state.strMoves.length % 2 === 0) {
+              this.blackInt.pause();
+              this.whiteInt.resume();
+            } else {
+              this.whiteInt.pause();
+              this.blackInt.resume();
+            }
+            
             this.broadcast("timeUpdate", {
               whiteClock: this.state.whiteClock,
               blackClock: this.state.blackClock,
@@ -70,6 +71,7 @@ export class LocalRoom extends Room<GameState> {
     );
 
     if (this.state.minutes !== 999999999) {
+      console.log("room minutes:", this.state.minutes);
       this.whiteInt.resume();
       this.blackInt.pause();
     }

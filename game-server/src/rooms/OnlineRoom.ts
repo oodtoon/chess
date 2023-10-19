@@ -58,9 +58,7 @@ export class OnlineRoom extends Room<GameState> {
                 this.whiteInt.pause();
                 this.blackInt.resume();
               }
-            }
-
-            if (options.minutes !== 999999999) {
+              
               this.broadcast("timeUpdate", {
                 whiteClock: this.state.whiteClock,
                 blackClock: this.state.blackClock,
