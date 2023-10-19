@@ -7,6 +7,7 @@
   import ExportIcon from "./icons/ExportIcon.svelte";
   import ImportIcon from "./icons/ImportIcon.svelte";
   import ToastError from "./dialogs/ToastError.svelte";
+  import PlayAgainButton from "./PlayAgainButton.svelte";
 
   export let minutes: number;
 
@@ -52,7 +53,7 @@
           const parsedPgn = parsePgn(pgn) as ParseTree;
           $game.fromParsedToken(parsedPgn);
         } catch {
-          displayToast()
+          displayToast();
         }
       };
       const files = (event.target as HTMLInputElement).files;
@@ -62,28 +63,29 @@
 </script>
 
 <div class="moves-list">
-  <h3>Game Notation</h3>
-  <ol>
-    {#each $moveList as move, i}
-      {#if i % 2 === 0}
-        <li>
-          {#if i === 0}
-            <span class="number">1.</span>
-          {:else}
-            <span class="number">{i / 2 + 1}.</span>
-          {/if}
-          <span class="move">{move}</span>
-          {#if $moveList[i + 1]}
-            <span class="move">{$moveList[i + 1]}</span>
-          {/if}
-        </li>
+  <section class="moves">
+    <h3>Game Notation</h3>
+    <ol>
+      {#each $moveList as move, i}
+        {#if i % 2 === 0}
+          <li>
+            {#if i === 0}
+              <span class="number">1.</span>
+            {:else}
+              <span class="number">{i / 2 + 1}.</span>
+            {/if}
+            <span class="move">{move}</span>
+            {#if $moveList[i + 1]}
+              <span class="move">{$moveList[i + 1]}</span>
+            {/if}
+          </li>
+        {/if}
+      {/each}
+      {#if $game.result}
+        <span class="game-result">Game Result: {$game.result}</span>
       {/if}
-    {/each}
-    <!-- svelte-ignore empty-block -->
-    {#if $game.result}
-      <span class="game-result">Game Result: {$game.result}</span>
-    {/if}
-  </ol>
+    </ol>
+  </section>
 
   <section class="btns-container">
     <button class="export" type="button" on:click={handleExport}
@@ -103,13 +105,17 @@
       >
     {/if}
   </section>
+  {#if $game.result}
+    <section class="player-again-container">
+      <PlayAgainButton />
+    </section>
+  {/if}
 </div>
 
 {#if isError}
-<div class="toast">
-  <ToastError />
-</div>
-
+  <div class="toast">
+    <ToastError />
+  </div>
 {/if}
 
 <style>
@@ -155,13 +161,23 @@
     justify-content: center;
   }
 
+  .moves {
+    grid-area: moves;
+  }
+
+
+  .player-again-container {
+    grid-area: play-again;
+    align-self: start;
+  }
   .moves-list {
     grid-area: moves-list;
-    display: block;
+    display: grid;
     background-color: #292727;
     color: white;
     margin-bottom: auto;
     width: 100%;
+    grid-template-areas: "moves moves" "btns play-again";
   }
 
   .btns-container {
@@ -235,6 +251,5 @@
     justify-content: center;
     flex-direction: column;
     z-index: 1000;
-  
   }
 </style>

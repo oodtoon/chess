@@ -194,10 +194,6 @@
     {#if minutes}
       <MoveList {minutes} />
     {/if}
-
-    {#if $game.result}
-      <PlayAgainButton />
-    {/if}
   </section>
 </div>
 
@@ -238,6 +234,7 @@
     background-color: rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
   }
 
@@ -315,6 +312,7 @@
 
     .game-info-container {
       place-self: start;
+
     }
   }
 

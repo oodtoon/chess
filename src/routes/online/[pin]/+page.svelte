@@ -19,7 +19,6 @@
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
   import { invalidateAll } from "$app/navigation";
-  import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
 
   export let data;
 
@@ -296,10 +295,6 @@
     {#if minutes}
       <MoveList {minutes} />
     {/if}
-
-    {#if $game.result}
-      <PlayAgainButton />
-    {/if}
   </section>
 
   {#if roomSize !== 2}
@@ -416,6 +411,12 @@
       grid-template-areas: "board info";
     }
 
+    .user {
+      place-self: start;
+      padding-bottom: 3em;
+    }
+
+  
     .board-container {
       display: grid;
       grid-template-rows: 1fr 1fr;
@@ -426,10 +427,7 @@
       gap: 0em 1em;
     }
 
-    .user {
-      place-self: start;
-      padding-bottom: 3em;
-    }
+  
 
     .opponent {
       place-self: end;
