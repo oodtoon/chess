@@ -25,4 +25,6 @@ export default class GameState extends Schema {
   @type("number") minutes: number = 0
   @type("number") whiteClock: number = 0
   @type("number") blackClock: number = 0
+  @type("string") result: string = ""
+  @type("string") terminationReason: string = ""
 }

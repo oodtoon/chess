@@ -12,7 +12,7 @@
   export let client: Color
 
   let time: number
-  let isPaused: boolean;
+  let isPaused: boolean = true
 
   $: if (minutes === Infinity) {
     isPaused = true
@@ -26,7 +26,7 @@
 
   $: if (isMultiPlayer && roomSize < 2) {
     isPaused = true;
-  } else if (color === activePlayer.color) {
+  } else if (color === activePlayer.color && !$game.isGameOver) {
     isPaused = false;
   } else {
     isPaused = true;
@@ -59,7 +59,6 @@
   }
 
   $: if (time <= 0 && minutes !== Infinity) {
-    console.log(time)
     $game.terminate({
       result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
       reason: "time out",

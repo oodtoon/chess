@@ -17,6 +17,7 @@
   class:captured
   class:livePiece
   class:isSamePieceType
+  class:knight={piece?.name === "Knight"}
   style:background-image="url({piece?.img})"
   on:click
   data-flip-id="piece-{piece?.id}"
@@ -36,6 +37,9 @@
     z-index: 1;
   }
 
+  .knight {
+    z-index: 45
+  }
   .livePiece {
     height: 100%;
     width: 100%;

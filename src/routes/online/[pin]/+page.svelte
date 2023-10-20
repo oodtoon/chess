@@ -23,11 +23,10 @@
   export let data;
 
   let roomSize = 0;
+  let playerAwayInt: NodeJS.Timeout;
   let isUndoDialog = false;
   let minutes: GameMinutes = Infinity;
   const { room, team, pin } = data;
-
-  let shouldCommitMove = true;
 
   let ws: number = Infinity;
   let bs: number = Infinity;
@@ -72,6 +71,11 @@
         resetGameBoard([...$room.state.strMoves]);
       }
 
+      if ($room.state.result) {
+        $game.result = $room.state.result;
+        $game.terminationReason = $room.state.terminationReason;
+      }
+
       roomSize = $room.state.players.size;
 
       if ($room.state.minutes !== 999999999) {
@@ -100,21 +104,27 @@
       oldMovesLength = $room.state.strMoves.length;
     });
 
-    $room.onMessage("leave", () => {
+    $room.onMessage("opponentLeft", () => {
       roomSize = 1;
-      // create auto-win if player has left for x amount of time
+
+      playerAwayInt = setTimeout(() => {
+        const result = $team === "White" ? "1-0" : "0-1";
+        $game.terminate({
+          result,
+          reason: "opponent disconnected",
+        });
+        $game = $game;
+      }, 20000);
     });
 
-    $room.onMessage("back", () => {
+    $room.onMessage("opponentIsBack", (message) => {
       roomSize = 2;
-    });
+      clearTimeout(playerAwayInt);
 
-    $room.onMessage("rejoin", (message) => {
-      shouldCommitMove = false;
-
-      message.moves;
-
-      shouldCommitMove = true;
+      if (message.result) {
+        $game.result = message.result;
+        $game.terminationReason = message.terminationReason;
+      }
     });
 
     $room.onMessage("resign", (message: Response) => {
@@ -139,10 +149,21 @@
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
+    const isGameOver = $game.isGameOver;
+    let gameOverMessage = {};
+    if (isGameOver) {
+      gameOverMessage = {
+        result: $game.result,
+        terminationReason: $game.resultText,
+      };
+    }
+
     if ($team === event.detail.move.player.color) {
       const message = {
         move: event.detail.move.toString(),
         color: event.detail.move.player.color,
+        isGameOver,
+        ...gameOverMessage,
       };
       $room.send("move", message);
     }
@@ -297,7 +318,7 @@
     {/if}
   </section>
 
-  {#if roomSize !== 2}
+  {#if roomSize !== 2 && !$game.result}
     <Waiting displayDeclineButton={true} />
   {/if}
 
@@ -416,9 +437,6 @@
       padding-bottom: 3em;
     }
 
-
-
-  
     .board-container {
       display: grid;
       grid-template-rows: 1fr 1fr;
@@ -428,8 +446,6 @@
       height: fit-content;
       gap: 0em 1em;
     }
-
-  
 
     .opponent {
       place-self: end;
