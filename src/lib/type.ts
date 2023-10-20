@@ -49,6 +49,7 @@ export type GameTerminationReason =
   | "resignation"
   | "draw agreed"
   | "time out"
+  | "opponent disconnected"
   | null;
 
 export type GameTerminationOptions = {

@@ -30,8 +30,7 @@ export class OnlineRoom extends Room<GameState> {
     }, 100);
 
     if (this.state.players.size < 2 || options.minutes === 999999999) {
-      this.whiteInt.pause();
-      this.blackInt.pause();
+      this.pauseBothClocks()
     }
 
     this.onMessage("move", (client, message) => {
@@ -64,6 +63,14 @@ export class OnlineRoom extends Room<GameState> {
                 blackClock: this.state.blackClock,
               });
             }
+
+            if (message.isGameOver) {
+              this.state.result = message.result
+              this.state.terminationReason = message.terminationReason
+
+              this.pauseBothClocks()
+            }
+
           } catch (e) {
             message.send(client, "error", e);
             console.log(`${client} sent invalid move`);
@@ -92,6 +99,13 @@ export class OnlineRoom extends Room<GameState> {
     this.onMessage("response", (client, message) => {
       this.broadcast("response", message);
 
+      if (message.type === "draw") {
+        this.pauseBothClocks()
+
+        this.state.result = "1/2-1/2"
+        this.state.terminationReason = "draw"
+      }
+
       const requestStateReset = {
         hasRequest: false,
         type: "",
@@ -105,11 +119,16 @@ export class OnlineRoom extends Room<GameState> {
     this.onMessage("resign", (client) => {
       const sender = this.state.players.get(client.sessionId);
       const resignResult = sender.color === "White" ? "0-1" : "1-0";
+
+      this.state.result = resignResult;
+      this.state.terminationReason = "resignation";
+
       const resignMsg = {
         result: resignResult,
         reason: "resignation",
       };
       this.broadcast("resign", resignMsg);
+      this.pauseBothClocks()
     });
   }
 
@@ -131,7 +150,6 @@ export class OnlineRoom extends Room<GameState> {
       if (this.state.minutes !== 999999999) {
         this.whiteInt.resume();
       }
-      
     }
     this.state.players.set(client.sessionId, new Player(type));
   }
@@ -141,8 +159,7 @@ export class OnlineRoom extends Room<GameState> {
     console.log(client.sessionId, player.color, "left!");
     player.connected = false;
 
-    
-    this.getOtherClient(client).send("leave")
+    this.getOtherClient(client).send("opponentLeft");
 
     try {
       if (consented) {
@@ -152,10 +169,11 @@ export class OnlineRoom extends Room<GameState> {
 
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
-      const message = { moves: [...this.state.strMoves] };
+      const message = { moves: [...this.state.strMoves], result: this.state.result, terminationReason: this.state.terminationReason };
       console.log([...this.state.strMoves]);
-      client.send("rejoin", message);
-      this.getOtherClient(client).send("back")
+
+      // client.send("rejoin", message);
+      this.getOtherClient(client).send("opponentIsBack", message);
 
       this.broadcast("timeUpdate", {
         whiteClock: this.state.whiteClock,
@@ -178,5 +196,10 @@ export class OnlineRoom extends Room<GameState> {
   onDispose() {
     console.log("right now");
     console.log("room", this.roomId, "disposing...");
+  }
+
+  pauseBothClocks() {
+    this.whiteInt.pause()
+    this.blackInt.pause()
   }
 }

@@ -21,8 +21,7 @@ export class LocalRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
-    this.whiteInt.pause();
-    this.blackInt.pause();
+    this.pauseBothClocks()
 
     if (options.minutes !== 999999999) {
       const seconds = options.minutes * 60;
@@ -40,7 +39,6 @@ export class LocalRoom extends Room<GameState> {
           parsePgn(pgn);
           this.state.strMoves.push(message.move);
 
-  
           if (options.minutes !== 999999999) {
             if (this.state.strMoves.length % 2 === 0) {
               this.blackInt.pause();
@@ -49,17 +47,38 @@ export class LocalRoom extends Room<GameState> {
               this.whiteInt.pause();
               this.blackInt.resume();
             }
-            
+
             this.broadcast("timeUpdate", {
               whiteClock: this.state.whiteClock,
               blackClock: this.state.blackClock,
             });
+
+          }
+          if (message.isGameOver) {
+            this.state.result = message.result;
+            this.state.terminationReason = message.terminationReason;
+
+            this.pauseBothClocks()
           }
         } catch (e) {
           message.send(client, "error", e);
           console.log(`${client} sent invalid move`);
         }
       }
+    });
+
+    this.onMessage("draw", () => {
+      this.state.result = "1/2-1/2";
+      this.state.terminationReason = "draw agreed";
+
+      this.pauseBothClocks()
+    });
+
+    this.onMessage("resign", (client, message) => {
+      this.state.result = message.result;
+      this.state.terminationReason = "resignation";
+
+      this.pauseBothClocks()
     });
   }
 
@@ -70,10 +89,12 @@ export class LocalRoom extends Room<GameState> {
       this.state.players.get(client.sessionId).color
     );
 
-    if (this.state.minutes !== 999999999) {
+    if (this.state.minutes !== 999999999 && !this.state.result) {
       console.log("room minutes:", this.state.minutes);
       this.whiteInt.resume();
       this.blackInt.pause();
+    } else if (this.state.result) {
+      this.pauseBothClocks()
     }
   }
 
@@ -105,5 +126,10 @@ export class LocalRoom extends Room<GameState> {
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
+  }
+
+  pauseBothClocks() {
+    this.whiteInt.pause()
+    this.blackInt.pause()
   }
 }

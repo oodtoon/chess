@@ -61,6 +61,11 @@
       if ($room.state.strMoves.length > 0) {
         resetGameBoard([...$room.state.strMoves]);
       }
+
+      if ($room.state.result) {
+          $game.result = $room.state.result
+          $game.terminationReason = $room.state.terminationReason
+        }
     });
 
     $room.state.strMoves.onChange(() => {
@@ -80,9 +85,18 @@
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
+    const isGameOver = $game.isGameOver
+    let gameOverMessage = {}
+    if (isGameOver) {
+      gameOverMessage = {
+
+      }
+    }
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
+      isGameOver,
+      ...gameOverMessage
     };
     $room.send("move", message);
   }
@@ -119,16 +133,17 @@
       result: "1/2-1/2",
       reason: "draw agreed",
     });
-
+    $room.send("draw")
     $game = $game;
   }
 
   function handleResign() {
+    const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0"
     $game.terminate({
-      result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
+      result,
       reason: "resignation",
     });
-
+    $room.send("resign", ({result}))
     $game = $game;
   }
 
