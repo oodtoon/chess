@@ -19,6 +19,9 @@
   import type { GameMinutes } from "$lib/type.js";
   import { invalidateAll } from "$app/navigation";
   import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
+  import winAudioSrc from "$lib/audio/win.mp3";
+  import lossAudioSrc from "$lib/audio/loss.mp3";
+  import AudioToggle from "$lib/components/AudioToggle.svelte";
 
   export let data;
   let roomSize: number = 0;
@@ -26,11 +29,15 @@
   let ws: number = Infinity;
   let bs: number = Infinity;
   let oldMovesLength: number;
+  let isMuted = false;
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
   const gameContext = setGameContext(new GameModel(eventBus), "local");
   const { game } = gameContext;
+
+  let winSound = new Audio(winAudioSrc);
+  let lossSound = new Audio(lossAudioSrc);
 
   onMount(() => {
     invalidateAll();
@@ -52,8 +59,8 @@
 
       if ($room.state.minutes !== 999999999) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock;
-        bs = $room.state.blackClock;
+        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock
       } else {
         minutes = Infinity;
       }
@@ -63,9 +70,9 @@
       }
 
       if ($room.state.result) {
-          $game.result = $room.state.result
-          $game.terminationReason = $room.state.terminationReason
-        }
+        $game.result = $room.state.result;
+        $game.terminationReason = $room.state.terminationReason;
+      }
     });
 
     $room.state.strMoves.onChange(() => {
@@ -85,18 +92,16 @@
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
-    const isGameOver = $game.isGameOver
-    let gameOverMessage = {}
+    const isGameOver = $game.isGameOver;
+    let gameOverMessage = {};
     if (isGameOver) {
-      gameOverMessage = {
-
-      }
+      gameOverMessage = {};
     }
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
       isGameOver,
-      ...gameOverMessage
+      ...gameOverMessage,
     };
     $room.send("move", message);
   }
@@ -133,17 +138,17 @@
       result: "1/2-1/2",
       reason: "draw agreed",
     });
-    $room.send("draw")
+    $room.send("draw");
     $game = $game;
   }
 
   function handleResign() {
-    const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0"
+    const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0";
     $game.terminate({
       result,
       reason: "resignation",
     });
-    $room.send("resign", ({result}))
+    $room.send("resign", { result });
     $game = $game;
   }
 
@@ -154,12 +159,25 @@
     });
   }
 
+  function handleReset() {
+    console.log("local reset")
+  }
+
   $: activePlayer = $game.getActivePlayer();
+
+  $: if ($game.result && $game.result !== "1/2-1/2" && !isMuted) {
+    winSound.play();
+  } else if ($game.result === "1/2-1/2" && !isMuted) {
+    lossSound.play();
+  }
+
 </script>
 
 <svelte:head>
   <title>Chess | Local</title>
 </svelte:head>
+
+
 
 <div class="container">
   <section class="board-container">
@@ -176,11 +194,12 @@
           {roomSize}
           color={"White"}
           client={activePlayer.color}
+          {isMuted}
         />
       {/if}
     </section>
 
-    <Game on:move={handleMove} />
+    <Game on:move={handleMove} {isMuted}/>
 
     <section
       class="player-info-container"
@@ -195,6 +214,7 @@
           {roomSize}
           color={"Black"}
           client={activePlayer.color}
+          {isMuted}
         />
       {/if}
     </section>
@@ -207,8 +227,9 @@
       on:resign={handleResign}
     />
     {#if minutes}
-      <MoveList {minutes} />
+      <MoveList {minutes}/>
     {/if}
+    <AudioToggle bind:isMuted />
   </section>
 </div>
 

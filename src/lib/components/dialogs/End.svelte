@@ -18,7 +18,8 @@
   let copied: boolean = false;
 
   const handlePlayAgain = () => {
-    gameContext.reset();
+    dispatch("playAgain")
+    // gameContext.reset();
   };
 
   const handleCopy = () => {
@@ -50,7 +51,7 @@
 
   <span class="btn-container">
     <button class="play-again-btn" on:click={handlePlayAgain}
-      ><span class="word">play again</span><span><PlayAgainIcon /></span
+      ><span class="word">play again</span><span><PlayAgainIcon/></span
       ></button
     >
 

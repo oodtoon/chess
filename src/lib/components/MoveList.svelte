@@ -107,7 +107,7 @@
   </section>
   {#if $game.result}
     <section class="player-again-container">
-      <PlayAgainButton />
+      <PlayAgainButton on:playAgain/>
     </section>
   {/if}
 </div>

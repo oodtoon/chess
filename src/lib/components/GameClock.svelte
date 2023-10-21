@@ -3,26 +3,41 @@
   import type Game from "$lib/models/game";
   import type { Color } from "$lib/type";
   import ClockIcon from "./icons/ClockIcon.svelte";
+  import minuteWarningAudioSrc from "$lib/audio/minute.mp3";
+  import tenSecondAudioSrc from "$lib/audio/10second.mp3";
+  import clockAudioSrc from "$lib/audio/clock.mp3";
 
   export let minutes: number;
   export let seconds: number;
   export let color: string;
   export let isMultiPlayer: boolean = false;
   export let roomSize: number;
-  export let client: Color
+  export let client: Color;
+  export let isMuted: boolean = false;
 
-  let time: number
-  let isPaused: boolean = true
+  let time: number;
+  let isPaused: boolean = true;
+
+  let minuteSound = new Audio(minuteWarningAudioSrc);
+  let tenSecondSound = new Audio(tenSecondAudioSrc);
+  let clockSound = new Audio(clockAudioSrc);
 
   $: if (minutes === Infinity) {
-    isPaused = true
+    isPaused = true;
   }
 
-  $: if (seconds && seconds !== Infinity) {
+  $: if (seconds !== Infinity) {
     time = seconds;
   }
 
+  const gameCtx = getGameContext();
+  const { game } = gameCtx;
+
   $: activePlayer = $game.getActivePlayer();
+
+  $: if ($game.result !== null) {
+    isPaused = true;
+  }
 
   $: if (isMultiPlayer && roomSize < 2) {
     isPaused = true;
@@ -33,9 +48,6 @@
   }
 
   let clockInt: NodeJS.Timeout;
-
-  const gameCtx = getGameContext();
-  const { game } = gameCtx;
 
   function getTurnText(game: Game) {
     return game.resultText ?? `${game.getActivePlayer().color}'s Turn`;
@@ -50,7 +62,7 @@
   const formatSecond = (t: string) =>
     (parseInt(t) % 60).toString().padStart(2, "0");
 
-  const formatMili = (t: string) => t.toString().padStart(2, "0");
+  const formatMili = (t: string) => t.toString().padStart(4, "0");
 
   $: if (!isPaused) {
     clockInt = setInterval(countDown, 100);
@@ -69,6 +81,63 @@
   $: if (time <= 0) {
     clearInterval(clockInt);
   }
+
+  $: if (!isMultiPlayer && !isMuted && time <= 60.5 && time >= 59) {
+    minuteSound.play();
+  }
+
+  $: if (!isMultiPlayer && !isMuted && time <= 10.5 && time >= 9.9) {
+    tenSecondSound.play();
+  }
+
+  $: if (
+    !isMultiPlayer &&
+    time < 10 &&
+    time > 0 &&
+    color === activePlayer.color &&
+    !isMuted
+  ) {
+    clockSound.play();
+  } else if (
+    !isMultiPlayer &&
+    ((color !== activePlayer.color && time < 10) || time <= 0)
+  ) {
+    clockSound.pause();
+  }
+
+  $: if (
+    isMultiPlayer &&
+    !isMuted &&
+    client === color &&
+    time <= 60.5 &&
+    time >= 59
+  ) {
+    minuteSound.play();
+  }
+
+  $: if (
+    isMultiPlayer &&
+    !isMuted &&
+    client === color &&
+    time <= 10.5 &&
+    time >= 9.5
+  ) {
+    tenSecondSound.play();
+  }
+
+  $: if (
+    isMultiPlayer &&
+    client === activePlayer.color &&
+    time <= 10 &&
+    time >= 0
+  ) {
+    clockSound.play();
+  } else if (
+    isMultiPlayer &&
+    ((client !== activePlayer.color) || time <= 0)
+  ) {
+    clockSound.pause();
+  }
 </script>
 
 {#if minutes !== Infinity}
@@ -76,11 +145,13 @@
     class="clock-container"
     class:White={color === "White"}
     class:Black={color === "Black"}
+    class:minuteWarning={time <= 60 && time > 57}
+    class:tenSecondWarning={time < 10}
   >
     <span class="clock-icon">
       <ClockIcon {color} />
     </span>
-    {#if time}
+    {#if time || time === 0}
       <span>{formatMinute(time.toFixed(0))}:</span>
       {#if time <= 59 && time > 0}
         <span>{formatMili(time.toFixed(1))}</span>
@@ -128,5 +199,13 @@
     background-color: black;
     color: white;
     border: solid 3px white;
+  }
+
+  .minuteWarning {
+    background-color: rgba(241, 213, 155, 255);
+  }
+
+  .tenSecondWarning {
+    background-color: red;
   }
 </style>

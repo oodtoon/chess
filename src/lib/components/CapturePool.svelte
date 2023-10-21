@@ -16,7 +16,7 @@
 
   $: totalValue = opponent.capturedPiecesValue - player.capturedPiecesValue;
 
-  let pawnImgUrl =
+  $: pawnImgUrl =
     player.color === "White"
       ? "https://www.chess.com/chess-themes/pieces/neo/150/wp.png"
       : "https://www.chess.com/chess-themes/pieces/neo/150/bp.png";

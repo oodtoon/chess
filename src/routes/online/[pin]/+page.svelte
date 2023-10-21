@@ -19,6 +19,9 @@
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
   import { invalidateAll } from "$app/navigation";
+  import winAudioSrc from "$lib/audio/win.mp3";
+  import lossAudioSrc from "$lib/audio/loss.mp3";
+  import AudioToggle from "$lib/components/AudioToggle.svelte";
 
   export let data;
 
@@ -30,6 +33,9 @@
 
   let ws: number = Infinity;
   let bs: number = Infinity;
+
+  let isMuted: boolean = false;
+  let isReset = false;
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -44,6 +50,9 @@
   const { game } = gameCtx;
 
   let opponentColor: Color;
+
+  let winSound = new Audio(winAudioSrc);
+  let lossSound = new Audio(lossAudioSrc);
 
   onMount(() => {
     invalidateAll();
@@ -80,11 +89,33 @@
 
       if ($room.state.minutes !== 999999999) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock;
-        bs = $room.state.blackClock;
+        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
+    });
+
+    $room.state.players.onChange(() => {
+      if (isReset) {
+        let newTeam: Color = $team === "White" ? "Black" : "White";
+        $team = newTeam;
+        $team = $team
+        opponentColor = $team === "White" ? "Black" : "White";
+        if ($room.state.minutes !== 999999999) {
+          minutes = $room.state.minutes;
+          ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+          bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+        } else {
+          console.log("INFINITY~");
+          minutes = Infinity;
+          ws = Infinity;
+          bs = Infinity;
+          ws = ws;
+          bs = bs;
+        }
+      }
+      isReset = false;
     });
 
     $room.state.strMoves.onChange(() => {
@@ -97,8 +128,15 @@
           return $game;
         });
       } else {
-        if ($room.state.strMoves.length !== $game.moves.length) {
+        if (
+          $room.state.strMoves.length !== $game.moves.length &&
+          $room.state.strMoves.length !== 0
+        ) {
           updateGameState([...$room.state.strMoves]);
+        } else if ($room.state.strMoves.length === 0) {
+          isReset = true;
+          gameCtx.reset();
+          $game = $game;
         }
       }
       oldMovesLength = $room.state.strMoves.length;
@@ -259,6 +297,24 @@
       isUndoDialog = true;
     }
   }
+
+  function handlePlayAgain() {
+    console.log("this again");
+    $room.send("reset");
+  }
+
+  $: if ($game.result) {
+    if (
+      ($team === "White" && $game.result === "1-0") ||
+      ($team === "Black" && $game.result === "0-1")
+    ) {
+      winSound.play();
+    } else {
+      lossSound.play();
+    }
+  }
+
+  
 </script>
 
 <svelte:head>
@@ -281,12 +337,19 @@
             color={$team}
             client={$team}
             isMultiPlayer
+            {isMuted}
           />
         {/if}
       {/if}
     </section>
 
-    <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
+    <Game
+      on:move={handleMove}
+      on:playAgain={handlePlayAgain}
+      team={$team}
+      isMultiPlayer={true}
+      {isMuted}
+    />
 
     <section class="player-info-container opponent">
       {#if $team}
@@ -301,6 +364,7 @@
             color={opponentColor}
             client={$team}
             isMultiPlayer
+            {isMuted}
           />
         {/if}
       {/if}
@@ -314,8 +378,9 @@
       on:resign={handleResign}
     />
     {#if minutes}
-      <MoveList {minutes} />
+      <MoveList {minutes} on:playAgain={handlePlayAgain} />
     {/if}
+    <AudioToggle bind:isMuted />
   </section>
 
   {#if roomSize !== 2 && !$game.result}

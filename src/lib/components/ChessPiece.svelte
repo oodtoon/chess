@@ -5,6 +5,7 @@
   export let captured: boolean;
   export let piece: Piece | null;
   export let isSamePieceType = false
+  export let isDisabled = false
 
   let livePiece = !captured;
 

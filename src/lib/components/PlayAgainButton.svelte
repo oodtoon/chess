@@ -1,11 +1,15 @@
 <script lang="ts">
   import { getGameContext } from "$lib/context";
+  import { createEventDispatcher } from "svelte";
   import PlayAgainIcon from "./icons/PlayAgainIcon.svelte";
 
   let gameContext = getGameContext();
 
+  let dispatch = createEventDispatcher()
+
   function handlePlayAgain() {
-    gameContext.reset();
+    dispatch("playAgain")
+    gameContext.reset();  
   }
 </script>
 

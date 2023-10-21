@@ -11,12 +11,17 @@
   import type { BaseMove } from "$lib/models/move";
   import Promotion from "./dialogs/Promotion.svelte";
   import End from "./dialogs/End.svelte";
+  import captureAudioSrc from "$lib/audio/capture.mp3";
+  import checkAudioSrc from "$lib/audio/check.mp3";
+  import moveAudioSrc from "$lib/audio/move.mp3";
 
   import { gsap } from "gsap/dist/gsap";
   import { Flip } from "gsap/dist/Flip";
 
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
+
+  export let isMuted: boolean
 
   let isMounted = false;
 
@@ -39,6 +44,10 @@
 
   let promotionMove: BaseMove | null = null;
   let isClosed = false;
+
+  let checkSound = new Audio(checkAudioSrc);
+  let captureSound = new Audio(captureAudioSrc);
+  let moveSound = new Audio(moveAudioSrc);
 
   onMount(() => {
     eventBus.addEventListener("move", handleMove);
@@ -77,10 +86,23 @@
     }
   }
 
-  function handleMove(event: CustomEvent<BaseMove>) {
+  function handleMove(event: CustomEvent) {
     const activePlayer = $game.getActivePlayer();
     checkForTerminalState(activePlayer);
     dispatch("move", event.detail);
+
+    if (isMuted) {
+      return
+    }
+
+    const { move } = event.detail;
+    if (move.isCheck) {
+      checkSound.play();
+    } else if (move.capturedPiece) {
+      captureSound.play();
+    } else {
+      moveSound.play();
+    }
   }
 
   function checkForTerminalState(activePlayer: Player) {
@@ -170,7 +192,7 @@
 <section class="board">
   <Board {rotate} let:row let:file>
     <BoardNotation {rotate} {row} {file} />
-  
+
     {@const piece = $game.board.get(row, file)}
     {#if piece}
       <ChessPiece
@@ -178,9 +200,10 @@
         active={piece === selectedPiece}
         on:click={() => handlePieceClick(piece)}
         captured={false}
+        isDisabled={$game.result !== null}
       />
     {/if}
-  
+
     {#each ghostMoves as ghostMove}
       {@const piece = $game.board.getSquareContent(row, file)}
       {#if ghostMove.row === row && ghostMove.file === file}
@@ -192,13 +215,13 @@
       {/if}
     {/each}
   </Board>
-  
+
   {#if promotionMove}
     <Promotion {gameContext} on:close={handlePromotion} />
   {/if}
-  
+
   {#if $game.result && !isClosed}
-    <End {gameContext} on:close={handleEndGameClose} />
+    <End {gameContext} on:close={handleEndGameClose} on:playAgain/>
   {/if}
 </section>
 
