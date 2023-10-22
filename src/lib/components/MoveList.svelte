@@ -6,7 +6,7 @@
   import CopyIcon from "./icons/CopyIcon.svelte";
   import ExportIcon from "./icons/ExportIcon.svelte";
   import ImportIcon from "./icons/ImportIcon.svelte";
-  import ToastError from "./dialogs/ToastError.svelte";
+  import Toast from "./dialogs/Toast.svelte";
   import PlayAgainButton from "./PlayAgainButton.svelte";
 
   export let minutes: number;
@@ -114,7 +114,7 @@
 
 {#if isError}
   <div class="toast">
-    <ToastError />
+    <Toast type={"importError"}/>
   </div>
 {/if}
 

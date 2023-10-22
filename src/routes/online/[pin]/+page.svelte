@@ -22,10 +22,13 @@
   import winAudioSrc from "$lib/audio/win.mp3";
   import lossAudioSrc from "$lib/audio/loss.mp3";
   import AudioToggle from "$lib/components/AudioToggle.svelte";
+  import Toast from "$lib/components/dialogs/Toast.svelte";
 
   export let data;
 
   let roomSize = 0;
+  let hasOpponentLeft = false;
+  let isReconnect = false;
   let playerAwayInt: NodeJS.Timeout;
   let isUndoDialog = false;
   let minutes: GameMinutes = Infinity;
@@ -100,7 +103,7 @@
       if (isReset) {
         let newTeam: Color = $team === "White" ? "Black" : "White";
         $team = newTeam;
-        $team = $team
+        $team = $team;
         opponentColor = $team === "White" ? "Black" : "White";
         if ($room.state.minutes !== 999999999) {
           minutes = $room.state.minutes;
@@ -142,9 +145,10 @@
     });
 
     $room.onMessage("opponentLeft", () => {
-      roomSize = 1;
+      hasOpponentLeft = true;
 
       playerAwayInt = setTimeout(() => {
+        hasOpponentLeft = false
         const result = $team === "White" ? "1-0" : "0-1";
         $game.terminate({
           result,
@@ -155,13 +159,19 @@
     });
 
     $room.onMessage("opponentIsBack", (message) => {
-      roomSize = 2;
+      hasOpponentLeft = false;
+      isReconnect = true;
+
       clearTimeout(playerAwayInt);
 
       if (message.result) {
         $game.result = message.result;
         $game.terminationReason = message.terminationReason;
       }
+
+      setTimeout(() => {
+        isReconnect = false;
+      }, 5000);
     });
 
     $room.onMessage("resign", (message: Response) => {
@@ -312,13 +322,19 @@
       lossSound.play();
     }
   }
-
-  
 </script>
 
 <svelte:head>
   <title>Chess | Online</title>
 </svelte:head>
+
+<div class="toast">
+  {#if hasOpponentLeft}
+    <Toast type={"disconnect"} />
+  {:else if isReconnect}
+    <Toast type={"reconnect"} />
+  {/if}
+</div>
 
 <div class="container">
   <section class="board-container">
@@ -457,6 +473,19 @@
 
   .opponent {
     grid-area: opponent;
+  }
+
+  .toast {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
   }
 
   @media (min-width: 700px) {

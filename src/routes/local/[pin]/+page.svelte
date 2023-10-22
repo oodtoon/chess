@@ -82,7 +82,6 @@
       } else if ($room.state.strMoves > oldMovesLength) {
         updateGameState([...$room.state.strMoves]);
       }
-
       oldMovesLength = $room.state.strMoves.length;
     });
 
@@ -91,19 +90,6 @@
       bs = message.blackClock;
     });
 
-    $room.onMessage("reset", () => {
-      if ($room.state.minutes !== 999999999) {
-        minutes = $room.state.minutes;
-        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
-        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
-      } else {
-        minutes = Infinity;
-        ws = Infinity;
-        bs = Infinity;
-        ws = ws;
-        bs = bs;
-      }
-    });
     roomSize = $room.state.players.size;
   }
 

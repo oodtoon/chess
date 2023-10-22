@@ -87,16 +87,25 @@ export class LocalRoom extends Room<GameState> {
       this.state.terminationReason = "";
       this.state.strMoves.clear();
 
+      let message
+
       if (options.minutes !== 999999999) {
         const seconds = options.minutes * 60;
         this.state.whiteClock = seconds;
         this.state.blackClock = seconds;
+        message = {
+          whiteClock: seconds,
+          blackClock: seconds
+        }
       } else {
         this.state.whiteClock = options.minutes;
         this.state.blackClock = options.minutes;
+        message = {
+          whiteClock: options.minutes,
+          blackClock: options.minutes
+        }
       }
-
-      this.broadcast("reset")
+      this.broadcast("timeUpdate", message)
     });
   }
 
