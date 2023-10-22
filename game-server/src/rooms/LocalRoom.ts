@@ -82,15 +82,21 @@ export class LocalRoom extends Room<GameState> {
     });
 
     this.onMessage("reset", () => {
-      console.log("local reset")
+      console.log("local reset");
       this.state.result = "";
       this.state.terminationReason = "";
+      this.state.strMoves.clear();
 
       if (options.minutes !== 999999999) {
         const seconds = options.minutes * 60;
         this.state.whiteClock = seconds;
         this.state.blackClock = seconds;
+      } else {
+        this.state.whiteClock = options.minutes;
+        this.state.blackClock = options.minutes;
       }
+
+      this.broadcast("reset")
     });
   }
 
@@ -128,8 +134,8 @@ export class LocalRoom extends Room<GameState> {
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
 
-      let wc = this.state.whiteClock <= 0 ? 0 : this.state.whiteClock
-      let bc = this.state.blackClock <= 0 ? 0 : this.state.blackClock
+      let wc = this.state.whiteClock <= 0 ? 0 : this.state.whiteClock;
+      let bc = this.state.blackClock <= 0 ? 0 : this.state.blackClock;
 
       this.broadcast("timeUpdate", {
         whiteClock: wc,

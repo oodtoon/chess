@@ -107,7 +107,6 @@
           ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
           bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
         } else {
-          console.log("INFINITY~");
           minutes = Infinity;
           ws = Infinity;
           bs = Infinity;

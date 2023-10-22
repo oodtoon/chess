@@ -60,7 +60,7 @@
       if ($room.state.minutes !== 999999999) {
         minutes = $room.state.minutes;
         ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
-        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock
+        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
@@ -76,7 +76,10 @@
     });
 
     $room.state.strMoves.onChange(() => {
-      if ($room.state.strMoves > oldMovesLength) {
+      if ($room.state.strMoves.length === 0) {
+        gameContext.reset();
+        $game = $game;
+      } else if ($room.state.strMoves > oldMovesLength) {
         updateGameState([...$room.state.strMoves]);
       }
 
@@ -88,6 +91,19 @@
       bs = message.blackClock;
     });
 
+    $room.onMessage("reset", () => {
+      if ($room.state.minutes !== 999999999) {
+        minutes = $room.state.minutes;
+        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+      } else {
+        minutes = Infinity;
+        ws = Infinity;
+        bs = Infinity;
+        ws = ws;
+        bs = bs;
+      }
+    });
     roomSize = $room.state.players.size;
   }
 
@@ -160,7 +176,8 @@
   }
 
   function handleReset() {
-    console.log("local reset")
+    console.log("local reset");
+    $room.send("reset");
   }
 
   $: activePlayer = $game.getActivePlayer();
@@ -170,14 +187,11 @@
   } else if ($game.result === "1/2-1/2" && !isMuted) {
     lossSound.play();
   }
-
 </script>
 
 <svelte:head>
   <title>Chess | Local</title>
 </svelte:head>
-
-
 
 <div class="container">
   <section class="board-container">
@@ -199,7 +213,7 @@
       {/if}
     </section>
 
-    <Game on:move={handleMove} {isMuted}/>
+    <Game on:move={handleMove} on:playAgain={handleReset} {isMuted} />
 
     <section
       class="player-info-container"
@@ -227,7 +241,7 @@
       on:resign={handleResign}
     />
     {#if minutes}
-      <MoveList {minutes}/>
+      <MoveList {minutes} on:playAgain={handleReset} />
     {/if}
     <AudioToggle bind:isMuted />
   </section>

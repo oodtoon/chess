@@ -71,6 +71,12 @@
   }
 
   $: if (time <= 0 && minutes !== Infinity) {
+    if (isMultiPlayer && roomSize === 1) {
+      $game.terminate({
+        result: $game.getActivePlayer().isWhite ? "1-0" : "0-1",
+        reason: "opponent disconnected"
+      })
+    }
     $game.terminate({
       result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
       reason: "time out",
@@ -95,8 +101,10 @@
     time < 10 &&
     time > 0 &&
     color === activePlayer.color &&
-    !isMuted
+    !isMuted &&
+    !$game.isGameOver
   ) {
+    console.log("this")
     clockSound.play();
   } else if (
     !isMultiPlayer &&
@@ -129,7 +137,8 @@
     isMultiPlayer &&
     client === activePlayer.color &&
     time <= 10 &&
-    time >= 0
+    time >= 0 &&
+    !$game.isGameOver
   ) {
     clockSound.play();
   } else if (

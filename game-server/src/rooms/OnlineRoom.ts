@@ -131,7 +131,6 @@ export class OnlineRoom extends Room<GameState> {
     });
 
     this.onMessage("reset", () => {
-      console.log("reset");
       this.state.result = "";
       this.state.terminationReason = "";
       this.state.strMoves.clear();
