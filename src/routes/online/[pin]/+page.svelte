@@ -23,6 +23,7 @@
   import lossAudioSrc from "$lib/audio/loss.mp3";
   import AudioToggle from "$lib/components/AudioToggle.svelte";
   import Toast from "$lib/components/dialogs/Toast.svelte";
+  import End from "$lib/components/dialogs/End.svelte";
 
   export let data;
 
@@ -40,6 +41,8 @@
   let isMuted: boolean = false;
   let isReset = false;
 
+  let isEndGameDialogClosed = false
+
   $: dialogState = $room
     ? $room?.state.requestState
     : { hasRequest: false, type: "", title: "", content: "", playerColor: "" };
@@ -56,8 +59,6 @@
 
   let winSound = new Audio(winAudioSrc);
   let lossSound = new Audio(lossAudioSrc);
-
-  // figure out issue with time clicking thing
 
   onMount(() => {
     invalidateAll();
@@ -139,6 +140,7 @@
           updateGameState([...$room.state.strMoves]);
         } else if ($room.state.strMoves.length === 0) {
           isReset = true;
+          isEndGameDialogClosed = false
           gameCtx.reset();
           $game = $game;
         }
@@ -149,8 +151,12 @@
     $room.onMessage("opponentLeft", () => {
       hasOpponentLeft = true;
 
+      if ($game.result) {
+        return 
+      }
+      
       playerAwayInt = setTimeout(() => {
-        hasOpponentLeft = false
+        hasOpponentLeft = false;
         const result = $team === "White" ? "1-0" : "0-1";
         $game.terminate({
           result,
@@ -291,7 +297,7 @@
 
   function handleDraw() {
     if ($game.isGameOver) {
-      return
+      return;
     }
     let drawMsg;
     let player = $room.state.players.get($room.sessionId).color;
@@ -302,7 +308,7 @@
 
   function handleResign() {
     if ($game.isGameOver) {
-      return
+      return;
     }
     $room.send("resign", {
       type: "resign",
@@ -311,7 +317,7 @@
 
   async function handleUndo() {
     if ($game.isGameOver) {
-      return
+      return;
     }
 
     if ($game.getActivePlayer().color !== $team) {
@@ -320,8 +326,11 @@
   }
 
   function handlePlayAgain() {
-    console.log("this again");
     $room.send("reset");
+  }
+
+  function handleEndGameClose() {
+    isEndGameDialogClosed = true;
   }
 
   $: if ($game.result && !isMuted) {
@@ -428,6 +437,10 @@
 
   {#if isUndoDialog}
     <Undo on:close={closeUndoDialog} />
+  {/if}
+
+  {#if $game.result && !isEndGameDialogClosed}
+    <End {gameCtx} on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
   {/if}
 </div>
 

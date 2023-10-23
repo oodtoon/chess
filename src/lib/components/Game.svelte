@@ -20,7 +20,6 @@
 
   export let isMultiPlayer: boolean = false;
   export let team: string = "White";
-
   export let isMuted: boolean
 
   let isMounted = false;
@@ -43,7 +42,6 @@
   $: ghostMoves = selectedPiece ? $game.getMoves(selectedPiece) : [];
 
   let promotionMove: BaseMove | null = null;
-  let isClosed = false;
 
   let checkSound = new Audio(checkAudioSrc);
   let captureSound = new Audio(captureAudioSrc);
@@ -166,10 +164,6 @@
     rotateBoard($moveList);
   }
 
-  function handleEndGameClose() {
-    isClosed = true;
-  }
-
   gsap.registerPlugin(Flip);
 
   async function animatePieceMove() {
@@ -218,10 +212,6 @@
 
   {#if promotionMove}
     <Promotion {gameContext} on:close={handlePromotion} />
-  {/if}
-
-  {#if $game.result && !isClosed}
-    <End {gameContext} on:close={handleEndGameClose} on:playAgain/>
   {/if}
 </section>
 

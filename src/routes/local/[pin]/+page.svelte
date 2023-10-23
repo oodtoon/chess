@@ -22,6 +22,7 @@
   import winAudioSrc from "$lib/audio/win.mp3";
   import lossAudioSrc from "$lib/audio/loss.mp3";
   import AudioToggle from "$lib/components/AudioToggle.svelte";
+  import End from "$lib/components/dialogs/End.svelte";
 
   export let data;
   let roomSize: number = 0;
@@ -30,11 +31,12 @@
   let bs: number = Infinity;
   let oldMovesLength: number;
   let isMuted = false;
+  let isEndGameDialogClosed = false
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
-  const gameContext = setGameContext(new GameModel(eventBus), "local");
-  const { game } = gameContext;
+  const gameCtx = setGameContext(new GameModel(eventBus), "local");
+  const { game } = gameCtx;
 
   let winSound = new Audio(winAudioSrc);
   let lossSound = new Audio(lossAudioSrc);
@@ -77,7 +79,7 @@
 
     $room.state.strMoves.onChange(() => {
       if ($room.state.strMoves.length === 0) {
-        gameContext.reset();
+        gameCtx.reset();
         $game = $game;
       } else if ($room.state.strMoves > oldMovesLength) {
         updateGameState([...$room.state.strMoves]);
@@ -166,7 +168,7 @@
     if ($game.isGameOver) {
       return
     }
-    
+
     game.update(($game) => {
       $game.undoMove();
       return $game;
@@ -176,6 +178,14 @@
   function handleReset() {
     console.log("local reset");
     $room.send("reset");
+  }
+
+  function handleEndGameClose() {
+    isEndGameDialogClosed = true;
+  }
+
+  function handlePlayAgain() {
+    gameCtx.reset()
   }
 
   $: activePlayer = $game.getActivePlayer();
@@ -244,6 +254,10 @@
     <AudioToggle bind:isMuted />
   </section>
 </div>
+
+{#if $game.result && !isEndGameDialogClosed}
+<End {gameCtx} on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
+{/if}
 
 <style>
   :root {

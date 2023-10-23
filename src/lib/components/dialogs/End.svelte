@@ -11,15 +11,14 @@
 
   const dispatch = createEventDispatcher();
 
-  export let gameContext: GameContext;
+  export let gameCtx: GameContext;
 
-  $: ({ game } = gameContext);
+  $: ({ game } = gameCtx);
 
   let copied: boolean = false;
 
   const handlePlayAgain = () => {
     dispatch("playAgain")
-    // gameContext.reset();
   };
 
   const handleCopy = () => {

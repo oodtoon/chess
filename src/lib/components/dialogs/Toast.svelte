@@ -5,8 +5,11 @@
   import CloseToastIcon from "../icons/CloseToastIcon.svelte";
   import WarningIcon from "../icons/WarningIcon.svelte";
   import SuccessIcon from "../icons/SuccessIcon.svelte";
+  import { getGameContext } from "$lib/context";
 
   const dispatch = createEventDispatcher();
+  const gameCtx = getGameContext();
+  const { game } = gameCtx;
 
   export let type: string;
 
@@ -17,7 +20,7 @@
     seconds -= 1;
   }
 
-  $: if (type === "disconnect") {
+  $: if (type === "disconnect" && !$game.result) {
     int = setInterval(countDown, 1000);
   }
 
@@ -45,7 +48,9 @@
     {#if type === "importError"}
       Invalid PGN format.
     {:else if type === "disconnect"}
-      Opponent disconnected 0:{seconds.toString().padStart(2, "0")}
+      Opponent disconnected {#if !$game.result}
+        0:{seconds.toString().padStart(2, "0")}
+      {/if}
     {:else}
       Opponent is back!
     {/if}
