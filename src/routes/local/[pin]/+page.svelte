@@ -136,6 +136,10 @@
   }
 
   function handleDraw() {
+    if ($game.isGameOver) {
+      return
+    }
+
     $game.terminate({
       result: "1/2-1/2",
       reason: "draw agreed",
@@ -145,6 +149,10 @@
   }
 
   function handleResign() {
+    if ($game.isGameOver) {
+      return
+    }
+
     const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0";
     $game.terminate({
       result,
@@ -155,6 +163,10 @@
   }
 
   function handleUndo() {
+    if ($game.isGameOver) {
+      return
+    }
+    
     game.update(($game) => {
       $game.undoMove();
       return $game;

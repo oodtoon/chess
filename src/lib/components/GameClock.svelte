@@ -135,11 +135,14 @@
 
   $: if (
     isMultiPlayer &&
+    !isMuted &&
     client === activePlayer.color &&
+    client === color &&
     time <= 10 &&
     time >= 0 &&
     !$game.isGameOver
   ) {
+    console.log("stuff time whatever")
     clockSound.play();
   } else if (
     isMultiPlayer &&

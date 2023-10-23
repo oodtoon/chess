@@ -57,6 +57,8 @@
   let winSound = new Audio(winAudioSrc);
   let lossSound = new Audio(lossAudioSrc);
 
+  // figure out issue with time clicking thing
+
   onMount(() => {
     invalidateAll();
     setupRoom();
@@ -288,6 +290,9 @@
   });
 
   function handleDraw() {
+    if ($game.isGameOver) {
+      return
+    }
     let drawMsg;
     let player = $room.state.players.get($room.sessionId).color;
     const opposingPlayer = player === "White" ? "Black" : "White";
@@ -296,12 +301,19 @@
   }
 
   function handleResign() {
+    if ($game.isGameOver) {
+      return
+    }
     $room.send("resign", {
       type: "resign",
     });
   }
 
   async function handleUndo() {
+    if ($game.isGameOver) {
+      return
+    }
+
     if ($game.getActivePlayer().color !== $team) {
       isUndoDialog = true;
     }
@@ -312,7 +324,7 @@
     $room.send("reset");
   }
 
-  $: if ($game.result) {
+  $: if ($game.result && !isMuted) {
     if (
       ($team === "White" && $game.result === "1-0") ||
       ($team === "Black" && $game.result === "0-1")
