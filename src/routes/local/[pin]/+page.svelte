@@ -31,7 +31,7 @@
   let bs: number = Infinity;
   let oldMovesLength: number;
   let isMuted = false;
-  let isEndGameDialogClosed = false
+  let hasUserClosedEngDialog = false
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
@@ -47,7 +47,6 @@
   });
 
   onDestroy(() => {
-    console.log("leaving");
     $room.leave(false);
   });
 
@@ -176,12 +175,11 @@
   }
 
   function handleReset() {
-    console.log("local reset");
     $room.send("reset");
   }
 
   function handleEndGameClose() {
-    isEndGameDialogClosed = true;
+    hasUserClosedEngDialog = true;
   }
 
   function handlePlayAgain() {
@@ -255,7 +253,7 @@
   </section>
 </div>
 
-{#if $game.result && !isEndGameDialogClosed}
+{#if $game.result && !hasUserClosedEngDialog}
 <End {gameCtx} on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
 {/if}
 
@@ -332,7 +330,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (max-height: 800px) {
+  @media (min-width: 1000px) and (max-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -346,6 +344,7 @@
       padding: 1em;
       min-width: 160px;
       max-height: 200px;
+      justify-items: stretch;
     }
 
     .container {
@@ -379,7 +378,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (min-height: 800px) {
+  @media (min-width: 1000px) and (min-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }

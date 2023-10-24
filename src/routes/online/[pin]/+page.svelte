@@ -41,7 +41,7 @@
   let isMuted: boolean = false;
   let isReset = false;
 
-  let isEndGameDialogClosed = false
+  let hasUserClosedEngDialog = false;
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -66,7 +66,7 @@
   });
 
   onDestroy(() => {
-    console.log("leaving");
+
     $room.leave(false);
   });
 
@@ -140,7 +140,7 @@
           updateGameState([...$room.state.strMoves]);
         } else if ($room.state.strMoves.length === 0) {
           isReset = true;
-          isEndGameDialogClosed = false
+          hasUserClosedEngDialog = false;
           gameCtx.reset();
           $game = $game;
         }
@@ -152,9 +152,8 @@
       hasOpponentLeft = true;
 
       if ($game.result) {
-        return 
+        return;
       }
-      
       playerAwayInt = setTimeout(() => {
         hasOpponentLeft = false;
         const result = $team === "White" ? "1-0" : "0-1";
@@ -330,7 +329,7 @@
   }
 
   function handleEndGameClose() {
-    isEndGameDialogClosed = true;
+    hasUserClosedEngDialog = true;
   }
 
   $: if ($game.result && !isMuted) {
@@ -405,6 +404,7 @@
         {/if}
       {/if}
     </section>
+    
   </section>
 
   <section class="game-info-container">
@@ -439,8 +439,12 @@
     <Undo on:close={closeUndoDialog} />
   {/if}
 
-  {#if $game.result && !isEndGameDialogClosed}
-    <End {gameCtx} on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
+  {#if $game.result && !hasUserClosedEngDialog}
+    <End
+      {gameCtx}
+      on:close={handleEndGameClose}
+      on:playAgain={handlePlayAgain}
+    />
   {/if}
 </div>
 
@@ -528,7 +532,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (max-height: 800px) {
+  @media (min-width: 1000px) and (max-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -575,7 +579,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (min-height: 800px) {
+  @media (min-width: 1000px) and (min-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }

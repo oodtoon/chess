@@ -76,7 +76,7 @@
     max-height: 24px;
   }
 
-  @media (min-width: 1000px) and (max-height: 800px) {
+  @media (min-width: 1000px) and (max-height: 900px) {
     .pieces {
       align-self: start;
     }
@@ -89,7 +89,7 @@
       align-self: center;
     }
   }
-  @media (min-width: 1000px) and (min-height: 800px) {
+  @media (min-width: 1000px) and (min-height: 900px) {
     .pieces {
       max-height: 3em;
     }
