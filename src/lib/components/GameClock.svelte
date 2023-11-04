@@ -9,7 +9,7 @@
 
   export let minutes: number;
   export let seconds: number;
-  export let color: string;
+  export let color: Color;
   export let isMultiPlayer: boolean = false;
   export let roomSize: number;
   export let client: Color;
@@ -25,6 +25,11 @@
   $: if (minutes === Infinity) {
     isPaused = true;
   }
+
+  // const counter = initStore()
+
+  // $: $counter.bannas === 5 && alert("hello")
+  // counter.incBanna()
 
   $: if (seconds !== Infinity) {
     time = seconds;
@@ -64,6 +69,18 @@
 
   const formatMili = (t: string) => t.toString().padStart(4, "0");
 
+  function isActivePlayer() {
+    if (isMultiPlayer) {
+      return client === color && activePlayer.color === color;
+    } else {
+      return activePlayer.color === color;
+    }
+  }
+
+  function shouldPlaySound() {
+    return !isMuted && isActivePlayer();
+  }
+
   $: if (!isPaused) {
     clockInt = setInterval(countDown, 100);
   } else {
@@ -74,8 +91,8 @@
     if (isMultiPlayer && roomSize === 1) {
       $game.terminate({
         result: $game.getActivePlayer().isWhite ? "1-0" : "0-1",
-        reason: "opponent disconnected"
-      })
+        reason: "opponent disconnected",
+      });
     }
     $game.terminate({
       result: $game.getActivePlayer().isWhite ? "0-1" : "1-0",
@@ -88,64 +105,17 @@
     clearInterval(clockInt);
   }
 
-  $: if (!isMultiPlayer && !isMuted && time <= 60.5 && time >= 59) {
-    minuteSound.play();
+  $: if (shouldPlaySound()) {
+    if (time <= 60.5 && time >= 59) {
+      minuteSound.play();
+    } else if (time <= 10.5 && time >= 9.9) {
+      tenSecondSound.play();
+    } else if (time < 10 && time > 0 && !$game.isGameOver) {
+      clockSound.play();
+    }
   }
 
-  $: if (!isMultiPlayer && !isMuted && time <= 10.5 && time >= 9.9) {
-    tenSecondSound.play();
-  }
-
-  $: if (
-    !isMultiPlayer &&
-    time < 10 &&
-    time > 0 &&
-    color === activePlayer.color &&
-    !isMuted &&
-    !$game.isGameOver
-  ) {
-    clockSound.play();
-  } else if (
-    !isMultiPlayer &&
-    ((color !== activePlayer.color && time < 10) || time <= 0)
-  ) {
-    clockSound.pause();
-  }
-
-  $: if (
-    isMultiPlayer &&
-    !isMuted &&
-    client === color &&
-    time <= 60.5 &&
-    time >= 59
-  ) {
-    minuteSound.play();
-  }
-
-  $: if (
-    isMultiPlayer &&
-    !isMuted &&
-    client === color &&
-    time <= 10.5 &&
-    time >= 9.5
-  ) {
-    tenSecondSound.play();
-  }
-
-  $: if (
-    isMultiPlayer &&
-    !isMuted &&
-    client === activePlayer.color &&
-    client === color &&
-    time <= 10 &&
-    time >= 0 &&
-    !$game.isGameOver
-  ) {
-    clockSound.play();
-  } else if (
-    isMultiPlayer &&
-    ((client !== activePlayer.color) || time <= 0)
-  ) {
+  $: if (!shouldPlaySound() || time <= 0) {
     clockSound.pause();
   }
 </script>
@@ -161,7 +131,7 @@
     <span class="clock-icon">
       <ClockIcon {color} />
     </span>
-    {#if time || time === 0}
+    {#if time !== undefined}
       <span>{formatMinute(time.toFixed(0))}:</span>
       {#if time <= 59 && time > 0}
         <span>{formatMili(time.toFixed(1))}</span>
