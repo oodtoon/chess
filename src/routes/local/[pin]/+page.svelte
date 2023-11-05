@@ -19,18 +19,30 @@
   import type { GameMinutes } from "$lib/type.js";
   import { invalidateAll } from "$app/navigation";
   import PlayAgainButton from "$lib/components/PlayAgainButton.svelte";
+  import winAudioSrc from "$lib/audio/win.mp3";
+  import lossAudioSrc from "$lib/audio/loss.mp3";
+  import AudioToggle from "$lib/components/AudioToggle.svelte";
+  import End from "$lib/components/dialogs/End.svelte";
 
   export let data;
   let roomSize: number = 0;
   let minutes: GameMinutes = Infinity;
-  let ws: number = Infinity;
-  let bs: number = Infinity;
+  let whiteClock: number = Infinity;
+  let blackClock: number = Infinity;
   let oldMovesLength: number;
+  let isMuted = false;
+  let hasUserClosedEngDialog = false
+
+  const COLYSEUS_INFINITY = 999999999
+
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
-  const gameContext = setGameContext(new GameModel(eventBus), "local");
-  const { game } = gameContext;
+  const gameCtx = setGameContext(new GameModel(eventBus), "local");
+  const { game } = gameCtx;
+
+  let winSound = new Audio(winAudioSrc);
+  let lossSound = new Audio(lossAudioSrc);
 
   onMount(() => {
     invalidateAll();
@@ -38,7 +50,6 @@
   });
 
   onDestroy(() => {
-    console.log("leaving");
     $room.leave(false);
   });
 
@@ -50,10 +61,10 @@
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
-      if ($room.state.minutes !== 999999999) {
+      if ($room.state.minutes !== COLYSEUS_INFINITY) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock;
-        bs = $room.state.blackClock;
+        whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
@@ -63,40 +74,40 @@
       }
 
       if ($room.state.result) {
-          $game.result = $room.state.result
-          $game.terminationReason = $room.state.terminationReason
-        }
+        $game.result = $room.state.result;
+        $game.terminationReason = $room.state.terminationReason;
+      }
     });
 
     $room.state.strMoves.onChange(() => {
-      if ($room.state.strMoves > oldMovesLength) {
+      if ($room.state.strMoves.length === 0) {
+        gameCtx.reset();
+        $game = $game;
+      } else if ($room.state.strMoves > oldMovesLength) {
         updateGameState([...$room.state.strMoves]);
       }
-
       oldMovesLength = $room.state.strMoves.length;
     });
 
     $room.onMessage("timeUpdate", (message) => {
-      ws = message.whiteClock;
-      bs = message.blackClock;
+      whiteClock = message.whiteClock;
+      blackClock = message.blackClock;
     });
 
     roomSize = $room.state.players.size;
   }
 
   function handleMove(event: CustomEvent<{ move: BaseMove }>) {
-    const isGameOver = $game.isGameOver
-    let gameOverMessage = {}
+    const isGameOver = $game.isGameOver;
+    let gameOverMessage = {};
     if (isGameOver) {
-      gameOverMessage = {
-
-      }
+      gameOverMessage = {};
     }
     const message = {
       move: event.detail.move.toString(),
       color: "Both",
       isGameOver,
-      ...gameOverMessage
+      ...gameOverMessage,
     };
     $room.send("move", message);
   }
@@ -129,32 +140,53 @@
   }
 
   function handleDraw() {
+
     $game.terminate({
       result: "1/2-1/2",
       reason: "draw agreed",
     });
-    $room.send("draw")
+    $room.send("draw");
     $game = $game;
   }
 
   function handleResign() {
-    const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0"
+
+    const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0";
     $game.terminate({
       result,
       reason: "resignation",
     });
-    $room.send("resign", ({result}))
+    $room.send("resign", { result });
     $game = $game;
   }
 
   function handleUndo() {
+
     game.update(($game) => {
       $game.undoMove();
       return $game;
     });
   }
 
+  function handleReset() {
+    $room.send("reset");
+  }
+
+  function handleEndGameClose() {
+    hasUserClosedEngDialog = true;
+  }
+
+  function handlePlayAgain() {
+    gameCtx.reset()
+  }
+
   $: activePlayer = $game.getActivePlayer();
+
+  $: if ($game.result && $game.result !== "1/2-1/2" && !isMuted) {
+    winSound.play();
+  } else if ($game.result === "1/2-1/2" && !isMuted) {
+    lossSound.play();
+  }
 </script>
 
 <svelte:head>
@@ -172,15 +204,16 @@
       {#if minutes}
         <GameClock
           {minutes}
-          seconds={ws}
+          seconds={whiteClock}
           {roomSize}
           color={"White"}
           client={activePlayer.color}
+          {isMuted}
         />
       {/if}
     </section>
 
-    <Game on:move={handleMove} />
+    <Game on:move={handleMove} on:playAgain={handleReset} {isMuted} />
 
     <section
       class="player-info-container"
@@ -191,10 +224,11 @@
       {#if minutes}
         <GameClock
           {minutes}
-          seconds={bs}
+          seconds={blackClock}
           {roomSize}
           color={"Black"}
           client={activePlayer.color}
+          {isMuted}
         />
       {/if}
     </section>
@@ -207,10 +241,15 @@
       on:resign={handleResign}
     />
     {#if minutes}
-      <MoveList {minutes} />
+      <MoveList {minutes} on:playAgain={handleReset} />
     {/if}
+    <AudioToggle bind:isMuted />
   </section>
 </div>
+
+{#if $game.result && !hasUserClosedEngDialog}
+<End on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
+{/if}
 
 <style>
   :root {
@@ -285,7 +324,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (max-height: 800px) {
+  @media (min-width: 1000px) and (max-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -299,6 +338,7 @@
       padding: 1em;
       min-width: 160px;
       max-height: 200px;
+      justify-items: stretch;
     }
 
     .container {
@@ -332,7 +372,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (min-height: 800px) {
+  @media (min-width: 1000px) and (min-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }

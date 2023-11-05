@@ -6,7 +6,7 @@
   import CopyIcon from "./icons/CopyIcon.svelte";
   import ExportIcon from "./icons/ExportIcon.svelte";
   import ImportIcon from "./icons/ImportIcon.svelte";
-  import ToastError from "./dialogs/ToastError.svelte";
+  import Toast from "./dialogs/Toast.svelte";
   import PlayAgainButton from "./PlayAgainButton.svelte";
 
   export let minutes: number;
@@ -14,6 +14,8 @@
   let copied = false;
 
   let isError = false;
+
+  let isToastClosed = false
 
   let ctx = getGameContext();
   const { game, moveList } = ctx;
@@ -31,11 +33,16 @@
   };
 
   function displayToast() {
+    isToastClosed = false
     isError = true;
 
     setTimeout(() => {
       isError = false;
     }, 5000);
+  }
+
+  function handleCloseToast() {
+    isToastClosed = true
   }
 
   const handleImport = async () => {
@@ -107,14 +114,14 @@
   </section>
   {#if $game.result}
     <section class="player-again-container">
-      <PlayAgainButton />
+      <PlayAgainButton on:playAgain/>
     </section>
   {/if}
 </div>
 
-{#if isError}
+{#if isError && !isToastClosed}
   <div class="toast">
-    <ToastError />
+    <Toast type={"importError"} on:dismiss={handleCloseToast}/>
   </div>
 {/if}
 

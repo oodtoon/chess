@@ -4,21 +4,21 @@
   import ExitButton from "../icons/ExitButton.svelte";
   import CopyIcon from "../icons/CopyIcon.svelte";
   import { createEventDispatcher } from "svelte";
-  import type { GameContext } from "$lib/context";
   import Trophy from "../icons/Trophy.svelte";
   import ExportIcon from "../icons/ExportIcon.svelte";
   import PlayAgainIcon from "../icons/PlayAgainIcon.svelte";
+  import { getGameContext } from "$lib/context";
 
   const dispatch = createEventDispatcher();
 
-  export let gameContext: GameContext;
+  let gameCtx = getGameContext()
 
-  $: ({ game } = gameContext);
+  $: ({ game } = gameCtx);
 
   let copied: boolean = false;
 
   const handlePlayAgain = () => {
-    gameContext.reset();
+    dispatch("playAgain")
   };
 
   const handleCopy = () => {
@@ -50,7 +50,7 @@
 
   <span class="btn-container">
     <button class="play-again-btn" on:click={handlePlayAgain}
-      ><span class="word">play again</span><span><PlayAgainIcon /></span
+      ><span class="word">play again</span><span><PlayAgainIcon/></span
       ></button
     >
 

@@ -19,17 +19,33 @@
   import Undo from "$lib/components/dialogs/Undo.svelte";
   import GameClock from "$lib/components/GameClock.svelte";
   import { invalidateAll } from "$app/navigation";
+  import winAudioSrc from "$lib/audio/win.mp3";
+  import lossAudioSrc from "$lib/audio/loss.mp3";
+  import AudioToggle from "$lib/components/AudioToggle.svelte";
+  import Toast from "$lib/components/dialogs/Toast.svelte";
+  import End from "$lib/components/dialogs/End.svelte";
 
   export let data;
 
   let roomSize = 0;
+  let hasOpponentLeft = false;
+  let isToastClosed = false
+  let isReconnect = false;
   let playerAwayInt: NodeJS.Timeout;
   let isUndoDialog = false;
   let minutes: GameMinutes = Infinity;
+
+  const COLYSEUS_INFINITY = 999999999
+
   const { room, team, pin } = data;
 
-  let ws: number = Infinity;
-  let bs: number = Infinity;
+  let whiteClock: number = Infinity;
+  let blackClock: number = Infinity;
+
+  let isMuted: boolean = false;
+  let isReset = false;
+
+  let hasUserClosedEngDialog = false;
 
   $: dialogState = $room
     ? $room?.state.requestState
@@ -45,13 +61,16 @@
 
   let opponentColor: Color;
 
+  let winSound = new Audio(winAudioSrc);
+  let lossSound = new Audio(lossAudioSrc);
+
   onMount(() => {
     invalidateAll();
     setupRoom();
   });
 
   onDestroy(() => {
-    console.log("leaving");
+
     $room.leave(false);
   });
 
@@ -78,13 +97,34 @@
 
       roomSize = $room.state.players.size;
 
-      if ($room.state.minutes !== 999999999) {
+      if ($room.state.minutes !== COLYSEUS_INFINITY) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock;
-        bs = $room.state.blackClock;
+        whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
+    });
+
+    $room.state.players.onChange(() => {
+      if (isReset) {
+        let newTeam: Color = $team === "White" ? "Black" : "White";
+        $team = newTeam;
+        $team = $team;
+        opponentColor = $team === "White" ? "Black" : "White";
+        if ($room.state.minutes !== COLYSEUS_INFINITY) {
+          minutes = $room.state.minutes;
+          whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+          blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+        } else {
+          minutes = Infinity;
+          whiteClock = Infinity;
+          blackClock = Infinity;
+          whiteClock = whiteClock;
+          blackClock = blackClock;
+        }
+      }
+      isReset = false;
     });
 
     $room.state.strMoves.onChange(() => {
@@ -97,17 +137,27 @@
           return $game;
         });
       } else {
-        if ($room.state.strMoves.length !== $game.moves.length) {
+        if (
+          $room.state.strMoves.length !== $game.moves.length &&
+          $room.state.strMoves.length !== 0
+        ) {
           updateGameState([...$room.state.strMoves]);
+        } else if ($room.state.strMoves.length === 0) {
+          isReset = true;
+          hasUserClosedEngDialog = false;
+          gameCtx.reset();
+          $game = $game;
         }
       }
       oldMovesLength = $room.state.strMoves.length;
     });
 
     $room.onMessage("opponentLeft", () => {
-      roomSize = 1;
+      isToastClosed = false
+      hasOpponentLeft = true;
 
       playerAwayInt = setTimeout(() => {
+        hasOpponentLeft = false;
         const result = $team === "White" ? "1-0" : "0-1";
         $game.terminate({
           result,
@@ -118,13 +168,20 @@
     });
 
     $room.onMessage("opponentIsBack", (message) => {
-      roomSize = 2;
+      hasOpponentLeft = false;
+      isToastClosed = false
+      isReconnect = true;
+
       clearTimeout(playerAwayInt);
 
       if (message.result) {
         $game.result = message.result;
         $game.terminationReason = message.terminationReason;
       }
+
+      setTimeout(() => {
+        isReconnect = false;
+      }, 5000);
     });
 
     $room.onMessage("resign", (message: Response) => {
@@ -143,8 +200,8 @@
     });
 
     $room.onMessage("timeUpdate", (message) => {
-      ws = message.whiteClock;
-      bs = message.blackClock;
+      whiteClock = message.whiteClock;
+      blackClock = message.blackClock;
     });
   }
 
@@ -259,11 +316,42 @@
       isUndoDialog = true;
     }
   }
+
+  function handlePlayAgain() {
+    $room.send("reset");
+  }
+
+  function handleEndGameClose() {
+    hasUserClosedEngDialog = true;
+  }
+
+  function handleCloseToast() {
+    isToastClosed = true
+  }
+
+  $: if ($game.result && !isMuted) {
+    if (
+      ($team === "White" && $game.result === "1-0") ||
+      ($team === "Black" && $game.result === "0-1")
+    ) {
+      winSound.play();
+    } else {
+      lossSound.play();
+    }
+  }
 </script>
 
 <svelte:head>
   <title>Chess | Online</title>
 </svelte:head>
+
+<div class="toast-container">
+  {#if hasOpponentLeft && !isToastClosed}
+    <Toast type={"disconnect"} on:dismiss={handleCloseToast}/>
+  {:else if isReconnect && !isToastClosed}
+    <Toast type={"reconnect"} on:dismiss={handleCloseToast}/>
+  {/if}
+</div>
 
 <div class="container">
   <section class="board-container">
@@ -276,17 +364,24 @@
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={$team === "White" ? ws : bs}
+            seconds={$team === "White" ? whiteClock : blackClock}
             {roomSize}
             color={$team}
             client={$team}
             isMultiPlayer
+            {isMuted}
           />
         {/if}
       {/if}
     </section>
 
-    <Game on:move={handleMove} team={$team} isMultiPlayer={true} />
+    <Game
+      on:move={handleMove}
+      on:playAgain={handlePlayAgain}
+      team={$team}
+      isMultiPlayer={true}
+      {isMuted}
+    />
 
     <section class="player-info-container opponent">
       {#if $team}
@@ -296,15 +391,17 @@
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={$team === "White" ? bs : ws}
+            seconds={$team === "White" ? blackClock : whiteClock}
             {roomSize}
             color={opponentColor}
             client={$team}
             isMultiPlayer
+            {isMuted}
           />
         {/if}
       {/if}
     </section>
+    
   </section>
 
   <section class="game-info-container">
@@ -314,8 +411,9 @@
       on:resign={handleResign}
     />
     {#if minutes}
-      <MoveList {minutes} />
+      <MoveList {minutes} on:playAgain={handlePlayAgain} />
     {/if}
+    <AudioToggle bind:isMuted />
   </section>
 
   {#if roomSize !== 2 && !$game.result}
@@ -336,6 +434,13 @@
 
   {#if isUndoDialog}
     <Undo on:close={closeUndoDialog} />
+  {/if}
+
+  {#if $game.result && !hasUserClosedEngDialog}
+    <End
+      on:close={handleEndGameClose}
+      on:playAgain={handlePlayAgain}
+    />
   {/if}
 </div>
 
@@ -395,6 +500,17 @@
     grid-area: opponent;
   }
 
+  .toast-container {
+    position: fixed;
+    top: 1rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
+  }
+
   @media (min-width: 700px) {
     :root {
       --responsive-size: 4rem;
@@ -410,7 +526,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (max-height: 800px) {
+  @media (min-width: 1000px) and (max-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }
@@ -457,7 +573,7 @@
     }
   }
 
-  @media (min-width: 1000px) and (min-height: 800px) {
+  @media (min-width: 1000px) and (min-height: 900px) {
     :root {
       --responsive-size: 5.5rem;
     }

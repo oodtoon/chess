@@ -4,6 +4,8 @@ import { formatAsPgnString, parsePgn } from "../server-io";
 import { Player } from "../models/game-state";
 
 type TimeOptions = { minutes: number };
+
+const INFINITY = 999999999
 export class LocalRoom extends Room<GameState> {
   public whiteInt!: Delayed;
   public blackInt!: Delayed;
@@ -21,9 +23,9 @@ export class LocalRoom extends Room<GameState> {
       this.state.blackClock -= 0.1;
     }, 100);
 
-    this.pauseBothClocks()
+    this.pauseBothClocks();
 
-    if (options.minutes !== 999999999) {
+    if (options.minutes !== INFINITY) {
       const seconds = options.minutes * 60;
       this.state.whiteClock = seconds;
       this.state.blackClock = seconds;
@@ -39,8 +41,10 @@ export class LocalRoom extends Room<GameState> {
           parsePgn(pgn);
           this.state.strMoves.push(message.move);
 
-          if (options.minutes !== 999999999) {
-            if (this.state.strMoves.length % 2 === 0) {
+          if (options.minutes !== INFINITY) {
+            if (message.isGameOver) {
+              this.pauseBothClocks();
+            } else if (this.state.strMoves.length % 2 === 0) {
               this.blackInt.pause();
               this.whiteInt.resume();
             } else {
@@ -52,13 +56,11 @@ export class LocalRoom extends Room<GameState> {
               whiteClock: this.state.whiteClock,
               blackClock: this.state.blackClock,
             });
-
           }
+
           if (message.isGameOver) {
             this.state.result = message.result;
             this.state.terminationReason = message.terminationReason;
-
-            this.pauseBothClocks()
           }
         } catch (e) {
           message.send(client, "error", e);
@@ -71,14 +73,41 @@ export class LocalRoom extends Room<GameState> {
       this.state.result = "1/2-1/2";
       this.state.terminationReason = "draw agreed";
 
-      this.pauseBothClocks()
+      this.pauseBothClocks();
     });
 
     this.onMessage("resign", (client, message) => {
       this.state.result = message.result;
       this.state.terminationReason = "resignation";
 
-      this.pauseBothClocks()
+      this.pauseBothClocks();
+    });
+
+    this.onMessage("reset", () => {
+      console.log("local reset");
+      this.state.result = "";
+      this.state.terminationReason = "";
+      this.state.strMoves.clear();
+
+      let message
+
+      if (options.minutes !== INFINITY) {
+        const seconds = options.minutes * 60;
+        this.state.whiteClock = seconds;
+        this.state.blackClock = seconds;
+        message = {
+          whiteClock: seconds,
+          blackClock: seconds
+        }
+      } else {
+        this.state.whiteClock = options.minutes;
+        this.state.blackClock = options.minutes;
+        message = {
+          whiteClock: options.minutes,
+          blackClock: options.minutes
+        }
+      }
+      this.broadcast("timeUpdate", message)
     });
   }
 
@@ -89,12 +118,16 @@ export class LocalRoom extends Room<GameState> {
       this.state.players.get(client.sessionId).color
     );
 
-    if (this.state.minutes !== 999999999 && !this.state.result) {
+    if (this.state.minutes !== INFINITY && !this.state.result) {
       console.log("room minutes:", this.state.minutes);
       this.whiteInt.resume();
       this.blackInt.pause();
-    } else if (this.state.result) {
-      this.pauseBothClocks()
+    } else if (
+      this.state.result !== null ||
+      this.state.whiteClock <= 0 ||
+      this.state.blackClock <= 0
+    ) {
+      this.pauseBothClocks();
     }
   }
 
@@ -112,9 +145,12 @@ export class LocalRoom extends Room<GameState> {
       await this.allowReconnection(client, 20);
       console.log(client.sessionId, player.color, "reconnected!");
 
+      let whiteClock = this.state.whiteClock <= 0 ? 0 : this.state.whiteClock;
+      let blackClock = this.state.blackClock <= 0 ? 0 : this.state.blackClock;
+
       this.broadcast("timeUpdate", {
-        whiteClock: this.state.whiteClock,
-        blackClock: this.state.blackClock,
+        whiteClock,
+        blackClock
       });
 
       player.connected = true;
@@ -129,7 +165,7 @@ export class LocalRoom extends Room<GameState> {
   }
 
   pauseBothClocks() {
-    this.whiteInt.pause()
-    this.blackInt.pause()
+    this.whiteInt.pause();
+    this.blackInt.pause();
   }
 }

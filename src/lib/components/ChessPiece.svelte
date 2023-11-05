@@ -6,6 +6,7 @@
   export let piece: Piece | null;
   export let isSamePieceType = false
 
+
   let livePiece = !captured;
 
 

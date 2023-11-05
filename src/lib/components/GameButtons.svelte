@@ -25,13 +25,13 @@
 </script>
 
 <section class="btns-container dual">
-  <button class="draw" type="button" on:click={handleDraw}
+  <button class="draw" type="button" disabled={$game.isGameOver} on:click={handleDraw}
     ><span class="word">Draw</span> <span><HandShakeIcon /></span></button
   >
-  <button class="resign" type="button" on:click={handleResign}
+  <button class="resign" type="button" disabled={$game.isGameOver} on:click={handleResign}
     ><span class="word">Resign</span> <span><FlagIcon /></span></button
   >
-  <button class="undo" type="button" on:click={handleUndo}>
+  <button class="undo" type="button" disabled={$game.isGameOver} on:click={handleUndo}>
     <span class="word">Undo Move</span>
     <span>
       <UndoIcon />
