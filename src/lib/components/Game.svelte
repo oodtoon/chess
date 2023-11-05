@@ -10,7 +10,6 @@
   import { promote } from "$lib/models/pieces";
   import type { BaseMove } from "$lib/models/move";
   import Promotion from "./dialogs/Promotion.svelte";
-  import End from "./dialogs/End.svelte";
   import captureAudioSrc from "$lib/audio/capture.mp3";
   import checkAudioSrc from "$lib/audio/check.mp3";
   import moveAudioSrc from "$lib/audio/move.mp3";
@@ -194,7 +193,6 @@
         active={piece === selectedPiece}
         on:click={() => handlePieceClick(piece)}
         captured={false}
-        isDisabled={$game.result !== null}
       />
     {/if}
 

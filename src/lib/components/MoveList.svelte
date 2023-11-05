@@ -15,6 +15,8 @@
 
   let isError = false;
 
+  let isToastClosed = false
+
   let ctx = getGameContext();
   const { game, moveList } = ctx;
 
@@ -31,11 +33,16 @@
   };
 
   function displayToast() {
+    isToastClosed = false
     isError = true;
 
     setTimeout(() => {
       isError = false;
     }, 5000);
+  }
+
+  function handleCloseToast() {
+    isToastClosed = true
   }
 
   const handleImport = async () => {
@@ -112,9 +119,9 @@
   {/if}
 </div>
 
-{#if isError}
+{#if isError && !isToastClosed}
   <div class="toast">
-    <Toast type={"importError"}/>
+    <Toast type={"importError"} on:dismiss={handleCloseToast}/>
   </div>
 {/if}
 

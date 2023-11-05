@@ -6,12 +6,13 @@
   import WarningIcon from "../icons/WarningIcon.svelte";
   import SuccessIcon from "../icons/SuccessIcon.svelte";
   import { getGameContext } from "$lib/context";
+  import type { ToastType } from "$lib/type";
 
   const dispatch = createEventDispatcher();
   const gameCtx = getGameContext();
   const { game } = gameCtx;
 
-  export let type: string;
+  export let type: ToastType;
 
   let seconds = 20;
   let int: NodeJS.Timer;
@@ -29,7 +30,8 @@
   }
 </script>
 
-<article
+<div
+  class="toast-dialog"
   class:error={type === "importError"}
   class:disconnect={type === "disconnect"}
   class:reconnect={type === "reconnect"}
@@ -59,10 +61,10 @@
   <button class="close" on:click={() => dispatch("dismiss")}>
     <CloseToastIcon width="0.8em" />
   </button>
-</article>
+</div>
 
 <style>
-  article {
+  .toast-dialog {
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 0.2rem;

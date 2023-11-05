@@ -4,14 +4,14 @@
   import ExitButton from "../icons/ExitButton.svelte";
   import CopyIcon from "../icons/CopyIcon.svelte";
   import { createEventDispatcher } from "svelte";
-  import type { GameContext } from "$lib/context";
   import Trophy from "../icons/Trophy.svelte";
   import ExportIcon from "../icons/ExportIcon.svelte";
   import PlayAgainIcon from "../icons/PlayAgainIcon.svelte";
+  import { getGameContext } from "$lib/context";
 
   const dispatch = createEventDispatcher();
 
-  export let gameCtx: GameContext;
+  let gameCtx = getGameContext()
 
   $: ({ game } = gameCtx);
 

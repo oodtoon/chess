@@ -9,7 +9,6 @@
 
   function handlePlayAgain() {
     dispatch("playAgain")
-    gameContext.reset();  
   }
 </script>
 

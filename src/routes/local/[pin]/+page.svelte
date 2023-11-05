@@ -27,11 +27,14 @@
   export let data;
   let roomSize: number = 0;
   let minutes: GameMinutes = Infinity;
-  let ws: number = Infinity;
-  let bs: number = Infinity;
+  let whiteClock: number = Infinity;
+  let blackClock: number = Infinity;
   let oldMovesLength: number;
   let isMuted = false;
   let hasUserClosedEngDialog = false
+
+  const COLYSEUS_INFINITY = 999999999
+
   const { room, team, pin } = data;
 
   const eventBus = new EventBus();
@@ -58,10 +61,10 @@
     $room.state.players.onAdd((player: any, sessionId: string) => {
       console.log("player:", sessionId, player.color, "has joined");
 
-      if ($room.state.minutes !== 999999999) {
+      if ($room.state.minutes !== COLYSEUS_INFINITY) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
-        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+        whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
@@ -87,8 +90,8 @@
     });
 
     $room.onMessage("timeUpdate", (message) => {
-      ws = message.whiteClock;
-      bs = message.blackClock;
+      whiteClock = message.whiteClock;
+      blackClock = message.blackClock;
     });
 
     roomSize = $room.state.players.size;
@@ -137,9 +140,6 @@
   }
 
   function handleDraw() {
-    if ($game.isGameOver) {
-      return
-    }
 
     $game.terminate({
       result: "1/2-1/2",
@@ -150,9 +150,6 @@
   }
 
   function handleResign() {
-    if ($game.isGameOver) {
-      return
-    }
 
     const result = $game.getActivePlayer().isWhite ? "0-1" : "1-0";
     $game.terminate({
@@ -164,9 +161,6 @@
   }
 
   function handleUndo() {
-    if ($game.isGameOver) {
-      return
-    }
 
     game.update(($game) => {
       $game.undoMove();
@@ -210,7 +204,7 @@
       {#if minutes}
         <GameClock
           {minutes}
-          seconds={ws}
+          seconds={whiteClock}
           {roomSize}
           color={"White"}
           client={activePlayer.color}
@@ -230,7 +224,7 @@
       {#if minutes}
         <GameClock
           {minutes}
-          seconds={bs}
+          seconds={blackClock}
           {roomSize}
           color={"Black"}
           client={activePlayer.color}
@@ -254,7 +248,7 @@
 </div>
 
 {#if $game.result && !hasUserClosedEngDialog}
-<End {gameCtx} on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
+<End on:close={handleEndGameClose} on:playAgain={handlePlayAgain} />
 {/if}
 
 <style>

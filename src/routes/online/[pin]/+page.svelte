@@ -29,14 +29,18 @@
 
   let roomSize = 0;
   let hasOpponentLeft = false;
+  let isToastClosed = false
   let isReconnect = false;
   let playerAwayInt: NodeJS.Timeout;
   let isUndoDialog = false;
   let minutes: GameMinutes = Infinity;
+
+  const COLYSEUS_INFINITY = 999999999
+
   const { room, team, pin } = data;
 
-  let ws: number = Infinity;
-  let bs: number = Infinity;
+  let whiteClock: number = Infinity;
+  let blackClock: number = Infinity;
 
   let isMuted: boolean = false;
   let isReset = false;
@@ -93,10 +97,10 @@
 
       roomSize = $room.state.players.size;
 
-      if ($room.state.minutes !== 999999999) {
+      if ($room.state.minutes !== COLYSEUS_INFINITY) {
         minutes = $room.state.minutes;
-        ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
-        bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+        whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+        blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
       } else {
         minutes = Infinity;
       }
@@ -108,16 +112,16 @@
         $team = newTeam;
         $team = $team;
         opponentColor = $team === "White" ? "Black" : "White";
-        if ($room.state.minutes !== 999999999) {
+        if ($room.state.minutes !== COLYSEUS_INFINITY) {
           minutes = $room.state.minutes;
-          ws = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
-          bs = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
+          whiteClock = $room.state.whiteClock <= 0 ? 0 : $room.state.whiteClock;
+          blackClock = $room.state.blackClock <= 0 ? 0 : $room.state.blackClock;
         } else {
           minutes = Infinity;
-          ws = Infinity;
-          bs = Infinity;
-          ws = ws;
-          bs = bs;
+          whiteClock = Infinity;
+          blackClock = Infinity;
+          whiteClock = whiteClock;
+          blackClock = blackClock;
         }
       }
       isReset = false;
@@ -149,11 +153,9 @@
     });
 
     $room.onMessage("opponentLeft", () => {
+      isToastClosed = false
       hasOpponentLeft = true;
 
-      if ($game.result) {
-        return;
-      }
       playerAwayInt = setTimeout(() => {
         hasOpponentLeft = false;
         const result = $team === "White" ? "1-0" : "0-1";
@@ -167,6 +169,7 @@
 
     $room.onMessage("opponentIsBack", (message) => {
       hasOpponentLeft = false;
+      isToastClosed = false
       isReconnect = true;
 
       clearTimeout(playerAwayInt);
@@ -197,8 +200,8 @@
     });
 
     $room.onMessage("timeUpdate", (message) => {
-      ws = message.whiteClock;
-      bs = message.blackClock;
+      whiteClock = message.whiteClock;
+      blackClock = message.blackClock;
     });
   }
 
@@ -295,9 +298,6 @@
   });
 
   function handleDraw() {
-    if ($game.isGameOver) {
-      return;
-    }
     let drawMsg;
     let player = $room.state.players.get($room.sessionId).color;
     const opposingPlayer = player === "White" ? "Black" : "White";
@@ -306,19 +306,12 @@
   }
 
   function handleResign() {
-    if ($game.isGameOver) {
-      return;
-    }
     $room.send("resign", {
       type: "resign",
     });
   }
 
   async function handleUndo() {
-    if ($game.isGameOver) {
-      return;
-    }
-
     if ($game.getActivePlayer().color !== $team) {
       isUndoDialog = true;
     }
@@ -330,6 +323,10 @@
 
   function handleEndGameClose() {
     hasUserClosedEngDialog = true;
+  }
+
+  function handleCloseToast() {
+    isToastClosed = true
   }
 
   $: if ($game.result && !isMuted) {
@@ -348,11 +345,11 @@
   <title>Chess | Online</title>
 </svelte:head>
 
-<div class="toast">
-  {#if hasOpponentLeft}
-    <Toast type={"disconnect"} />
-  {:else if isReconnect}
-    <Toast type={"reconnect"} />
+<div class="toast-container">
+  {#if hasOpponentLeft && !isToastClosed}
+    <Toast type={"disconnect"} on:dismiss={handleCloseToast}/>
+  {:else if isReconnect && !isToastClosed}
+    <Toast type={"reconnect"} on:dismiss={handleCloseToast}/>
   {/if}
 </div>
 
@@ -367,7 +364,7 @@
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={$team === "White" ? ws : bs}
+            seconds={$team === "White" ? whiteClock : blackClock}
             {roomSize}
             color={$team}
             client={$team}
@@ -394,7 +391,7 @@
         {#if minutes}
           <GameClock
             {minutes}
-            seconds={$team === "White" ? bs : ws}
+            seconds={$team === "White" ? blackClock : whiteClock}
             {roomSize}
             color={opponentColor}
             client={$team}
@@ -441,7 +438,6 @@
 
   {#if $game.result && !hasUserClosedEngDialog}
     <End
-      {gameCtx}
       on:close={handleEndGameClose}
       on:playAgain={handlePlayAgain}
     />
@@ -504,14 +500,12 @@
     grid-area: opponent;
   }
 
-  .toast {
+  .toast-container {
     position: fixed;
-    top: 0;
+    top: 1rem;
     left: 0;
     right: 0;
-    width: 100%;
     display: flex;
-    margin-top: 1rem;
     justify-content: center;
     flex-direction: column;
     z-index: 1000;
